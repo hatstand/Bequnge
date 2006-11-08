@@ -43,10 +43,21 @@ private:
 	void modulo();
 	void greaterThan();
 	void notf();
+	void up();
+	void right();
+	void left();
+	void down();
+	void higher();
+	void lower();
+	void random();
+	void turnLeft();
+	void turnRight();
+	void reverse();
+
 
 	void pushNumber(QChar n);
 
-	void panic();
+	void panic(QString message = NULL);
 };
 
 #endif

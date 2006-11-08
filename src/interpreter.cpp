@@ -64,11 +64,13 @@ void Interpreter::readInAll()
 
 	while((line = m_input->readLine()) != NULL)
 	{
-		line.chop(1);
-
 		for(int i = 0; i < line.length(); ++i)
 		{
+			if(line[i] == '\n')
+				break;
+
 			pos[0] = i;
+			//qDebug() << "Putting:" << line[i] << "in:" << pos[0] << pos[1];
 			m_space.setChar(pos, line[i]);
 		}
 		
@@ -83,6 +85,7 @@ bool Interpreter::step()
 	QChar c = m_space.getChar(m_pos);
 	bool ret = compute(c);
 
+	//qDebug() << "Direction: " << m_direction;
 	switch(m_direction)
 	{
 		case 1:
@@ -116,6 +119,8 @@ void Interpreter::getNext()
 // Call this with a QChar Array
 bool Interpreter::compute(QChar command)
 {
+	//qDebug() << "Instruction:" << command;
+
 	if(command == '+')
 		add();
 	else if(command == '-')
@@ -130,12 +135,32 @@ bool Interpreter::compute(QChar command)
 		notf();
 	else if(command == '`')
 		greaterThan();
+	else if(command == '^')
+		up();
+	else if(command == '>')
+		right();
+	else if(command == '<')
+		left();
+	else if(command == 'v')
+		down();
+	else if(command == 'h')
+		higher();
+	else if(command == 'l')
+		lower();
+	else if(command == '?')
+		random();
+	else if(command == '[')
+		turnLeft();
+	else if(command == ']')
+		turnRight();
+	else if(command == 'r')
+		reverse();
 	else if(command.isNumber())
 		pushNumber(command);
 	else if(command == '@')
 		return false;
 	else
-		panic();
+		panic("Don't understand character: " + QString(command));
 
 	return true;
 }
@@ -224,12 +249,64 @@ void Interpreter::greaterThan()
 		m_stack.push(0);
 }
 
+void Interpreter::up()
+{
+	m_direction = -2;
+}
+
+void Interpreter::right()
+{
+	m_direction = 1;
+}
+
+void Interpreter::left()
+{
+	m_direction = -1;
+}
+
+void Interpreter::down()
+{
+	m_direction = 2;
+}
+
+void Interpreter::higher()
+{
+	m_direction = -3;
+}
+
+void Interpreter::lower()
+{
+	m_direction = 3;
+}
+
+void Interpreter::random()
+{
+	
+}
+
+void Interpreter::turnLeft()
+{
+	
+}
+
+void Interpreter::turnRight()
+{
+
+}
+
+void Interpreter::reverse()
+{
+	m_direction *= -1;
+}
+
 void Interpreter::pushNumber(QChar n)
 {
 	m_stack.push(QString(n).toInt());
 }
 
-void Interpreter::panic()
+void Interpreter::panic(QString message)
 {
-	qFatal("PANIC!");
+	message = "PANIC!: " + message;
+	qDebug() << m_pos[0] << m_pos[1];
+	qFatal(message.toAscii());
 }
