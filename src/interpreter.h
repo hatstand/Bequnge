@@ -27,10 +27,20 @@ private:
 	FungeSpace<2> m_space;
 	int m_pos[2];
 
+	int m_edgeLeft;
+	int m_edgeRight;
+	int m_edgeTop;
+	int m_edgeBottom;
+
+	bool m_stringMode;
+	bool m_jumpedSpace;
+
 
 	void parseHeader();
 	void readInAll();
 	bool compute(QChar);
+	void move();
+	void jumpSpaces();
 	bool step();
 	void getNext();
 
@@ -53,6 +63,10 @@ private:
 	void turnLeft();
 	void turnRight();
 	void reverse();
+	void string();
+	void duplicate();
+	void vertIf();
+	void printChar();
 
 
 	void pushNumber(QChar n);

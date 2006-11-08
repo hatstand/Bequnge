@@ -12,6 +12,11 @@ Interpreter::Interpreter(QIODevice* input, QObject* parent)
 	m_direction = 1;
 	m_pos[0] = 0;
 	m_pos[1] = 0;
+
+	m_edgeLeft = 0;
+	m_edgeRight = 0;
+
+	m_stringMode = false;
 }
 
 Interpreter::~Interpreter()
@@ -64,7 +69,8 @@ void Interpreter::readInAll()
 
 	while((line = m_input->readLine()) != NULL)
 	{
-		for(int i = 0; i < line.length(); ++i)
+		int i = 0;
+		for(; i < line.length(); ++i)
 		{
 			if(line[i] == '\n')
 				break;
@@ -73,19 +79,34 @@ void Interpreter::readInAll()
 			//qDebug() << "Putting:" << line[i] << "in:" << pos[0] << pos[1];
 			m_space.setChar(pos, line[i]);
 		}
+
+		// TODO: Dimension independent edge detection
+		m_edgeRight = qMax(m_edgeRight, i);
+		// TODO: left edge detection
+		m_edgeLeft = 0;
 		
 		++pos[1];
 	}
+	m_edgeRight--;
+
+	m_edgeTop = 0;
+	m_edgeBottom = pos[1];
+	qDebug() << "Edge:" << m_edgeRight;
 
 	qDebug() << "Finished reading code";
 }
 
-bool Interpreter::step()
+void Interpreter::jumpSpaces()
 {
-	QChar c = m_space.getChar(m_pos);
-	bool ret = compute(c);
+	if(m_space.getChar(m_pos).category() == QChar::Separator_Space)
+	{
+		m_jumpedSpace = true;	
+		move();
+	}
+}
 
-	//qDebug() << "Direction: " << m_direction;
+void Interpreter::move()
+{
 	switch(m_direction)
 	{
 		case 1:
@@ -104,6 +125,42 @@ bool Interpreter::step()
 			panic();
 	}
 
+	//qDebug() << "Moved to:" << m_pos[0] << m_pos[1] << m_space.getChar(m_pos);
+
+	if(m_pos[0] < m_edgeLeft)
+	{
+		m_pos[0] = m_edgeRight;
+	}
+	else if(m_pos[0] > m_edgeRight)
+	{
+		m_pos[0] = m_edgeLeft;
+	}
+	else if(m_pos[1] < m_edgeTop)
+	{
+		m_pos[1] = m_edgeBottom;
+	}
+	else if(m_pos[1] > m_edgeBottom)
+	{
+		m_pos[1] = m_edgeTop;
+	}
+
+	jumpSpaces();
+}
+
+bool Interpreter::step()
+{
+	if(m_jumpedSpace)
+	{
+		m_jumpedSpace = false;
+		if(m_stringMode)
+			m_stack.push(QChar(' ').unicode());
+	}
+	QChar c = m_space.getChar(m_pos);
+	bool ret = compute(c);
+
+	//qDebug() << "Direction: " << m_direction;
+	move();
+
 	return ret;
 }
 
@@ -120,6 +177,11 @@ void Interpreter::getNext()
 bool Interpreter::compute(QChar command)
 {
 	//qDebug() << "Instruction:" << command;
+	if(m_stringMode && command != '"')
+	{
+		m_stack.push(command.unicode());
+		return true;
+	}
 
 	if(command == '+')
 		add();
@@ -155,6 +217,14 @@ bool Interpreter::compute(QChar command)
 		turnRight();
 	else if(command == 'r')
 		reverse();
+	else if(command == '"')
+		string();
+	else if(command == ':')
+		duplicate();
+	else if(command == '|')
+		vertIf();
+	else if(command == ',')
+		printChar();
 	else if(command.isNumber())
 		pushNumber(command);
 	else if(command == '@')
@@ -325,6 +395,35 @@ void Interpreter::turnRight()
 void Interpreter::reverse()
 {
 	m_direction *= -1;
+}
+
+void Interpreter::string()
+{
+	if(!m_stringMode)
+		m_stack.push('\0');
+
+	m_stringMode = !m_stringMode;
+}
+
+void Interpreter::duplicate()
+{
+	int x = m_stack.pop();
+	m_stack.push(x);
+	m_stack.push(x);
+}
+
+void Interpreter::vertIf()
+{
+	int x = m_stack.pop();
+	if(x)
+		up();
+	else
+		down();
+}
+
+void Interpreter::printChar()
+{
+	qWarning() << QChar(m_stack.pop());
 }
 
 void Interpreter::pushNumber(QChar n)
