@@ -1,9 +1,10 @@
 #include <QApplication>
 
-#include "mainwindow.h"
-#include "interpreter.h"
 #include <QFile>
 #include <QDebug>
+
+#include "mainwindow.h"
+#include "interpreter.h"
 
 int main(int argc, char** argv)
 {

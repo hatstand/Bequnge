@@ -10,7 +10,8 @@ Interpreter::Interpreter(QIODevice* input, QObject* parent)
 	m_version = "1";
 	m_dimensions = 2;
 	m_direction = 1;
-	m_counter = &zeroth;
+	m_pos[0] = 0;
+	m_pos[1] = 0;
 }
 
 Interpreter::~Interpreter()
@@ -59,47 +60,62 @@ void Interpreter::readInAll()
 	qDebug() << "Reading in code";
 	QString line;
 
+	int pos[2] = {0,0};
+
 	while((line = m_input->readLine()) != NULL)
 	{
 		line.chop(1);
-		// zeroth is the 0th dimension
-		// This represents the 1st dimension
-		Array* v = new Array();
+
 		for(int i = 0; i < line.length(); ++i)
 		{
-			v->append(new Array(line[i]));
+			pos[0] = i;
+			m_space.setChar(pos, line[i]);
 		}
-		zeroth.append(v);
+		
+		++pos[1];
 	}
 
 	qDebug() << "Finished reading code";
 }
 
-void Interpreter::run()
+bool Interpreter::step()
 {
-	// Get the first Array that actually contains a character
-	if(!(m_counter->isChar()))
+	QChar c = m_space.getChar(m_pos);
+	compute(c);
+
+	switch(m_direction)
 	{
-		m_counter = m_counter->getNext();
+		case 1:
+			++m_pos[0];
+			break;
+		case 2:
+			++m_pos[1];
+			break;
+		case -1:
+			--m_pos[0];
+			break;
+		case -2:
+			--m_pos[1];
+			break;
+		default:
+			panic();
 	}
 
-	qDebug() << "Counter: " << m_counter->toString();
+	return true;
+}
 
-	// Do instruction
-	compute(m_counter);
+void Interpreter::run()
+{
+	while(step());
+}
 
-	// Calculate next position for counter
-	m_counter = m_counter->getParent();
+void Interpreter::getNext()
+{
 }
 
 // Call this with a QChar Array
-void Interpreter::compute(Array* ptr)
+void Interpreter::compute(QChar command)
 {
-	if(!ptr->isChar())
-		qFatal("Compute: Array is not a character");
-
-	QChar command = ptr->getContents();
-
 	if(command == '+')
 		add();
 	else if(command == '-')
@@ -116,16 +132,10 @@ void Interpreter::compute(Array* ptr)
 		greaterThan();
 	else if(command.isNumber())
 		pushNumber(command);
+	else if(command == '@')
+		panic();
 	else
 		panic();
-}
-
-const QChar Interpreter::getChar(Array* a)
-{
-	if(a->isChar())
-		return a->getContents();
-	else
-		return getChar(a->getNext());
 }
 
 void Interpreter::parse()
@@ -133,8 +143,6 @@ void Interpreter::parse()
 	parseHeader();
 
 	readInAll();
-
-	qDebug() << zeroth.toString();
 }
 
 
@@ -144,7 +152,7 @@ void Interpreter::add()
 	ushort x = QString(m_stack.pop()).toUShort();
 	ushort y = QString(m_stack.pop()).toUShort();
 
-	ushort z = y - x;
+	ushort z = y + x;
 
 	qDebug() << x << "+" << y << "=" << z;
 	m_stack.push(QChar(z));
@@ -152,7 +160,13 @@ void Interpreter::add()
 
 void Interpreter::subtract()
 {
+	ushort x = QString(m_stack.pop()).toUShort();
+	ushort y = QString(m_stack.pop()).toUShort();
 
+	ushort z = y - x;
+
+	qDebug() << y << "-" << x << "=" << z;
+	m_stack.push(QChar(z));
 }
 
 void Interpreter::multiply()

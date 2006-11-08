@@ -1,7 +1,7 @@
 #ifndef INTERPRETER_H
 #define INTERPRETER_H
 
-#include "array.h"
+#include "fungespace.h"
 
 #include <QIODevice>
 #include <QStack>
@@ -20,17 +20,19 @@ public:
 private:
 	QIODevice* m_input;
 	QStack<QChar> m_stack;
-	Array* m_counter;
 	int m_direction;
 	QString m_version;
 	uint m_dimensions;
-	Array zeroth;
+
+	FungeSpace<2> m_space;
+	int m_pos[2];
+
 
 	void parseHeader();
 	void readInAll();
-	void compute(Array* ptr);
-
-	const QChar getChar(Array*);
+	void compute(QChar);
+	bool step();
+	void getNext();
 
 
 	// Instructions
