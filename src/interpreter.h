@@ -25,7 +25,6 @@ private:
 	QString m_version;
 	uint m_dimensions;
 	Array zeroth;
-	int m_direction;
 
 	void parseHeader();
 	void readInAll();
