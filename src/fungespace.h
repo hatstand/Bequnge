@@ -83,14 +83,14 @@ QChar FungeSpace<dimensions>::getChar(Coord pos)
 			t = &((*it)->n);
 		}
 		else
-			return QChar();
+			return QChar(' ');
 	}
 
 	Next::iterator it = t->find(pos[dimensions-1]);
 	if(it != t->end())
 		return (*it)->c;
 	else
-		return QChar();
+		return QChar(' ');
 }
 
 #endif

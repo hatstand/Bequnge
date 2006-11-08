@@ -81,7 +81,7 @@ void Interpreter::readInAll()
 bool Interpreter::step()
 {
 	QChar c = m_space.getChar(m_pos);
-	compute(c);
+	bool ret = compute(c);
 
 	switch(m_direction)
 	{
@@ -101,7 +101,7 @@ bool Interpreter::step()
 			panic();
 	}
 
-	return true;
+	return ret;
 }
 
 void Interpreter::run()
@@ -114,7 +114,7 @@ void Interpreter::getNext()
 }
 
 // Call this with a QChar Array
-void Interpreter::compute(QChar command)
+bool Interpreter::compute(QChar command)
 {
 	if(command == '+')
 		add();
@@ -133,9 +133,11 @@ void Interpreter::compute(QChar command)
 	else if(command.isNumber())
 		pushNumber(command);
 	else if(command == '@')
-		panic();
+		return false;
 	else
 		panic();
+
+	return true;
 }
 
 void Interpreter::parse()
@@ -149,54 +151,82 @@ void Interpreter::parse()
 //Instructions
 void Interpreter::add()
 {
-	ushort x = QString(m_stack.pop()).toUShort();
-	ushort y = QString(m_stack.pop()).toUShort();
+	int x = m_stack.pop();
+	int y = m_stack.pop();
 
-	ushort z = y + x;
+	int z = y + x;
 
 	qDebug() << x << "+" << y << "=" << z;
-	m_stack.push(QChar(z));
+	m_stack.push(z);
 }
 
 void Interpreter::subtract()
 {
-	ushort x = QString(m_stack.pop()).toUShort();
-	ushort y = QString(m_stack.pop()).toUShort();
+	int x = m_stack.pop();
+	int y = m_stack.pop();
 
-	ushort z = y - x;
+	int z = y - x;
 
 	qDebug() << y << "-" << x << "=" << z;
-	m_stack.push(QChar(z));
+	m_stack.push(z);
 }
 
 void Interpreter::multiply()
 {
+	int x = m_stack.pop();
+	int y = m_stack.pop();
 
+	int z = y * x;
+
+	qDebug() << y << "*" << x << "=" << z;
+	m_stack.push(z);
 }
 
 void Interpreter::divide()
 {
+	int x = m_stack.pop();
+	int y = m_stack.pop();
 
+	int z = y * x;
+
+	qDebug() << y << "/" << x << "=" << z;
+	m_stack.push(z);
 }
 
 void Interpreter::modulo()
 {
+	int x = m_stack.pop();
+	int y = m_stack.pop();
 
+	int z = y % x;
+
+	qDebug() << y << "%" << x << "=" << z;
+	m_stack.push(z);
 }
 
 void Interpreter::notf()
 {
-
+	int x = m_stack.pop();
+	if(x)
+		m_stack.push(1);
+	else
+		m_stack.push(0);
 }
 
 void Interpreter::greaterThan()
 {
+	int x = m_stack.pop();
+	int y = m_stack.pop();
 
+	if(y > x)
+		m_stack.push(1);
+	else
+		m_stack.push(0);
 }
 
 void Interpreter::pushNumber(QChar n)
 {
-	m_stack.push(n);
+	m_stack.push(QString(n).toInt());
 }
 
 void Interpreter::panic()

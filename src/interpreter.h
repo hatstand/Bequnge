@@ -19,7 +19,7 @@ public:
 
 private:
 	QIODevice* m_input;
-	QStack<QChar> m_stack;
+	QStack<int> m_stack;
 	int m_direction;
 	QString m_version;
 	uint m_dimensions;
@@ -30,7 +30,7 @@ private:
 
 	void parseHeader();
 	void readInAll();
-	void compute(QChar);
+	bool compute(QChar);
 	bool step();
 	void getNext();
 
