@@ -286,12 +286,40 @@ void Interpreter::random()
 
 void Interpreter::turnLeft()
 {
-	
+	switch(m_direction)
+	{
+		case 1:
+			m_direction = -2;
+			break;
+		case 2:
+			m_direction = 1;
+			break;
+		case -1:
+			m_direction = 2;
+			break;
+		case -2:
+			m_direction = -1;
+			break;
+	}
 }
 
 void Interpreter::turnRight()
 {
-
+	switch(m_direction)
+	{
+		case 1:
+			m_direction = 2;
+			break;
+		case 2:
+			m_direction = -1;
+			break;
+		case -1:
+			m_direction = -2;
+			break;
+		case -2:
+			m_direction = 1;
+			break;
+	}
 }
 
 void Interpreter::reverse()
