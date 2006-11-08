@@ -6,6 +6,7 @@ TEMPLATE = app
 TARGET = ../bin/bequnge
 DEPENDPATH += .
 INCLUDEPATH += .
+QT += opengl
 
 # Input
 SOURCES += main.cpp
