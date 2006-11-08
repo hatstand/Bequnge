@@ -13,9 +13,11 @@ SOURCES += main.cpp
 SOURCES += mainwindow.cpp
 SOURCES += interpreter.cpp
 SOURCES += array.cpp
+SOURCES += glview.cpp
 
 HEADERS += mainwindow.h
 HEADERS += interpreter.h
 HEADERS += array.h
+HEADERS += glview.h
 
 FORMS += mainwindow.ui

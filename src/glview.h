@@ -1,0 +1,56 @@
+#ifndef GLVIEW_H
+#define GLVIEW_H
+
+#include <QGLWidget>
+#include <QTime>
+
+class QMouseEvent;
+
+class TwoDFungeSpace
+{
+public:
+	TwoDFungeSpace(int dimensions);
+	
+	void setChar(QList<int> position, QChar data);
+	QChar getChar(QList<int> position);
+
+private:
+	QMap<int, QMap<int, QChar> > m_data;
+};
+
+
+class GLView : public QGLWidget
+{
+public:
+	GLView(QWidget* parent = 0);
+	~GLView();
+	
+private:
+	void initializeGL();
+	void resizeGL(int width, int height);
+	void paintGL();
+	void mouseMoveEvent(QMouseEvent* event);
+	void mousePressEvent(QMouseEvent* event);
+	void mouseReleaseEvent(QMouseEvent* event);
+	void wheelEvent(QWheelEvent* event);
+	
+	void updateCameraOffset(int i);
+
+private:
+	TwoDFungeSpace* m_fungeSpace;
+	QList<int> m_cursor;
+	QTimer* m_redrawTimer;
+	int m_delayMs;
+	
+	float m_actualCameraOffset[3];
+	float m_destinationCameraOffset[3];
+	float m_preDragCameraOffset[2];
+	QPoint m_preDragMousePosition;
+	bool m_dragging;
+	
+	float rtri;
+	/* rotation angle for the quadrilateral. */
+	float rquad;
+};
+
+#endif
