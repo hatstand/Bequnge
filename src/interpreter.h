@@ -21,7 +21,7 @@ private:
 	QIODevice* m_input;
 	QStack<QChar> m_stack;
 	Array* m_counter;
-	int direction;
+	int m_direction;
 	QString m_version;
 	uint m_dimensions;
 	Array zeroth;

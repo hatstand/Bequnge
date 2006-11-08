@@ -89,7 +89,7 @@ void Interpreter::run()
 	compute(m_counter);
 
 	// Calculate next position for counter
-	m_counter = m_counter->parent;
+	m_counter = m_counter->getParent();
 }
 
 // Call this with a QChar Array
