@@ -34,7 +34,9 @@ private:
 	void mouseReleaseEvent(QMouseEvent* event);
 	void wheelEvent(QWheelEvent* event);
 	
-	void updateCameraOffset(int i);
+	void updateCamera(int i);
+	float degreesToRadians(float degrees);
+	float modulo(float value, float mod);
 
 private:
 	TwoDFungeSpace* m_fungeSpace;
@@ -42,11 +44,19 @@ private:
 	QTimer* m_redrawTimer;
 	int m_delayMs;
 	
+	// Camera offset
 	float m_actualCameraOffset[3];
+	bool m_moveDragging;
 	float m_destinationCameraOffset[3];
 	float m_preDragCameraOffset[2];
+	
+	// Camera rotation
+	float m_actualCameraRotation[2];
+	bool m_rotateDragging;
+	float m_destinationCameraRotation[2];
+	float m_preDragCameraRotation[2];
+	
 	QPoint m_preDragMousePosition;
-	bool m_dragging;
 	
 	float rtri;
 	/* rotation angle for the quadrilateral. */

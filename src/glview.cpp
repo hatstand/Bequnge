@@ -4,6 +4,10 @@
 #include <QMouseEvent>
 #include <QWheelEvent>
 
+#include <QDebug>
+
+#include <math.h>
+
 TwoDFungeSpace::TwoDFungeSpace(int dimensions)
 {
 	if (dimensions != 2)
@@ -50,7 +54,8 @@ QChar TwoDFungeSpace::getChar(QList<int> position)
 
 GLView::GLView(QWidget* parent)
 	: QGLWidget(parent),
-	  m_dragging(false)
+	  m_moveDragging(false),
+	  m_rotateDragging(false)
 {
 	m_cursor.append(0);
 	m_cursor.append(0);
@@ -65,11 +70,17 @@ GLView::GLView(QWidget* parent)
 	
 	m_destinationCameraOffset[0] = 0.0f;
 	m_destinationCameraOffset[1] = 0.0f;
-	m_destinationCameraOffset[2] = 0.0f;
+	m_destinationCameraOffset[2] = -7.0f;
 	
-	m_actualCameraOffset[0] = 0.0f;
-	m_actualCameraOffset[1] = 0.0f;
-	m_actualCameraOffset[2] = 0.0f;
+	m_actualCameraOffset[0] = m_destinationCameraOffset[0];
+	m_actualCameraOffset[1] = m_destinationCameraOffset[1];
+	m_actualCameraOffset[2] = m_destinationCameraOffset[2];
+	
+	m_destinationCameraRotation[0] = 0.0f;
+	m_destinationCameraRotation[1] = 0.0f;
+	
+	m_actualCameraRotation[0] = m_destinationCameraRotation[0];
+	m_actualCameraRotation[1] = m_destinationCameraRotation[1];
 	
 	rtri = 0.0f;
 	rquad = 0.0f;
@@ -107,10 +118,29 @@ void GLView::resizeGL(int width, int height)
 	glMatrixMode(GL_MODELVIEW);
 }
 
-void GLView::updateCameraOffset(int i)
+void GLView::updateCamera(int i)
 {
-	float distance = m_destinationCameraOffset[i] - m_actualCameraOffset[i];
-	m_actualCameraOffset[i] += (distance * 0.2f);
+	float diff = m_destinationCameraOffset[i] - m_actualCameraOffset[i];
+	if (fabs(diff) < 0.01)
+		m_actualCameraOffset[i] = m_destinationCameraOffset[i];
+	else
+		m_actualCameraOffset[i] += diff * 0.2f;
+	
+	if (i < 2)
+	{
+		diff = m_destinationCameraRotation[i] - m_actualCameraRotation[i];
+		if (fabs(diff) < 1.0f)
+		{
+			m_actualCameraRotation[i] = m_destinationCameraRotation[i];
+			if (!m_rotateDragging)
+			{
+				m_destinationCameraRotation[i] = modulo(m_destinationCameraRotation[i], 360.0f);
+				m_actualCameraRotation[i] = m_destinationCameraRotation[i];
+			}
+		}
+		else
+			m_actualCameraRotation[i] += diff * 0.2f;
+	}
 }
 
 void GLView::paintGL()
@@ -118,60 +148,16 @@ void GLView::paintGL()
 	glClear(GL_DEPTH_BUFFER_BIT | GL_COLOR_BUFFER_BIT);	// Clear The Screen And The Depth Buffer
 	glLoadIdentity();				// Reset The View
 	
-	updateCameraOffset(0);
-	updateCameraOffset(1);
-	updateCameraOffset(2);
+	updateCamera(0);
+	updateCamera(1);
+	updateCamera(2);
 	
 	glTranslatef(m_actualCameraOffset[0], m_actualCameraOffset[1], m_actualCameraOffset[2]);
+	glRotatef(m_actualCameraRotation[0], 1.0f, 0.0f, 0.0f);
+	glRotatef(m_actualCameraRotation[1], 0.0f, 1.0f, 0.0f);
+	
 	
 	glPushMatrix();
-		glTranslatef(-1.5f,0.0f,-6.0f);		// Move Left 1.5 Units And Into The Screen 6.0
-		
-		glRotatef(rtri,0.0f,1.0f,0.0f);		// Rotate The Pyramid On The Y axis 
-		
-		// draw a pyramid (in smooth coloring mode)
-		glBegin(GL_POLYGON);				// start drawing a pyramid
-		
-		// front face of pyramid
-		glColor3f(1.0f,0.0f,0.0f);			// Set The Color To Red
-		glVertex3f(0.0f, 1.0f, 0.0f);		        // Top of triangle (front)
-		glColor3f(0.0f,1.0f,0.0f);			// Set The Color To Green
-		glVertex3f(-1.0f,-1.0f, 1.0f);		// left of triangle (front)
-		glColor3f(0.0f,0.0f,1.0f);			// Set The Color To Blue
-		glVertex3f(1.0f,-1.0f, 1.0f);		        // right of traingle (front)	
-		
-		// right face of pyramid
-		glColor3f(1.0f,0.0f,0.0f);			// Red
-		glVertex3f( 0.0f, 1.0f, 0.0f);		// Top Of Triangle (Right)
-		glColor3f(0.0f,0.0f,1.0f);			// Blue
-		glVertex3f( 1.0f,-1.0f, 1.0f);		// Left Of Triangle (Right)
-		glColor3f(0.0f,1.0f,0.0f);			// Green
-		glVertex3f( 1.0f,-1.0f, -1.0f);		// Right Of Triangle (Right)
-		
-		// back face of pyramid
-		glColor3f(1.0f,0.0f,0.0f);			// Red
-		glVertex3f( 0.0f, 1.0f, 0.0f);		// Top Of Triangle (Back)
-		glColor3f(0.0f,1.0f,0.0f);			// Green
-		glVertex3f( 1.0f,-1.0f, -1.0f);		// Left Of Triangle (Back)
-		glColor3f(0.0f,0.0f,1.0f);			// Blue
-		glVertex3f(-1.0f,-1.0f, -1.0f);		// Right Of Triangle (Back)
-		
-		// left face of pyramid.
-		glColor3f(1.0f,0.0f,0.0f);			// Red
-		glVertex3f( 0.0f, 1.0f, 0.0f);		// Top Of Triangle (Left)
-		glColor3f(0.0f,0.0f,1.0f);			// Blue
-		glVertex3f(-1.0f,-1.0f,-1.0f);		// Left Of Triangle (Left)
-		glColor3f(0.0f,1.0f,0.0f);			// Green
-		glVertex3f(-1.0f,-1.0f, 1.0f);		// Right Of Triangle (Left)
-		
-		glEnd();					// Done Drawing The Pyramid
-	glPopMatrix();
-	
-	glPushMatrix();
-		glTranslatef(1.5f,0.0f,-7.0f);		// Move Right 3 Units, and back into the screen 7
-		
-		glRotatef(rquad,1.0f,1.0f,1.0f);		// Rotate The Cube On X, Y, and Z
-		
 		// draw a cube (6 quadrilaterals)
 		glBegin(GL_QUADS);				// start drawing the cube.
 		
@@ -196,7 +182,7 @@ void GLView::paintGL()
 		glVertex3f(-1.0f,-1.0f, 1.0f);		// Bottom Left Of The Quad (Front)
 		glVertex3f( 1.0f,-1.0f, 1.0f);		// Bottom Right Of The Quad (Front)
 		
-		// back of cube.
+		// back of cube.QChar
 		glColor3f(1.0f,1.0f,0.0f);			// Set The Color To Yellow
 		glVertex3f( 1.0f,-1.0f,-1.0f);		// Top Right Of The Quad (Back)
 		glVertex3f(-1.0f,-1.0f,-1.0f);		// Top Left Of The Quad (Back)
@@ -219,21 +205,48 @@ void GLView::paintGL()
 		glEnd();					// Done Drawing The Cube
 	glPopMatrix();
 	
+	renderText(0, 15, "Offset: " + QString::number(m_actualCameraOffset[0]) + ", " + QString::number(m_actualCameraOffset[1]) + ", " + QString::number(m_actualCameraOffset[2]));
+	renderText(0, 30, "Rotation: " + QString::number(m_actualCameraRotation[0]) + ", " + QString::number(m_actualCameraRotation[1]));
+	
 	rtri+=15.0f;					// Increase The Rotation Variable For The Pyramid
 	rquad-=15.0f;					// Decrease The Rotation Variable For The Cube
 	
 	m_redrawTimer->start(m_delayMs);
 }
 
+float GLView::degreesToRadians(float degrees)
+{
+	qDebug() << degrees << "degrees =" << (degrees / 180.0f) * M_PI << "radians";
+	return (degrees / 180.0f) * M_PI;
+}
+
+float GLView::modulo(float value, float mod)
+{
+	if (fabs(value/mod) < 1.0f)
+		return value;
+	
+	if (value > 0.0f)
+		return value - floorf(value/mod)*mod;
+	return value - ceilf(value/mod)*mod;
+}
+
 void GLView::mouseMoveEvent(QMouseEvent* event)
 {
-	if (m_dragging)
+	if (m_moveDragging)
 	{
 		float xOffset = event->pos().x() - m_preDragMousePosition.x();
 		float yOffset = event->pos().y() - m_preDragMousePosition.y();
 		
 		m_destinationCameraOffset[0] = m_preDragCameraOffset[0] + (xOffset / 135.0f);
 		m_destinationCameraOffset[1] = m_preDragCameraOffset[1] - (yOffset / 135.0f);
+	}
+	else if (m_rotateDragging)
+	{
+		float xOffset = event->pos().x() - m_preDragMousePosition.x();
+		float yOffset = event->pos().y() - m_preDragMousePosition.y();
+		
+		m_destinationCameraRotation[1] = m_preDragCameraRotation[1] + (xOffset / 5.0f);
+		m_destinationCameraRotation[0] = m_preDragCameraRotation[0] + (yOffset / 5.0f);
 	}
 }
 
@@ -244,14 +257,23 @@ void GLView::wheelEvent(QWheelEvent* event)
 
 void GLView::mousePressEvent(QMouseEvent* event)
 {
-	qDebug("Press");
 	switch (event->button())
 	{
 	case Qt::MidButton:
-		m_preDragCameraOffset[0] = m_destinationCameraOffset[0];
-		m_preDragCameraOffset[1] = m_destinationCameraOffset[1];
 		m_preDragMousePosition = event->pos();
-		m_dragging = true;
+		
+		if (event->modifiers() & Qt::ControlModifier)
+		{
+			m_preDragCameraRotation[0] = m_destinationCameraRotation[0];
+			m_preDragCameraRotation[1] = m_destinationCameraRotation[1];
+			m_rotateDragging = true;
+		}
+		else
+		{
+			m_preDragCameraOffset[0] = m_destinationCameraOffset[0];
+			m_preDragCameraOffset[1] = m_destinationCameraOffset[1];
+			m_moveDragging = true;
+		}
 		break;
 	}
 }
@@ -261,8 +283,8 @@ void GLView::mouseReleaseEvent(QMouseEvent* event)
 	switch (event->button())
 	{
 	case Qt::MidButton:
-		m_dragging = false;
-		break;
+		m_rotateDragging = false;
+		m_moveDragging = false;
 	}
 }
 
