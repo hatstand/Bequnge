@@ -8,4 +8,9 @@ DEPENDPATH += .
 INCLUDEPATH += .
 
 # Input
-SOURCES += main.cpp
+SOURCES += main.cpp \
+	interpreter.cpp \
+	array.cpp
+
+HEADERS += interpreter.h \
+	array.h

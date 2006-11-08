@@ -4,5 +4,7 @@
 
 TEMPLATE = subdirs
 
+CONFIG += debug
+
 # Subdirs
 SUBDIRS = src
