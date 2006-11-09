@@ -44,9 +44,17 @@ private:
 
 class GLView : public QGLWidget
 {
+	Q_OBJECT
+	
 public:
 	GLView(QWidget* parent = 0);
 	~GLView();
+	
+public slots:
+	void setStringMode(bool enabled);
+	
+signals:
+	void stringModeChanged(bool enabled);
 	
 private:
 	void initializeGL();
@@ -63,16 +71,31 @@ private:
 	float modulo(float value, float mod);
 	float snapToPlane(int i, float value);
 	QList<int> glToFungeSpace(float x, float y, float z);
+	QList<float> fungeSpaceToGl(QList<int> c, bool premultiplied);
+	void toggleStringMode();
+	void setCursorDirection(int direction);
 
 private:
+	// Funge space
 	ThreeDFungeSpace* m_fungeSpace;
+	
+	// Cursor
 	QList<int> m_cursor;
 	QTime m_cursorBlinkTime;
 	bool m_cursorBlinkOn;
 	int m_cursorDirection;
+	int m_activePlane;
+	float m_actualCursorPos[3];
+	
+	// Frame updates
 	QTimer* m_redrawTimer;
 	int m_delayMs;
 	
+	bool m_stringMode;
+	
+	// Eye offset
+	float m_actualEyeOffset[3];
+	float m_destinationEyeOffset[3];
 	
 	// Camera offset
 	float m_actualCameraOffset[3];
@@ -91,7 +114,6 @@ private:
 	// Fonts
 	FT_Face m_fontFace;
 	OGLFT::Face* m_font;
-	OGLFT::Face* m_fontHighlighted;
 	float m_fontSize;
 };
 

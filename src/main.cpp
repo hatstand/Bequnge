@@ -13,7 +13,7 @@ int main(int argc, char** argv)
 	if ((app.arguments().count() > 1) && (app.arguments().at(1) == "--gui"))
 	{
 		MainWindow* win = new MainWindow(NULL);
-		win->show();
+		win->showMaximized();
 
 		return app.exec();
 	}

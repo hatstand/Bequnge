@@ -17,13 +17,17 @@ SOURCES += interpreter.cpp
 SOURCES += fungespace.cpp
 SOURCES += glview.cpp
 SOURCES += OGLFT.cpp
+SOURCES += stringmodewidget.cpp
 
 HEADERS += mainwindow.h
 HEADERS += interpreter.h
 HEADERS += fungespace.h
 HEADERS += glview.h
 HEADERS += OGLFT.h
+HEADERS += stringmodewidget.h
 
 FORMS += mainwindow.ui
 
 RESOURCES = resources.qrc
+
+CONFIG += debug

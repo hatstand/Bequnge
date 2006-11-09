@@ -82,7 +82,8 @@ GLView::GLView(QWidget* parent)
 	  m_cursorBlinkOn(true),
 	  m_cursorDirection(1),
 	  m_moveDragging(false),
-	  m_rotateDragging(false)
+	  m_rotateDragging(false),
+	  m_stringMode(false)
 {
 	// Initialize the curser
 	setFocusPolicy(Qt::WheelFocus);
@@ -91,12 +92,10 @@ GLView::GLView(QWidget* parent)
 	m_cursor.append(0);
 	m_cursorBlinkTime.start();
 	
+	m_activePlane = 2;
+	
 	// Initialize funge space
 	m_fungeSpace = new ThreeDFungeSpace(3);
-	/*m_fungeSpace->setChar(0, 0, 0, 'a');
-	m_fungeSpace->setChar(1, 0, 0, 'b');
-	m_fungeSpace->setChar(1, 1, 0, 'c');
-	m_fungeSpace->setChar(1, 1, 1, 'd');*/
 	
 	// Setup the redraw timer
 	m_redrawTimer = new QTimer(this);
@@ -119,6 +118,18 @@ GLView::GLView(QWidget* parent)
 	m_actualCameraRotation[0] = m_destinationCameraRotation[0];
 	m_actualCameraRotation[1] = m_destinationCameraRotation[1];
 	
+	m_destinationEyeOffset[0] = 0.0f;
+	m_destinationEyeOffset[1] = 3.5f;
+	m_destinationEyeOffset[2] = 6.0f;
+	
+	m_actualEyeOffset[0] = m_destinationEyeOffset[0];
+	m_actualEyeOffset[1] = m_destinationEyeOffset[1];
+	m_actualEyeOffset[0] = m_destinationEyeOffset[2];
+	
+	m_actualCursorPos[0] = 0.0f;
+	m_actualCursorPos[1] = 0.0f;
+	m_actualCursorPos[2] = 0.0f;
+	
 	// Load the font
 	QResource fontResource("luximr.ttf");
 	
@@ -130,7 +141,6 @@ GLView::GLView(QWidget* parent)
 	
 	m_fontSize = 29;
 	m_font = new OGLFT::TranslucentTexture(m_fontFace, m_fontSize - 5);
-	m_fontHighlighted = new OGLFT::TranslucentTexture(m_fontFace, m_fontSize - 5);
 	
 	if ( m_font == 0 || !m_font->isValid() )
 	{
@@ -140,8 +150,6 @@ GLView::GLView(QWidget* parent)
 	}
 	
 	m_font->setForegroundColor(1.0f, 1.0f, 1.0f);
-	m_fontHighlighted->setBackgroundColor(1.0f, 1.0f, 1.0f);
-	m_fontHighlighted->setForegroundColor(0.0f, 0.0f, 0.0f);
 }
 
 
@@ -179,7 +187,7 @@ void GLView::resizeGL(int width, int height)
 	glMatrixMode(GL_PROJECTION);
 	glLoadIdentity();
 	
-	gluPerspective(45.0f,(GLfloat)width/(GLfloat)height,0.1f,100.0f);
+	gluPerspective(50.0f,(GLfloat)width/(GLfloat)height,0.1f,100.0f);
 	glMatrixMode(GL_MODELVIEW);
 }
 
@@ -206,6 +214,19 @@ void GLView::updateCamera(int i)
 		else
 			m_actualCameraRotation[i] += diff * 0.2f;
 	}
+	
+	diff = m_destinationEyeOffset[i] - m_actualEyeOffset[i];
+	if (fabs(diff) < 0.01)
+		m_actualEyeOffset[i] = m_destinationEyeOffset[i];
+	else
+		m_actualEyeOffset[i] += diff * 0.2f;
+	
+	QList<float> c = fungeSpaceToGl(m_cursor, false);
+	diff = c[i] - m_actualCursorPos[i];
+	if (fabs(diff) < 0.01)
+		m_actualCursorPos[i] = c[i];
+	else
+		m_actualCursorPos[i] += diff * 0.2f;
 }
 
 void GLView::paintGL()
@@ -217,27 +238,42 @@ void GLView::paintGL()
 	updateCamera(1);
 	updateCamera(2);
 	
-	glTranslatef(m_actualCameraOffset[0], m_actualCameraOffset[1], m_actualCameraOffset[2]);
-	glRotatef(m_actualCameraRotation[0], 1.0f, 0.0f, 0.0f);
-	glRotatef(m_actualCameraRotation[1], 0.0f, 1.0f, 0.0f);
+	gluLookAt(m_actualEyeOffset[0] + m_actualCursorPos[0],
+	          m_actualEyeOffset[1] + m_actualCursorPos[1],
+	          m_actualEyeOffset[2] + m_actualCursorPos[2],
+	          m_actualCursorPos[0],
+	          m_actualCursorPos[1],
+	          m_actualCursorPos[2],
+	          0.0f,
+	          1.0f,
+	          0.0f);
 	
+	
+	glEnable(GL_TEXTURE_2D);
+	glScalef(0.004f, 0.004f, 0.004f);
 	glPushMatrix();
-		glEnable(GL_TEXTURE_2D);
-		glScalef(0.004f, 0.004f, 0.004f);
-		
-		//bool foundCursor = false;
+		QList<float> coord;
 		QList<FungeSpaceEntry> entries = m_fungeSpace->getEntries();
 		foreach(FungeSpaceEntry entry, entries)
 		{
 			glPushMatrix();
-				OGLFT::Face* font = m_font;
-				if ((entry.coords == m_cursor) && (m_cursorBlinkOn))
-					font = m_fontHighlighted;
+				/*if ((entry.coords == m_cursor) && (m_cursorBlinkOn))
+					m_font = m_fontHighlighted;*/
 				
-				glTranslatef(m_fontSize * entry.coords[0], - m_fontSize * entry.coords[1], - m_fontSize * entry.coords[2]);
-				/*glRotatef(-m_actualCameraRotation[0], 1.0f, 0.0f, 0.0f);
-				glRotatef(-m_actualCameraRotation[1], 0.0f, 1.0f, 0.0f);*/
-				font->draw(entry.data);
+				int diff = abs(entry.coords[m_activePlane] - m_cursor[m_activePlane]);
+				
+				if (diff == 0)
+					m_font->setForegroundColor(0.0f, 1.0f, 0.0f, 1.0f);
+				else if (diff <= 8)
+					m_font->setForegroundColor(1.0f, 1.0f, 1.0f, 1.0f - diff * 0.1f);
+				else
+					m_font->setForegroundColor(1.0f, 1.0f, 1.0f, 0.2f);
+				
+				coord = fungeSpaceToGl(entry.coords, true);
+				glTranslatef(coord[0], coord[1], coord[2]);
+				if (m_activePlane == 0)
+						glRotatef(90.0f, 0.0f, 1.0f, 0.0f);
+				m_font->draw(entry.data);
 			glPopMatrix();
 		}
 		
@@ -245,7 +281,8 @@ void GLView::paintGL()
 		
 		if (m_cursorBlinkOn)
 		{
-			glTranslatef(m_fontSize * m_cursor[0], - m_fontSize * m_cursor[1] - 2.5f, - m_fontSize * m_cursor[2] - 0.001f);
+			coord = fungeSpaceToGl(m_cursor, true);
+			glTranslatef(coord[0], coord[1] - 2.5f, coord[2] - 0.001f);
 			glBegin(GL_QUADS);
 				glColor3f(1.0f, 1.0f, 1.0f);
 				glVertex3f(m_fontSize - 5.0f, m_fontSize, 0.0f);
@@ -254,56 +291,6 @@ void GLView::paintGL()
 				glVertex3f(m_fontSize - 5.0f, 0.0f, 0.0f);
 			glEnd();
 		}
-		
-		/*if (m_cursorBlinkOn)
-		{
-			glPushMatrix();
-				float s = m_fontSize/2;
-				glTranslatef(m_fontSize * m_cursor[0] + s, - m_fontSize * m_cursor[1] + s, - m_fontSize * m_cursor[2]);
-				
-				glBegin(GL_QUADS);				// start drawing the cube.
-  
-					// top of cube
-					glColor4f(1.0f, 1.0f, 1.0f, 0.5f);			// Set The Color To Blue
-					glVertex3f( s, s,-s);		// Top Right Of The Quad (Top)
-					glVertex3f(-s, s,-s);		// Top Left Of The Quad (Top)
-					glVertex3f(-s, s, s);		// Bottom Left Of The Quad (Top)
-					glVertex3f( s, s, s);		// Bottom Right Of The Quad (Top)
-					
-					// bottom of cube
-					glVertex3f( s,-s, s);		// Top Right Of The Quad (Bottom)
-					glVertex3f(-s,-s, s);		// Top Left Of The Quad (Bottom)
-					glVertex3f(-s,-s,-s);		// Bottom Left Of The Quad (Bottom)
-					glVertex3f( s,-s,-s);		// Bottom Right Of The Quad (Bottom)
-					
-					// front of cube
-					glVertex3f( s, s, s);		// Top Right Of The Quad (Front)
-					glVertex3f(-s, s, s);		// Top Left Of The Quad (Front)
-					glVertex3f(-s,-s, s);		// Bottom Left Of The Quad (Front)
-					glVertex3f( s,-s, s);		// Bottom Right Of The Quad (Front)
-					
-					// back of cube.
-					glVertex3f( s,-s,-s);		// Top Right Of The Quad (Back)
-					glVertex3f(-s,-s,-s);		// Top Left Of The Quad (Back)
-					glVertex3f(-s, s,-s);		// Bottom Left Of The Quad (Back)
-					glVertex3f( s, s,-s);		// Bottom Right Of The Quad (Back)
-					
-					// left of cube
-					glVertex3f(-s, s, s);		// Top Right Of The Quad (Left)
-					glVertex3f(-s, s,-s);		// Top Left Of The Quad (Left)
-					glVertex3f(-s,-s,-s);		// Bottom Left Of The Quad (Left)
-					glVertex3f(-s,-s, s);		// Bottom Right Of The Quad (Left)
-					
-					// Right of cube
-					glVertex3f( s, s,-s);	        // Top Right Of The Quad (Right)
-					glVertex3f( s, s, s);		// Top Left Of The Quad (Right)
-					glVertex3f( s,-s, s);		// Bottom Left Of The Quad (Right)
-					glVertex3f( s,-s,-s);		// Bottom Right Of The Quad (Right)
-				glEnd();					// Done Drawing The Cube
-
-
-			glPopMatrix();
-		}*/
 	glPopMatrix();
 	
 	glColor3f(1.0f, 1.0f, 1.0f);
@@ -384,6 +371,19 @@ QList<int> GLView::glToFungeSpace(float x, float y, float z)
 	ret.append((int)(floor(x/size)));
 	ret.append((int)(- floor(y/size)));
 	ret.append((int)(floor((z*-1)/size - 0.5f) + 1));
+	return ret;
+}
+
+QList<float> GLView::fungeSpaceToGl(QList<int> c, bool premultiplied)
+{
+	float size = m_fontSize;
+	if (!premultiplied)
+		size *= 0.004f;
+	
+	QList<float> ret;
+	ret.append(c[0] * size);
+	ret.append(- c[1] * size);
+	ret.append(- c[2] * size);
 	return ret;
 }
 
@@ -473,28 +473,61 @@ void GLView::keyPressEvent(QKeyEvent* event)
 	{
 		int a = abs(m_cursorDirection);
 		m_cursor[a-1] += (m_cursorDirection < 0 ? 1 : -1);
+		if (m_fungeSpace->getChar(m_cursor[0], m_cursor[1], m_cursor[2]) == '"')
+			toggleStringMode();
+		
 		m_fungeSpace->setChar(m_cursor[0], m_cursor[1], m_cursor[2], ' ');
 	}
 	else if (!event->text().isEmpty())
 	{
 		QChar c = event->text()[0];
 		m_fungeSpace->setChar(m_cursor[0], m_cursor[1], m_cursor[2], c);
-		if (c == '<')
-			m_cursorDirection=-1;
-		else if (c == '>')
-			m_cursorDirection=1;
-		else if (c == 'v')
-			m_cursorDirection=2;
-		else if (c == '^')
-			m_cursorDirection=-2;
-		else if (c == 'h')
-			m_cursorDirection=3;
-		else if (c == '?')
-			m_cursorDirection=-3;
+		
+		if (!m_stringMode)
+		{
+			if (c == '<')
+				setCursorDirection(-1);
+			else if (c == '>')
+				setCursorDirection(1);
+			else if (c == 'v')
+				setCursorDirection(2);
+			else if (c == '^')
+				setCursorDirection(-2);
+			else if (c == 'h')
+				setCursorDirection(3);
+			else if (c == 'l')
+				setCursorDirection(-3);
+		}
+		
+		if (c == '"')
+			toggleStringMode();
 		
 		int a = abs(m_cursorDirection);
 		m_cursor[a-1] += (m_cursorDirection > 0 ? 1 : -1);
 	}
+}
+
+void GLView::toggleStringMode()
+{
+	m_stringMode = !m_stringMode;
+	emit stringModeChanged(m_stringMode);
+}
+
+void GLView::setStringMode(bool enabled)
+{
+	m_stringMode = enabled;
+}
+
+void GLView::setCursorDirection(int direction)
+{
+	m_cursorDirection = direction;
+	m_destinationEyeOffset[m_activePlane] -= 6.0f;
+	int a = abs(direction);
+	if (a == 1)
+		m_activePlane = 2;
+	else if (a == 3)
+		m_activePlane = 0;
+	m_destinationEyeOffset[m_activePlane] += 6.0f;
 }
 
 
