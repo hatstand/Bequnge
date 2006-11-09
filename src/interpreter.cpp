@@ -101,26 +101,20 @@ void Interpreter::jumpSpaces()
 
 void Interpreter::move()
 {
-	for(uint i = 0; i < m_dimensions; ++i)
+	if(m_direction > 0)
 	{
-		if(qAbs(m_direction)-1 == i)
-		{
-			if(m_direction > 0)
-			{
-				++m_pos[i];
-				if(m_pos[i] > m_space->getPositiveEdge(i))
-					m_pos[i] = m_space->getNegativeEdge(i);
-			}
-			else
-			{
-				--m_pos[i];
-				if(m_pos[i] < m_space->getNegativeEdge(i))
-					m_pos[i] = m_space->getPositiveEdge(i);
-			}
-		}
+		m_pos[m_direction - 1]++;
+		if(m_pos[m_direction - 1] > m_space->getPositiveEdge(m_direction - 1))
+			m_pos[m_direction - 1] = m_space->getNegativeEdge(m_direction - 1);
+	}
+	else if(m_direction < 0)
+	{
+		int t = qAbs(m_direction) - 1;
+		m_pos[t]--;
+		if(m_pos[t] < m_space->getNegativeEdge(t))
+			m_pos[t] = m_space->getPositiveEdge(t);
 	}
 
-	//qDebug() << "Moved to:" << m_pos[0] << m_pos[1] << m_space->getChar(m_pos);
 	jumpSpaces();
 }
 
