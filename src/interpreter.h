@@ -24,12 +24,6 @@ signals:
 	void input();
 
 private:
-	union stackContents
-	{
-		int date;
-		quintptr ptr;
-	};
-
 	QIODevice* m_input;
 	QStack<int>* m_stack;
 	QStack<QStack<int>* > m_stackStack;
@@ -37,8 +31,8 @@ private:
 	QString m_version;
 	uint m_dimensions;
 
-	FungeSpace<2> m_space;
-	FungeSpace<2>::Coord m_pos;
+	FungeSpace* m_space;
+	Coord m_pos;
 
 	bool m_stringMode;
 	bool m_jumpedSpace;

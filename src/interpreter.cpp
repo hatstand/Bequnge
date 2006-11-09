@@ -4,13 +4,11 @@
 #include <QStringList>
 
 Interpreter::Interpreter(QIODevice* input, QObject* parent)
-	: QObject(parent),m_input(input)
+	: QObject(parent),m_input(input),m_space(NULL)
 {
 	m_version = "1";
 	m_dimensions = 2;
 	m_direction = 1;
-	m_pos[0] = 0;
-	m_pos[1] = 0;
 
 	m_stringMode = false;
 
@@ -56,6 +54,10 @@ void Interpreter::parseHeader()
 		}
 	}
 
+	m_space = new FungeSpace(m_dimensions);
+	for(uint i = 0; i < m_dimensions; ++i)
+		m_pos << 0;
+
 	qDebug() << "Finished parsing header";
 }
 
@@ -64,9 +66,9 @@ void Interpreter::readInAll()
 	qDebug() << "Reading in code";
 	QString line;
 
-	FungeSpace<2>::Coord pos;
-	pos[0] = 0;
-	pos[1] = 0;
+	Coord pos;
+	pos << 0;
+	pos << 0;
 
 	while((line = m_input->readLine()) != NULL)
 	{
@@ -78,7 +80,7 @@ void Interpreter::readInAll()
 
 			pos[0] = i;
 			//qDebug() << "Putting:" << line[i] << "in:" << pos[0] << pos[1];
-			m_space.setChar(pos, line[i]);
+			m_space->setChar(pos, line[i]);
 		}
 
 		++pos[1];
@@ -89,7 +91,7 @@ void Interpreter::readInAll()
 
 void Interpreter::jumpSpaces()
 {
-	if(m_space.getChar(m_pos).category() == QChar::Separator_Space)
+	if(m_space->getChar(m_pos).category() == QChar::Separator_Space)
 	{
 		m_jumpedSpace = true;	
 		move();
@@ -118,21 +120,21 @@ void Interpreter::move()
 
 	//qDebug() << "Moved to:" << m_pos[0] << m_pos[1] << m_space.getChar(m_pos);
 
-	if(m_pos[0] < m_space.getNegativeEdge(0))
+	if(m_pos[0] < m_space->getNegativeEdge(0))
 	{
-		m_pos[0] = m_space.getPositiveEdge(0);
+		m_pos[0] = m_space->getPositiveEdge(0);
 	}
-	else if(m_pos[0] > m_space.getPositiveEdge(0))
+	else if(m_pos[0] > m_space->getPositiveEdge(0))
 	{
-		m_pos[0] = m_space.getNegativeEdge(0);
+		m_pos[0] = m_space->getNegativeEdge(0);
 	}
-	else if(m_pos[1] < m_space.getNegativeEdge(1))
+	else if(m_pos[1] < m_space->getNegativeEdge(1))
 	{
-		m_pos[1] = m_space.getPositiveEdge(1);
+		m_pos[1] = m_space->getPositiveEdge(1);
 	}
-	else if(m_pos[1] > m_space.getPositiveEdge(1))
+	else if(m_pos[1] > m_space->getPositiveEdge(1))
 	{
-		m_pos[1] = m_space.getNegativeEdge(1);
+		m_pos[1] = m_space->getNegativeEdge(1);
 	}
 
 	jumpSpaces();
@@ -146,7 +148,7 @@ bool Interpreter::step()
 		if(m_stringMode)
 			m_stack->push(QChar(' ').unicode());
 	}
-	QChar c = m_space.getChar(m_pos);
+	QChar c = m_space->getChar(m_pos);
 	bool ret = compute(c);
 
 	//qDebug() << "Direction: " << m_direction;
@@ -428,7 +430,7 @@ void Interpreter::character()
 {
 	move();
 	m_stack->push(QChar('\0').unicode());
-	m_stack->push(m_space.getChar(m_pos).unicode());
+	m_stack->push(m_space->getChar(m_pos).unicode());
 }
 
 void Interpreter::duplicate()
@@ -531,7 +533,7 @@ void Interpreter::iterate()
 	move();
 
 	for(int i = 0; i < x; ++i)
-		compute(m_space.getChar(m_pos));
+		compute(m_space->getChar(m_pos));
 }
 
 void Interpreter::beginBlock()

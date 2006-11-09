@@ -14,6 +14,7 @@ INCLUDEPATH += /usr/include/freetype2
 SOURCES += main.cpp
 SOURCES += mainwindow.cpp
 SOURCES += interpreter.cpp
+SOURCES += fungespace.cpp
 SOURCES += glview.cpp
 SOURCES += OGLFT.cpp
 
