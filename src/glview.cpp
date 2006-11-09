@@ -248,7 +248,6 @@ void GLView::paintGL()
 	          1.0f,
 	          0.0f);
 	
-	
 	glEnable(GL_TEXTURE_2D);
 	glScalef(0.004f, 0.004f, 0.004f);
 	glPushMatrix();
@@ -272,7 +271,7 @@ void GLView::paintGL()
 				coord = fungeSpaceToGl(entry.coords, true);
 				glTranslatef(coord[0], coord[1], coord[2]);
 				if (m_activePlane == 0)
-						glRotatef(90.0f, 0.0f, 1.0f, 0.0f);
+					glRotatef(90.0f, 0.0f, 1.0f, 0.0f);
 				m_font->draw(entry.data);
 			glPopMatrix();
 		}
@@ -283,6 +282,8 @@ void GLView::paintGL()
 		{
 			coord = fungeSpaceToGl(m_cursor, true);
 			glTranslatef(coord[0], coord[1] - 2.5f, coord[2] - 0.001f);
+			if (m_activePlane == 0)
+				glRotatef(90.0f, 0.0f, 1.0f, 0.0f);
 			glBegin(GL_QUADS);
 				glColor3f(1.0f, 1.0f, 1.0f);
 				glVertex3f(m_fontSize - 5.0f, m_fontSize, 0.0f);
