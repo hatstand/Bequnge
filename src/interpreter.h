@@ -17,9 +17,22 @@ public:
 	void parse();
 	void run();
 
+	void provideInput(QChar);
+
+signals:
+	void output(QChar);
+	void input();
+
 private:
+	union stackContents
+	{
+		int date;
+		quintptr ptr;
+	};
+
 	QIODevice* m_input;
-	QStack<int> m_stack;
+	QStack<int>* m_stack;
+	QStack<QStack<int>* > m_stackStack;
 	int m_direction;
 	QString m_version;
 	uint m_dimensions;
@@ -30,6 +43,7 @@ private:
 	bool m_stringMode;
 	bool m_jumpedSpace;
 
+	QChar outputChar;
 
 	void parseHeader();
 	void readInAll();
@@ -59,9 +73,23 @@ private:
 	void turnRight();
 	void reverse();
 	void string();
+	void character();
 	void duplicate();
+	void pop();
+	void swap();
+	void clear();
 	void vertIf();
+	void compare();
 	void printChar();
+	void printDec();
+	void inputDec();
+	void inputChar();
+	void trampoline();
+	void jump();
+	void iterate();
+
+	void beginBlock();
+	void endBlock();
 
 
 	void pushNumber(QChar n);

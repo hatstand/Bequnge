@@ -15,17 +15,21 @@ class FungeSpace
 {
 	
 public:
+	// Represents a point in fungespace
 	typedef boost::array<int, dimensions> Coord;
 
 	FungeSpace();
 	~FungeSpace();
 
+	// Place a char in FungeSpace
 	void setChar(Coord, QChar);
+	// Get a char from a Coord in FungeSpace
 	QChar getChar(Coord);
 
+	// Get all the code back out from FungeSpace
 	QMap<Coord, QChar> getCode();
-	//QList<QPair<Coord, QChar> > getCode();
 	
+	// Get the code edges (only correct if code doesn't shrink)
 	int getPositiveEdge(int dimension){ return positiveEdges[dimension]; }
 	int getNegativeEdge(int dimension) { return negativeEdges[dimension]; }
 
@@ -37,6 +41,8 @@ private:
 	void descend(Next n, Coord pos, int x, QMap<Coord, QChar>* ret);
 };
 
+
+// Either a final funge char or a QMap to some more Elements
 struct Element
 {
 	QChar c;
@@ -81,6 +87,7 @@ QMap<boost::array<int, dimensions>, QChar> FungeSpace<dimensions>::getCode()
 	for(int i = 0; i < dimensions; ++i)
 		pos[i] = 0;
 
+	// Go down through all the maps to the bottom ones with actual chars in
 	descend(zeroth, pos, 0, &ret);
 
 	foreach(QChar i, ret)
@@ -149,6 +156,8 @@ template <int dimensions>
 QChar FungeSpace<dimensions>::getChar(Coord pos)
 {
 	Next* t = &zeroth;
+	// Loop dimensions
+	// Check each coordinate in turn
 	for(int i = 0; i < dimensions-1; ++i)
 	{
 		Next::iterator it = t->find(pos[i]);
@@ -160,6 +169,7 @@ QChar FungeSpace<dimensions>::getChar(Coord pos)
 			return QChar(' ');
 	}
 
+	// Check the final dimension
 	Next::iterator it = t->find(pos[dimensions-1]);
 	if(it != t->end())
 		return (*it)->c;
