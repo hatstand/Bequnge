@@ -12,16 +12,32 @@ class QMouseEvent;
 
 #include "OGLFT.h"
 
-class TwoDFungeSpace
+class FungeSpaceEntry
 {
 public:
-	TwoDFungeSpace(int dimensions);
+	FungeSpaceEntry(QChar d, int x, int y, int z)
+	{
+		data = d;
+		coords[0] = x;
+		coords[1] = y;
+		coords[2] = z;
+	}
 	
-	void setChar(QList<int> position, QChar data);
-	QChar getChar(QList<int> position);
+	QChar data;
+	int coords[3];
+};
+
+class ThreeDFungeSpace
+{
+public:
+	ThreeDFungeSpace(int dimensions);
+	
+	void setChar(int p0, int p1, int p2, QChar data);
+	QChar getChar(int p0, int p1, int p2);
+	QList<FungeSpaceEntry> getEntries();
 
 private:
-	QMap<int, QMap<int, QChar> > m_data;
+	QMap<int, QMap<int, QMap<int, QChar> > > m_data;
 };
 
 
@@ -45,7 +61,7 @@ private:
 	float modulo(float value, float mod);
 
 private:
-	TwoDFungeSpace* m_fungeSpace;
+	ThreeDFungeSpace* m_fungeSpace;
 	QList<int> m_cursor;
 	QTimer* m_redrawTimer;
 	int m_delayMs;
@@ -67,6 +83,7 @@ private:
 	// Fonts
 	FT_Face m_fontFace;
 	OGLFT::Face* m_font;
+	float m_fontSize;
 };
 
 #endif

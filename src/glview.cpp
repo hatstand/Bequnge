@@ -11,47 +11,68 @@
 
 #include <math.h>
 
-TwoDFungeSpace::TwoDFungeSpace(int dimensions)
+ThreeDFungeSpace::ThreeDFungeSpace(int dimensions)
 {
-	if (dimensions != 2)
-		qWarning("%d dimensions requested.  Only 2 dimensional funge space is supported in this implementation.", dimensions);
+	if (dimensions != 3)
+		qWarning("%d dimensions requested.  Only 3 dimensional funge space is supported in this implementation.", dimensions);
 }
 
-void TwoDFungeSpace::setChar(QList<int> position, QChar data)
+void ThreeDFungeSpace::setChar(int p0, int p1, int p2, QChar data)
 {
-	if (position.count() != 2)
-	{
-		qWarning("Coords with %d dimensions passed to setChar.", position.count());
-		return;
-	}
-	
 	if (data.isSpace())
 	{
-		if (m_data.contains(position[0]))
+		if (m_data.contains(p0))
 		{
-			m_data[position[0]].remove(position[1]);
-			if (m_data[position[0]].isEmpty())
-				m_data.remove(position[0]);
+			if (m_data[p0].contains(p1))
+			{
+				m_data[p0][p1].remove(p2);
+				if (m_data[p0][p1].isEmpty())
+					m_data[p0].remove(p1);
+			}
+			if (m_data[p0].isEmpty())
+				m_data.remove(p0);
 		}
 	}
 	
-	m_data[position[0]][position[1]] = data;
+	m_data[p0][p1][p2] = data;
 }
 
-QChar TwoDFungeSpace::getChar(QList<int> position)
+QChar ThreeDFungeSpace::getChar(int p0, int p1, int p2)
 {
-	if (position.count() != 2)
-	{
-		qWarning("Coords with %d dimensions passed to getChar.", position.count());
+	if (!m_data.contains(p0))
 		return QChar::Separator_Space;
-	}
-	
-	if (!m_data.contains(position[0]))
+	if (!m_data[p0].contains(p1))
 		return QChar::Separator_Space;
-	if (!m_data[position[0]].contains(position[1]))
+	if (!m_data[p0][p1].contains(p2))
 		return QChar::Separator_Space;
-	return m_data[position[0]][position[1]];
+	return m_data[p0][p1][p2];
 }
+
+QList<FungeSpaceEntry> ThreeDFungeSpace::getEntries()
+{
+	QList<FungeSpaceEntry> ret;
+	
+	QMapIterator<int, QMap<int, QMap<int, QChar> > > i1(m_data);
+	while (i1.hasNext())
+	{
+		i1.next();
+		int x = i1.key();
+		QMapIterator<int, QMap<int, QChar> > i2(i1.value());
+		while (i2.hasNext())
+		{
+			i2.next();
+			int y = i2.key();
+			QMapIterator<int, QChar> i3(i2.value());
+			while (i3.hasNext())
+			{
+				i3.next();
+				ret.append(FungeSpaceEntry(i3.value(), x, y, i3.key()));
+			}
+		}
+	}
+	return ret;
+}
+
 
 
 
@@ -61,11 +82,11 @@ GLView::GLView(QWidget* parent)
 	  m_rotateDragging(false)
 {
 	// Initialize funge space
-	m_cursor.append(0);
-	m_cursor.append(0);
-	
-	m_fungeSpace = new TwoDFungeSpace(2);
-	m_fungeSpace->setChar(m_cursor, '@');
+	m_fungeSpace = new ThreeDFungeSpace(3);
+	m_fungeSpace->setChar(0, 0, 0, 'a');
+	m_fungeSpace->setChar(1, 0, 0, 'b');
+	m_fungeSpace->setChar(1, 1, 0, 'c');
+	m_fungeSpace->setChar(1, 1, -1, 'd');
 	
 	// Setup the redraw timer
 	m_redrawTimer = new QTimer(this);
@@ -97,7 +118,8 @@ GLView::GLView(QWidget* parent)
 	args.memory_size = fontResource.size();
 	FT_Open_Face(OGLFT::Library::instance(), &args, 0, &m_fontFace);
 	
-	m_font = new OGLFT::TranslucentTexture(m_fontFace, 24);
+	m_fontSize = 24;
+	m_font = new OGLFT::TranslucentTexture(m_fontFace, m_fontSize);
 	
 	if ( m_font == 0 || !m_font->isValid() )
 	{
@@ -186,57 +208,21 @@ void GLView::paintGL()
 	glRotatef(m_actualCameraRotation[0], 1.0f, 0.0f, 0.0f);
 	glRotatef(m_actualCameraRotation[1], 0.0f, 1.0f, 0.0f);
 	
-	
 	glPushMatrix();
-		// draw a cube (6 quadrilaterals)
-		/*glBegin(GL_QUADS);				// start drawing the cube.
-		
-		// top of cube
-		glColor3f(0.0f,1.0f,0.0f);			// Set The Color To Blue
-		glVertex3f( 1.0f, 1.0f,-1.0f);		// Top Right Of The Quad (Top)
-		glVertex3f(-1.0f, 1.0f,-1.0f);		// Top Left Of The Quad (Top)
-		glVertex3f(-1.0f, 1.0f, 1.0f);		// Bottom Left Of The Quad (Top)
-		glVertex3f( 1.0f, 1.0f, 1.0f);		// Bottom Right Of The Quad (Top)
-		
-		// bottom of cube
-		glColor3f(1.0f,0.5f,0.0f);			// Set The Color To Orange
-		glVertex3f( 1.0f,-1.0f, 1.0f);		// Top Right Of The Quad (Bottom)
-		glVertex3f(-1.0f,-1.0f, 1.0f);		// Top Left Of The Quad (Bottom)
-		glVertex3f(-1.0f,-1.0f,-1.0f);		// Bottom Left Of The Quad (Bottom)
-		glVertex3f( 1.0f,-1.0f,-1.0f);		// Bottom Right Of The Quad (Bottom)
-		
-		// front of cube
-		glColor3f(1.0f,0.0f,0.0f);			// Set The Color To Red
-		glVertex3f( 1.0f, 1.0f, 1.0f);		// Top Right Of The Quad (Front)
-		glVertex3f(-1.0f, 1.0f, 1.0f);		// Top Left Of The Quad (Front)
-		glVertex3f(-1.0f,-1.0f, 1.0f);		// Bottom Left Of The Quad (Front)
-		glVertex3f( 1.0f,-1.0f, 1.0f);		// Bottom Right Of The Quad (Front)
-		
-		// back of cube.QChar
-		glColor3f(1.0f,1.0f,0.0f);			// Set The Color To Yellow
-		glVertex3f( 1.0f,-1.0f,-1.0f);		// Top Right Of The Quad (Back)
-		glVertex3f(-1.0f,-1.0f,-1.0f);		// Top Left Of The Quad (Back)
-		glVertex3f(-1.0f, 1.0f,-1.0f);		// Bottom Left Of The Quad (Back)
-		glVertex3f( 1.0f, 1.0f,-1.0f);		// Bottom Right Of The Quad (Back)
-		
-		// left of cube
-		glColor3f(0.0f,0.0f,1.0f);			// Blue
-		glVertex3f(-1.0f, 1.0f, 1.0f);		// Top Right Of The Quad (Left)
-		glVertex3f(-1.0f, 1.0f,-1.0f);		// Top Left Of The Quad (Left)
-		glVertex3f(-1.0f,-1.0f,-1.0f);		// Bottom Left Of The Quad (Left)
-		glVertex3f(-1.0f,-1.0f, 1.0f);		// Bottom Right Of The Quad (Left)
-		
-		// Right of cube
-		glColor3f(1.0f,0.0f,1.0f);			// Set The Color To Violet
-		glVertex3f( 1.0f, 1.0f,-1.0f);	        // Top Right Of The Quad (Right)
-		glVertex3f( 1.0f, 1.0f, 1.0f);		// Top Left Of The Quad (Right)
-		glVertex3f( 1.0f,-1.0f, 1.0f);		// Bottom Left Of The Quad (Right)
-		glVertex3f( 1.0f,-1.0f,-1.0f);		// Bottom Right Of The Quad (Right)
-		glEnd();					// Done Drawing The Cube*/
-		
 		glEnable(GL_TEXTURE_2D);
 		glScalef(0.004f, 0.004f, 0.004f);
-		m_font->draw("Test String");
+		
+		QList<FungeSpaceEntry> entries = m_fungeSpace->getEntries();
+		foreach(FungeSpaceEntry entry, entries)
+		{
+			glPushMatrix();
+				glTranslatef(m_fontSize * entry.coords[0], m_fontSize * entry.coords[1], m_fontSize * entry.coords[2]);
+				glRotatef(-m_actualCameraRotation[0], 1.0f, 0.0f, 0.0f);
+				glRotatef(-m_actualCameraRotation[1], 0.0f, 1.0f, 0.0f);
+				m_font->draw(entry.data);
+			glPopMatrix();
+		}
+		
 		glDisable(GL_TEXTURE_2D);
 	glPopMatrix();
 	
