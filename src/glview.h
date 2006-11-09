@@ -59,12 +59,16 @@ private:
 	void updateCamera(int i);
 	float degreesToRadians(float degrees);
 	float modulo(float value, float mod);
+	QList<int> glToFungeSpace(float x, float y, float z);
 
 private:
 	ThreeDFungeSpace* m_fungeSpace;
 	QList<int> m_cursor;
+	QTime m_cursorBlinkTime;
+	bool m_cursorBlinkOn;
 	QTimer* m_redrawTimer;
 	int m_delayMs;
+	
 	
 	// Camera offset
 	float m_actualCameraOffset[3];
