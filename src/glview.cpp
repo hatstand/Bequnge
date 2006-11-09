@@ -79,10 +79,10 @@ QList<FungeSpaceEntry> ThreeDFungeSpace::getEntries()
 
 GLView::GLView(QWidget* parent)
 	: QGLWidget(parent),
-	  m_moveDragging(false),
-	  m_rotateDragging(false),
 	  m_cursorBlinkOn(true),
-	  m_cursorDirection(1)
+	  m_cursorDirection(1),
+	  m_moveDragging(false),
+	  m_rotateDragging(false)
 {
 	// Initialize the curser
 	setFocusPolicy(Qt::WheelFocus);
@@ -225,7 +225,7 @@ void GLView::paintGL()
 		glEnable(GL_TEXTURE_2D);
 		glScalef(0.004f, 0.004f, 0.004f);
 		
-		bool foundCursor = false;
+		//bool foundCursor = false;
 		QList<FungeSpaceEntry> entries = m_fungeSpace->getEntries();
 		foreach(FungeSpaceEntry entry, entries)
 		{
@@ -329,7 +329,7 @@ float GLView::modulo(float value, float mod)
 {
 	if (value >= 0.0f)
 	{
-		if (abs(value/mod) < 1.0f)
+		if (abs((int)(value/mod)) < 1.0f)
 			return value;
 		return value - floorf(value/mod)*mod;
 	}
@@ -367,6 +367,8 @@ float GLView::snapToPlane(int i, float value)
 		m_destinationCameraRotation[i] = nearbyintf(value/90.0f) * 90.0f;
 	else
 		m_destinationCameraRotation[i] = value;
+
+	return angle;
 }
 
 void GLView::wheelEvent(QWheelEvent* event)
@@ -379,9 +381,9 @@ QList<int> GLView::glToFungeSpace(float x, float y, float z)
 	float size = m_fontSize * 0.004f;
 	
 	QList<int> ret;
-	ret.append(floor(x/size));
-	ret.append(- floor(y/size));
-	ret.append(floor((z*-1)/size - 0.5f) + 1);
+	ret.append((int)(floor(x/size)));
+	ret.append((int)(- floor(y/size)));
+	ret.append((int)(floor((z*-1)/size - 0.5f) + 1));
 	return ret;
 }
 
@@ -423,7 +425,7 @@ void GLView::mousePressEvent(QMouseEvent* event)
 			
 		//Read the window z co-ordinate 
 		//(the z value on that point in unit cube)          
-		glReadPixels( x, viewport[3]-y, 1, 1,
+		glReadPixels( (GLint)x, (GLint)(viewport[3]-y), 1, 1,
 				GL_DEPTH_COMPONENT, GL_FLOAT, &z );
 		
 		//Unproject the window co-ordinates to 
@@ -435,6 +437,8 @@ void GLView::mousePressEvent(QMouseEvent* event)
 		if (m_fungeSpace->getChar(p[0], p[1], p[2]) != ' ')
 			m_cursor = p;
 	}
+	default:
+		break;
 	}
 }
 
@@ -445,6 +449,9 @@ void GLView::mouseReleaseEvent(QMouseEvent* event)
 	case Qt::MidButton:
 		m_rotateDragging = false;
 		m_moveDragging = false;
+	
+	default:
+		break;
 	}
 }
 

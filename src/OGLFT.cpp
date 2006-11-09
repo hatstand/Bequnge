@@ -476,7 +476,7 @@ namespace OGLFT {
 
       bbox = measure( s.at( 0 ) );
 
-      for ( unsigned int i = 1; i < s.length(); i++ ) {
+      for ( int i = 1; i < s.length(); i++ ) {
 
 	BBox char_bbox = measure( s.at( i ) );
 
@@ -496,7 +496,7 @@ namespace OGLFT {
   {
     BBox bbox;
 
-    for ( unsigned int i = 0; i < s.length(); i++ ) {
+    for ( int i = 0; i < s.length(); i++ ) {
       BBox char_bbox;
 
       unsigned int f;
@@ -757,7 +757,7 @@ namespace OGLFT {
   {
     // First, make sure all the characters in the string are themselves
     // in display lists
-    for ( unsigned int i = 0; i < s.length(); i++ ) {
+    for ( int i = 0; i < s.length(); i++ ) {
       compile( s.at( i ) );
     }
     
@@ -873,7 +873,7 @@ namespace OGLFT {
   {
     DLCI character_display_list = character_display_lists_.begin();
 
-    for ( unsigned int i = 0; i < s.length(); i++ ) {
+    for ( int i = 0; i < s.length(); i++ ) {
 
       if ( character_display_list != character_display_lists_.end() ) {
 	glCallList( *character_display_list );
@@ -1169,6 +1169,8 @@ namespace OGLFT {
 	dx = -( bbox.x_min_ + bbox.x_max_ ) / 2.; break;
       case RIGHT:
 	dx = -bbox.x_max_; break;
+		default:
+			break;
       }
       switch ( vertical_justification_ ) {
       case BOTTOM:
@@ -1177,6 +1179,8 @@ namespace OGLFT {
 	dy = -( bbox.y_min_ + bbox.y_max_ ) / 2.; break;
       case TOP:
 	dy = -bbox.y_max_; break;
+		default:
+			break;
       }
 
       // There is probably a less expensive way to compute this
@@ -1263,6 +1267,8 @@ namespace OGLFT {
 	dx = ( bbox.x_min_ + bbox.x_max_ ) / 2; break;
       case RIGHT:
 	dx = bbox.x_max_; break;
+		default:
+			break;
       }
       switch ( vertical_justification_ ) {
       case BOTTOM:
@@ -1271,6 +1277,8 @@ namespace OGLFT {
 	dy = ( bbox.y_min_ + bbox.y_max_ ) /2; break;
       case TOP:
 	dy = bbox.y_max_; break;
+		default:
+			break;
       }
 
       // **Now** rotate these coordinates around into 3D modeling coordinates!

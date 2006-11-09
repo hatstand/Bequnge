@@ -4,7 +4,7 @@
 #include <QStringList>
 
 Interpreter::Interpreter(QIODevice* input, QObject* parent)
-	: m_input(input)
+	: QObject(parent),m_input(input)
 {
 	m_version = "1";
 	m_dimensions = 2;
