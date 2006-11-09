@@ -24,3 +24,5 @@ HEADERS += glview.h
 HEADERS += OGLFT.h
 
 FORMS += mainwindow.ui
+
+RESOURCES = resources.qrc

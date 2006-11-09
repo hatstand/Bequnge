@@ -3,6 +3,9 @@
 #include <QTimer>
 #include <QMouseEvent>
 #include <QWheelEvent>
+#include <QResource>
+#include <QMessageBox>
+#include <QCoreApplication>
 
 #include <QDebug>
 
@@ -57,17 +60,20 @@ GLView::GLView(QWidget* parent)
 	  m_moveDragging(false),
 	  m_rotateDragging(false)
 {
+	// Initialize funge space
 	m_cursor.append(0);
 	m_cursor.append(0);
 	
 	m_fungeSpace = new TwoDFungeSpace(2);
 	m_fungeSpace->setChar(m_cursor, '@');
 	
+	// Setup the redraw timer
 	m_redrawTimer = new QTimer(this);
 	connect(m_redrawTimer, SIGNAL(timeout()), SLOT(updateGL()));
 	
 	m_delayMs = 1000/30; // 30fps
 	
+	// Setup the camera offset and rotation
 	m_destinationCameraOffset[0] = 0.0f;
 	m_destinationCameraOffset[1] = 0.0f;
 	m_destinationCameraOffset[2] = -7.0f;
@@ -81,11 +87,32 @@ GLView::GLView(QWidget* parent)
 	
 	m_actualCameraRotation[0] = m_destinationCameraRotation[0];
 	m_actualCameraRotation[1] = m_destinationCameraRotation[1];
+	
+	// Load the font
+	QResource fontResource("luximr.ttf");
+	
+	FT_Open_Args args;
+	args.flags = FT_OPEN_MEMORY;
+	args.memory_base = fontResource.data();
+	args.memory_size = fontResource.size();
+	FT_Open_Face(OGLFT::Library::instance(), &args, 0, &m_fontFace);
+	
+	m_font = new OGLFT::TranslucentTexture(m_fontFace, 24);
+	
+	if ( m_font == 0 || !m_font->isValid() )
+	{
+		QMessageBox::critical(this, "Error loading font", "Font face could not be loaded");
+		QCoreApplication::exit(1);
+		return;
+	}
+	
+	m_font->setForegroundColor(1.0f, 1.0f, 1.0f);
 }
 
 
 GLView::~GLView()
 {
+	delete m_font;
 }
 
 void GLView::initializeGL()
@@ -102,6 +129,12 @@ void GLView::initializeGL()
 	//gluPerspective(45.0f,(GLfloat)Width/(GLfloat)Height,0.1f,100.0f);	// Calculate The Aspect Ratio Of The Window
 	
 	glMatrixMode(GL_MODELVIEW);
+	
+	glPixelStorei( GL_UNPACK_ALIGNMENT, 1 );
+	glBlendFunc( GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA );
+	glTexEnvi( GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_REPLACE );
+	
+	glEnable( GL_BLEND );
 }
 
 void GLView::resizeGL(int width, int height)
@@ -156,7 +189,7 @@ void GLView::paintGL()
 	
 	glPushMatrix();
 		// draw a cube (6 quadrilaterals)
-		glBegin(GL_QUADS);				// start drawing the cube.
+		/*glBegin(GL_QUADS);				// start drawing the cube.
 		
 		// top of cube
 		glColor3f(0.0f,1.0f,0.0f);			// Set The Color To Blue
@@ -199,7 +232,12 @@ void GLView::paintGL()
 		glVertex3f( 1.0f, 1.0f, 1.0f);		// Top Left Of The Quad (Right)
 		glVertex3f( 1.0f,-1.0f, 1.0f);		// Bottom Left Of The Quad (Right)
 		glVertex3f( 1.0f,-1.0f,-1.0f);		// Bottom Right Of The Quad (Right)
-		glEnd();					// Done Drawing The Cube
+		glEnd();					// Done Drawing The Cube*/
+		
+		glEnable(GL_TEXTURE_2D);
+		glScalef(0.004f, 0.004f, 0.004f);
+		m_font->draw("Test String");
+		glDisable(GL_TEXTURE_2D);
 	glPopMatrix();
 	
 	glColor3f(1.0f, 1.0f, 1.0f);

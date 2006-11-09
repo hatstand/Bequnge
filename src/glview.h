@@ -5,7 +5,12 @@
 #include <QTime>
 #include <QFont>
 
+#include <ft2build.h>
+#include FT_FREETYPE_H
+
 class QMouseEvent;
+
+#include "OGLFT.h"
 
 class TwoDFungeSpace
 {
@@ -58,6 +63,10 @@ private:
 	float m_preDragCameraRotation[2];
 	
 	QPoint m_preDragMousePosition;
+	
+	// Fonts
+	FT_Face m_fontFace;
+	OGLFT::Face* m_font;
 };
 
 #endif
