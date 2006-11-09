@@ -9,6 +9,7 @@
 #include FT_FREETYPE_H
 
 class QMouseEvent;
+class QKeyEvent;
 
 #include "OGLFT.h"
 
@@ -18,13 +19,13 @@ public:
 	FungeSpaceEntry(QChar d, int x, int y, int z)
 	{
 		data = d;
-		coords[0] = x;
-		coords[1] = y;
-		coords[2] = z;
+		coords.append(x);
+		coords.append(y);
+		coords.append(z);
 	}
 	
 	QChar data;
-	int coords[3];
+	QList<int> coords;
 };
 
 class ThreeDFungeSpace
@@ -55,6 +56,7 @@ private:
 	void mousePressEvent(QMouseEvent* event);
 	void mouseReleaseEvent(QMouseEvent* event);
 	void wheelEvent(QWheelEvent* event);
+	void keyPressEvent(QKeyEvent* event);
 	
 	void updateCamera(int i);
 	float degreesToRadians(float degrees);
@@ -67,6 +69,7 @@ private:
 	QList<int> m_cursor;
 	QTime m_cursorBlinkTime;
 	bool m_cursorBlinkOn;
+	int m_cursorDirection;
 	QTimer* m_redrawTimer;
 	int m_delayMs;
 	
@@ -88,6 +91,7 @@ private:
 	// Fonts
 	FT_Face m_fontFace;
 	OGLFT::Face* m_font;
+	OGLFT::Face* m_fontHighlighted;
 	float m_fontSize;
 };
 

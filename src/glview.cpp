@@ -3,6 +3,7 @@
 #include <QTimer>
 #include <QMouseEvent>
 #include <QWheelEvent>
+#include <QKeyEvent>
 #include <QResource>
 #include <QMessageBox>
 #include <QCoreApplication>
@@ -80,9 +81,11 @@ GLView::GLView(QWidget* parent)
 	: QGLWidget(parent),
 	  m_moveDragging(false),
 	  m_rotateDragging(false),
-	  m_cursorBlinkOn(true)
+	  m_cursorBlinkOn(true),
+	  m_cursorDirection(1)
 {
 	// Initialize the curser
+	setFocusPolicy(Qt::WheelFocus);
 	m_cursor.append(0);
 	m_cursor.append(0);
 	m_cursor.append(0);
@@ -90,10 +93,10 @@ GLView::GLView(QWidget* parent)
 	
 	// Initialize funge space
 	m_fungeSpace = new ThreeDFungeSpace(3);
-	m_fungeSpace->setChar(0, 0, 0, 'a');
+	/*m_fungeSpace->setChar(0, 0, 0, 'a');
 	m_fungeSpace->setChar(1, 0, 0, 'b');
 	m_fungeSpace->setChar(1, 1, 0, 'c');
-	m_fungeSpace->setChar(1, 1, -1, 'd');
+	m_fungeSpace->setChar(1, 1, 1, 'd');*/
 	
 	// Setup the redraw timer
 	m_redrawTimer = new QTimer(this);
@@ -125,8 +128,9 @@ GLView::GLView(QWidget* parent)
 	args.memory_size = fontResource.size();
 	FT_Open_Face(OGLFT::Library::instance(), &args, 0, &m_fontFace);
 	
-	m_fontSize = 24;
-	m_font = new OGLFT::TranslucentTexture(m_fontFace, m_fontSize);
+	m_fontSize = 29;
+	m_font = new OGLFT::TranslucentTexture(m_fontFace, m_fontSize - 5);
+	m_fontHighlighted = new OGLFT::TranslucentTexture(m_fontFace, m_fontSize - 5);
 	
 	if ( m_font == 0 || !m_font->isValid() )
 	{
@@ -136,6 +140,8 @@ GLView::GLView(QWidget* parent)
 	}
 	
 	m_font->setForegroundColor(1.0f, 1.0f, 1.0f);
+	m_fontHighlighted->setBackgroundColor(1.0f, 1.0f, 1.0f);
+	m_fontHighlighted->setForegroundColor(0.0f, 0.0f, 0.0f);
 }
 
 
@@ -160,10 +166,10 @@ void GLView::initializeGL()
 	glMatrixMode(GL_MODELVIEW);
 	
 	glPixelStorei( GL_UNPACK_ALIGNMENT, 1 );
-	glBlendFunc( GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA );
 	glTexEnvi( GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_REPLACE );
 	
 	glEnable( GL_BLEND );
+	glBlendFunc( GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA );
 }
 
 void GLView::resizeGL(int width, int height)
@@ -219,14 +225,19 @@ void GLView::paintGL()
 		glEnable(GL_TEXTURE_2D);
 		glScalef(0.004f, 0.004f, 0.004f);
 		
+		bool foundCursor = false;
 		QList<FungeSpaceEntry> entries = m_fungeSpace->getEntries();
 		foreach(FungeSpaceEntry entry, entries)
 		{
 			glPushMatrix();
-				glTranslatef(m_fontSize * entry.coords[0], m_fontSize * entry.coords[1], m_fontSize * entry.coords[2]);
+				OGLFT::Face* font = m_font;
+				if ((entry.coords == m_cursor) && (m_cursorBlinkOn))
+					font = m_fontHighlighted;
+				
+				glTranslatef(m_fontSize * entry.coords[0], - m_fontSize * entry.coords[1], - m_fontSize * entry.coords[2]);
 				/*glRotatef(-m_actualCameraRotation[0], 1.0f, 0.0f, 0.0f);
 				glRotatef(-m_actualCameraRotation[1], 0.0f, 1.0f, 0.0f);*/
-				m_font->draw(entry.data);
+				font->draw(entry.data);
 			glPopMatrix();
 		}
 		
@@ -234,9 +245,21 @@ void GLView::paintGL()
 		
 		if (m_cursorBlinkOn)
 		{
+			glTranslatef(m_fontSize * m_cursor[0], - m_fontSize * m_cursor[1] - 2.5f, - m_fontSize * m_cursor[2] - 0.001f);
+			glBegin(GL_QUADS);
+				glColor3f(1.0f, 1.0f, 1.0f);
+				glVertex3f(m_fontSize - 5.0f, m_fontSize, 0.0f);
+				glVertex3f(0.0f, m_fontSize, 0.0f);
+				glVertex3f(0.0f, 0.0f, 0.0f);
+				glVertex3f(m_fontSize - 5.0f, 0.0f, 0.0f);
+			glEnd();
+		}
+		
+		/*if (m_cursorBlinkOn)
+		{
 			glPushMatrix();
 				float s = m_fontSize/2;
-				glTranslatef(m_fontSize * m_cursor[0] + s, m_fontSize * m_cursor[1] + s, m_fontSize * (-m_cursor[2]));
+				glTranslatef(m_fontSize * m_cursor[0] + s, - m_fontSize * m_cursor[1] + s, - m_fontSize * m_cursor[2]);
 				
 				glBegin(GL_QUADS);				// start drawing the cube.
   
@@ -280,12 +303,13 @@ void GLView::paintGL()
 
 
 			glPopMatrix();
-		}
+		}*/
 	glPopMatrix();
 	
 	glColor3f(1.0f, 1.0f, 1.0f);
 	renderText(0, 15, "Offset: " + QString::number(m_actualCameraOffset[0]) + ", " + QString::number(m_actualCameraOffset[1]) + ", " + QString::number(m_actualCameraOffset[2]));
 	renderText(0, 30, "Rotation: " + QString::number(m_actualCameraRotation[0]) + ", " + QString::number(m_actualCameraRotation[1]));
+	renderText(0, 45, "Cursor: " + QString::number(m_cursor[0]) + ", " + QString::number(m_cursor[1]) + ", " + QString::number(m_cursor[2]));
 	
 	if (m_cursorBlinkTime.elapsed() > 500)
 	{
@@ -356,8 +380,8 @@ QList<int> GLView::glToFungeSpace(float x, float y, float z)
 	
 	QList<int> ret;
 	ret.append(floor(x/size));
-	ret.append(floor(y/size));
-	ret.append(floor((z*-1)/size) + 1);
+	ret.append(- floor(y/size));
+	ret.append(floor((z*-1)/size - 0.5f) + 1);
 	return ret;
 }
 
@@ -421,6 +445,48 @@ void GLView::mouseReleaseEvent(QMouseEvent* event)
 	case Qt::MidButton:
 		m_rotateDragging = false;
 		m_moveDragging = false;
+	}
+}
+
+void GLView::keyPressEvent(QKeyEvent* event)
+{
+	if (event->matches(QKeySequence::MoveToNextChar))
+		m_cursor[0]++;
+	else if (event->matches(QKeySequence::MoveToPreviousChar))
+		m_cursor[0]--;
+	else if (event->matches(QKeySequence::MoveToNextLine))
+		m_cursor[1]++;
+	else if (event->matches(QKeySequence::MoveToPreviousLine))
+		m_cursor[1]--;
+	else if (event->matches(QKeySequence::MoveToNextPage))
+		m_cursor[2]++;
+	else if (event->matches(QKeySequence::MoveToPreviousPage))
+		m_cursor[2]--;
+	else if (event->key() == Qt::Key_Backspace)
+	{
+		int a = abs(m_cursorDirection);
+		m_cursor[a-1] += (m_cursorDirection < 0 ? 1 : -1);
+		m_fungeSpace->setChar(m_cursor[0], m_cursor[1], m_cursor[2], ' ');
+	}
+	else if (!event->text().isEmpty())
+	{
+		QChar c = event->text()[0];
+		m_fungeSpace->setChar(m_cursor[0], m_cursor[1], m_cursor[2], c);
+		if (c == '<')
+			m_cursorDirection=-1;
+		else if (c == '>')
+			m_cursorDirection=1;
+		else if (c == 'v')
+			m_cursorDirection=2;
+		else if (c == '^')
+			m_cursorDirection=-2;
+		else if (c == 'h')
+			m_cursorDirection=3;
+		else if (c == '?')
+			m_cursorDirection=-3;
+		
+		int a = abs(m_cursorDirection);
+		m_cursor[a-1] += (m_cursorDirection > 0 ? 1 : -1);
 	}
 }
 

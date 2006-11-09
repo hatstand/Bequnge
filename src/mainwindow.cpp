@@ -9,5 +9,7 @@ MainWindow::MainWindow(QWidget* parent)
 	
 	m_glView = new GLView(this);
 	setCentralWidget(m_glView);
+	
+	m_glView->setFocus(Qt::OtherFocusReason);
 }
 
