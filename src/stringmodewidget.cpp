@@ -7,7 +7,10 @@
 StringModeWidget::StringModeWidget(QWidget* parent)
 	: QLabel(parent)
 {
-	setToolTip("When the editor is in string mode, special characters such as > and < can be inserted without changing the direction of the cursor.  String mode can be toggled by typing \".");
+	setToolTip("When the editor is in string mode, special\n"
+	           "characters such as > and < can be inserted\n"
+	           "without changing the direction of the cursor.\n\n"
+	           "String mode can be toggled by typing \".");
 	setStringMode(false);
 	setAutoFillBackground(true);
 }

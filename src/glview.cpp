@@ -41,11 +41,11 @@ void ThreeDFungeSpace::setChar(int p0, int p1, int p2, QChar data)
 QChar ThreeDFungeSpace::getChar(int p0, int p1, int p2)
 {
 	if (!m_data.contains(p0))
-		return QChar::Separator_Space;
+		return ' ';
 	if (!m_data[p0].contains(p1))
-		return QChar::Separator_Space;
+		return ' ';
 	if (!m_data[p0][p1].contains(p2))
-		return QChar::Separator_Space;
+		return ' ';
 	return m_data[p0][p1][p2];
 }
 
@@ -82,8 +82,8 @@ GLView::GLView(QWidget* parent)
 	  m_cursorBlinkOn(true),
 	  m_cursorDirection(1),
 	  m_moveDragging(false),
-	  m_rotateDragging(false),
-	  m_stringMode(false)
+	  m_stringMode(false),
+	  m_zoomLevel(6.0f)
 {
 	// Initialize the curser
 	setFocusPolicy(Qt::WheelFocus);
@@ -106,21 +106,13 @@ GLView::GLView(QWidget* parent)
 	// Setup the camera offset and rotation
 	m_destinationCameraOffset[0] = 0.0f;
 	m_destinationCameraOffset[1] = 0.0f;
-	m_destinationCameraOffset[2] = -7.0f;
+	m_destinationCameraOffset[2] = 0.0f;
 	
 	m_actualCameraOffset[0] = m_destinationCameraOffset[0];
 	m_actualCameraOffset[1] = m_destinationCameraOffset[1];
 	m_actualCameraOffset[2] = m_destinationCameraOffset[2];
 	
-	m_destinationCameraRotation[0] = 0.0f;
-	m_destinationCameraRotation[1] = 0.0f;
-	
-	m_actualCameraRotation[0] = m_destinationCameraRotation[0];
-	m_actualCameraRotation[1] = m_destinationCameraRotation[1];
-	
-	m_destinationEyeOffset[0] = 0.0f;
-	m_destinationEyeOffset[1] = 3.5f;
-	m_destinationEyeOffset[2] = 6.0f;
+	setEye(m_zoomLevel, 35.0f, 0.0f);
 	
 	m_actualEyeOffset[0] = m_destinationEyeOffset[0];
 	m_actualEyeOffset[1] = m_destinationEyeOffset[1];
@@ -199,22 +191,6 @@ void GLView::updateCamera(int i)
 	else
 		m_actualCameraOffset[i] += diff * 0.2f;
 	
-	if (i < 2)
-	{
-		diff = m_destinationCameraRotation[i] - m_actualCameraRotation[i];
-		if (fabs(diff) < 1.0f)
-		{
-			m_actualCameraRotation[i] = m_destinationCameraRotation[i];
-			if (!m_rotateDragging)
-			{
-				m_destinationCameraRotation[i] = modulo(m_destinationCameraRotation[i], 360.0f);
-				m_actualCameraRotation[i] = m_destinationCameraRotation[i];
-			}
-		}
-		else
-			m_actualCameraRotation[i] += diff * 0.2f;
-	}
-	
 	diff = m_destinationEyeOffset[i] - m_actualEyeOffset[i];
 	if (fabs(diff) < 0.01)
 		m_actualEyeOffset[i] = m_destinationEyeOffset[i];
@@ -238,27 +214,24 @@ void GLView::paintGL()
 	updateCamera(1);
 	updateCamera(2);
 	
-	gluLookAt(m_actualEyeOffset[0] + m_actualCursorPos[0],
-	          m_actualEyeOffset[1] + m_actualCursorPos[1],
-	          m_actualEyeOffset[2] + m_actualCursorPos[2],
-	          m_actualCursorPos[0],
-	          m_actualCursorPos[1],
+	gluLookAt(m_actualEyeOffset[0] + m_actualCursorPos[0] + m_actualCameraOffset[0],
+	          m_actualEyeOffset[1] + m_actualCursorPos[1] + m_actualCameraOffset[1],
+	          m_actualEyeOffset[2] + m_actualCursorPos[2] + m_actualCameraOffset[2],
+	          m_actualCursorPos[0] + m_actualCameraOffset[0],
+	          m_actualCursorPos[1] + m_actualCameraOffset[1],
 	          m_actualCursorPos[2],
 	          0.0f,
 	          1.0f,
 	          0.0f);
 	
-	glEnable(GL_TEXTURE_2D);
 	glScalef(0.004f, 0.004f, 0.004f);
 	glPushMatrix();
+		glEnable(GL_TEXTURE_2D);
 		QList<float> coord;
 		QList<FungeSpaceEntry> entries = m_fungeSpace->getEntries();
 		foreach(FungeSpaceEntry entry, entries)
 		{
 			glPushMatrix();
-				/*if ((entry.coords == m_cursor) && (m_cursorBlinkOn))
-					m_font = m_fontHighlighted;*/
-				
 				int diff = abs(entry.coords[m_activePlane] - m_cursor[m_activePlane]);
 				
 				if (diff == 0)
@@ -275,7 +248,6 @@ void GLView::paintGL()
 				m_font->draw(entry.data);
 			glPopMatrix();
 		}
-		
 		glDisable(GL_TEXTURE_2D);
 		
 		if (m_cursorBlinkOn)
@@ -295,9 +267,7 @@ void GLView::paintGL()
 	glPopMatrix();
 	
 	glColor3f(1.0f, 1.0f, 1.0f);
-	renderText(0, 15, "Offset: " + QString::number(m_actualCameraOffset[0]) + ", " + QString::number(m_actualCameraOffset[1]) + ", " + QString::number(m_actualCameraOffset[2]));
-	renderText(0, 30, "Rotation: " + QString::number(m_actualCameraRotation[0]) + ", " + QString::number(m_actualCameraRotation[1]));
-	renderText(0, 45, "Cursor: " + QString::number(m_cursor[0]) + ", " + QString::number(m_cursor[1]) + ", " + QString::number(m_cursor[2]));
+	renderText(0, 15, "Cursor: " + QString::number(m_cursor[0]) + ", " + QString::number(m_cursor[1]) + ", " + QString::number(m_cursor[2]));
 	
 	if (m_cursorBlinkTime.elapsed() > 500)
 	{
@@ -331,42 +301,33 @@ void GLView::mouseMoveEvent(QMouseEvent* event)
 		float xOffset = event->pos().x() - m_preDragMousePosition.x();
 		float yOffset = event->pos().y() - m_preDragMousePosition.y();
 		
-		m_destinationCameraOffset[0] = m_preDragCameraOffset[0] + (xOffset / 135.0f);
-		m_destinationCameraOffset[1] = m_preDragCameraOffset[1] - (yOffset / 135.0f);
+		int otherPlane = m_activePlane == 0 ? 2 : 0;
+		
+		m_destinationCameraOffset[otherPlane] = - xOffset / 135.0f;
+		m_destinationCameraOffset[1] = yOffset / 135.0f;
 	}
 	else if (m_rotateDragging)
 	{
-		float xOffset = event->pos().x() - m_preDragMousePosition.x();
-		float yOffset = event->pos().y() - m_preDragMousePosition.y();
+		float xOffset = - (event->pos().x() - m_preDragMousePosition.x()) / 4.0f;
+		float yOffset = 30.0f + (event->pos().y() - m_preDragMousePosition.y()) / 4.0f;
 		
-		xOffset = m_destinationCameraRotation[1] = m_preDragCameraRotation[1] + (xOffset / 5.0f);
-		yOffset = m_destinationCameraRotation[0] = m_preDragCameraRotation[0] + (yOffset / 5.0f);
-		
-		snapToPlane(0, yOffset);
-		snapToPlane(1, xOffset);
+		setEye(m_zoomLevel, yOffset, xOffset);
 	}
-}
-
-float GLView::snapToPlane(int i, float value)
-{
-	float angle = modulo(value, 90.0f);
-	
-	if (angle < 20.0f || angle > 70.0f)
-		m_destinationCameraRotation[i] = nearbyintf(value/90.0f) * 90.0f;
-	else
-		m_destinationCameraRotation[i] = value;
-
-	return angle;
 }
 
 void GLView::wheelEvent(QWheelEvent* event)
 {
-	m_destinationCameraOffset[2] += (((float)event->delta()) / 135.0f);
+	m_zoomLevel -= event->delta() / 90.0f;
+	
+	if (m_zoomLevel < 1.0f)
+		m_zoomLevel = 1.0f;
+	
+	setEye(m_zoomLevel, 35.0f, 0.0f);
 }
 
 QList<int> GLView::glToFungeSpace(float x, float y, float z)
 {
-	float size = m_fontSize * 0.004f;
+	float size = m_fontSize;
 	
 	QList<int> ret;
 	ret.append((int)(floor(x/size)));
@@ -390,27 +351,27 @@ QList<float> GLView::fungeSpaceToGl(QList<int> c, bool premultiplied)
 
 void GLView::mousePressEvent(QMouseEvent* event)
 {
+	m_preDragMousePosition = event->pos();
 	switch (event->button())
 	{
 	case Qt::MidButton:
-		m_preDragMousePosition = event->pos();
-		
 		if (event->modifiers() & Qt::ControlModifier)
 		{
-			m_preDragCameraRotation[0] = m_destinationCameraRotation[0];
-			m_preDragCameraRotation[1] = m_destinationCameraRotation[1];
 			m_rotateDragging = true;
-		}
-		else
-		{
-			m_preDragCameraOffset[0] = m_destinationCameraOffset[0];
-			m_preDragCameraOffset[1] = m_destinationCameraOffset[1];
-			m_moveDragging = true;
+			event->accept();
+			return;
 		}
 		break;
 		
 	case Qt::LeftButton:
 	{
+		if (event->modifiers() & Qt::ControlModifier)
+		{
+			m_moveDragging = true;
+			event->accept();
+			return;
+		}
+		
 		double objx, objy, objz;
 		float x = event->pos().x();
 		float y = event->pos().y();
@@ -437,6 +398,8 @@ void GLView::mousePressEvent(QMouseEvent* event)
 		QList<int> p = glToFungeSpace(objx, objy, objz);
 		if (m_fungeSpace->getChar(p[0], p[1], p[2]) != ' ')
 			m_cursor = p;
+		
+		event->accept();
 	}
 	default:
 		break;
@@ -449,8 +412,15 @@ void GLView::mouseReleaseEvent(QMouseEvent* event)
 	{
 	case Qt::MidButton:
 		m_rotateDragging = false;
+		setEye(m_zoomLevel, 30.0f, 0.0f);
+		break;
+		
+	case Qt::LeftButton:
 		m_moveDragging = false;
-	
+		m_destinationCameraOffset[0] = 0.0f;
+		m_destinationCameraOffset[1] = 0.0f;
+		break;
+		
 	default:
 		break;
 	}
@@ -458,18 +428,20 @@ void GLView::mouseReleaseEvent(QMouseEvent* event)
 
 void GLView::keyPressEvent(QKeyEvent* event)
 {
+	int otherPlane = m_activePlane == 0 ? 2 : 0;
+	
 	if (event->matches(QKeySequence::MoveToNextChar))
-		m_cursor[0]++;
+		m_cursor[otherPlane]++;
 	else if (event->matches(QKeySequence::MoveToPreviousChar))
-		m_cursor[0]--;
+		m_cursor[otherPlane]--;
 	else if (event->matches(QKeySequence::MoveToNextLine))
 		m_cursor[1]++;
 	else if (event->matches(QKeySequence::MoveToPreviousLine))
 		m_cursor[1]--;
 	else if (event->matches(QKeySequence::MoveToNextPage))
-		m_cursor[2]++;
+		m_cursor[m_activePlane]++;
 	else if (event->matches(QKeySequence::MoveToPreviousPage))
-		m_cursor[2]--;
+		m_cursor[m_activePlane]--;
 	else if (event->key() == Qt::Key_Backspace)
 	{
 		int a = abs(m_cursorDirection);
@@ -522,13 +494,41 @@ void GLView::setStringMode(bool enabled)
 void GLView::setCursorDirection(int direction)
 {
 	m_cursorDirection = direction;
-	m_destinationEyeOffset[m_activePlane] -= 6.0f;
 	int a = abs(direction);
 	if (a == 1)
 		m_activePlane = 2;
 	else if (a == 3)
 		m_activePlane = 0;
-	m_destinationEyeOffset[m_activePlane] += 6.0f;
+	
+	setEye(m_zoomLevel, 30.0f, 0.0f);
+}
+
+void GLView::setEye(float radius, float vert, float horiz)
+{
+	int otherPlane = m_activePlane == 0 ? 2 : 0;
+	
+	float v = vert;
+	float h = horiz;
+	
+	if (v > 85.0f)
+		v = 85.0f;
+	if (v < -85.0f)
+		v = -85.0f;
+	if (h > 85.0f)
+		h = 85.0f;
+	if (h < -85.0f)
+		h = -85.0f;
+		
+		qDebug() << h;
+	
+	v = degreesToRadians(v);
+	h = degreesToRadians(h);
+	
+	qDebug() << h;
+	
+	m_destinationEyeOffset[m_activePlane] = radius * cos(v) * cos(h);
+	m_destinationEyeOffset[1] = radius * sin(v);
+	m_destinationEyeOffset[otherPlane] = radius * sin(h);
 }
 
 

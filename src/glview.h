@@ -69,11 +69,11 @@ private:
 	void updateCamera(int i);
 	float degreesToRadians(float degrees);
 	float modulo(float value, float mod);
-	float snapToPlane(int i, float value);
 	QList<int> glToFungeSpace(float x, float y, float z);
 	QList<float> fungeSpaceToGl(QList<int> c, bool premultiplied);
 	void toggleStringMode();
 	void setCursorDirection(int direction);
+	void setEye(float radius, float vert, float horiz);
 
 private:
 	// Funge space
@@ -96,18 +96,15 @@ private:
 	// Eye offset
 	float m_actualEyeOffset[3];
 	float m_destinationEyeOffset[3];
+	float m_zoomLevel;
 	
 	// Camera offset
 	float m_actualCameraOffset[3];
 	bool m_moveDragging;
 	float m_destinationCameraOffset[3];
-	float m_preDragCameraOffset[2];
 	
 	// Camera rotation
-	float m_actualCameraRotation[2];
 	bool m_rotateDragging;
-	float m_destinationCameraRotation[2];
-	float m_preDragCameraRotation[2];
 	
 	QPoint m_preDragMousePosition;
 	
