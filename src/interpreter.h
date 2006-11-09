@@ -27,11 +27,6 @@ private:
 	FungeSpace<2> m_space;
 	FungeSpace<2>::Coord m_pos;
 
-	int m_edgeLeft;
-	int m_edgeRight;
-	int m_edgeTop;
-	int m_edgeBottom;
-
 	bool m_stringMode;
 	bool m_jumpedSpace;
 

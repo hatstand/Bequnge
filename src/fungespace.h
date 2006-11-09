@@ -25,6 +25,9 @@ public:
 
 	QMap<Coord, QChar> getCode();
 	//QList<QPair<Coord, QChar> > getCode();
+	
+	int getPositiveEdge(int dimension){ return positiveEdges[dimension]; }
+	int getNegativeEdge(int dimension) { return negativeEdges[dimension]; }
 
 private:
 	Next zeroth;
@@ -140,7 +143,6 @@ void FungeSpace<dimensions>::setChar(Coord pos, QChar c)
 	}
 	else
 		t->remove(pos[dimensions-1]);
-		
 }
 
 template <int dimensions>

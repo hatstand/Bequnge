@@ -12,9 +12,6 @@ Interpreter::Interpreter(QIODevice* input, QObject* parent)
 	m_pos[0] = 0;
 	m_pos[1] = 0;
 
-	m_edgeLeft = 0;
-	m_edgeRight = 0;
-
 	m_stringMode = false;
 }
 
@@ -80,18 +77,8 @@ void Interpreter::readInAll()
 			m_space.setChar(pos, line[i]);
 		}
 
-		// TODO: Dimension independent edge detection
-		m_edgeRight = qMax(m_edgeRight, i);
-		// TODO: left edge detection
-		m_edgeLeft = 0;
-		
 		++pos[1];
 	}
-	m_edgeRight--;
-
-	m_edgeTop = 0;
-	m_edgeBottom = pos[1];
-	qDebug() << "Edge:" << m_edgeRight;
 
 	qDebug() << "Finished reading code";
 }
@@ -127,21 +114,21 @@ void Interpreter::move()
 
 	//qDebug() << "Moved to:" << m_pos[0] << m_pos[1] << m_space.getChar(m_pos);
 
-	if(m_pos[0] < m_edgeLeft)
+	if(m_pos[0] < m_space.getNegativeEdge(0))
 	{
-		m_pos[0] = m_edgeRight;
+		m_pos[0] = m_space.getPositiveEdge(0);
 	}
-	else if(m_pos[0] > m_edgeRight)
+	else if(m_pos[0] > m_space.getPositiveEdge(0))
 	{
-		m_pos[0] = m_edgeLeft;
+		m_pos[0] = m_space.getNegativeEdge(0);
 	}
-	else if(m_pos[1] < m_edgeTop)
+	else if(m_pos[1] < m_space.getNegativeEdge(1))
 	{
-		m_pos[1] = m_edgeBottom;
+		m_pos[1] = m_space.getPositiveEdge(1);
 	}
-	else if(m_pos[1] > m_edgeBottom)
+	else if(m_pos[1] > m_space.getPositiveEdge(1))
 	{
-		m_pos[1] = m_edgeTop;
+		m_pos[1] = m_space.getNegativeEdge(1);
 	}
 
 	jumpSpaces();
