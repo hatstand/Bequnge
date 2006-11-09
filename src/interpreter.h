@@ -25,7 +25,7 @@ private:
 	uint m_dimensions;
 
 	FungeSpace<2> m_space;
-	int m_pos[2];
+	FungeSpace<2>::Coord m_pos;
 
 	int m_edgeLeft;
 	int m_edgeRight;

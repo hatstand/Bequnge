@@ -6,7 +6,6 @@
 Interpreter::Interpreter(QIODevice* input, QObject* parent)
 	: m_input(input)
 {
-	m_input->open(QIODevice::ReadOnly);
 	m_version = "1";
 	m_dimensions = 2;
 	m_direction = 1;
@@ -21,7 +20,6 @@ Interpreter::Interpreter(QIODevice* input, QObject* parent)
 
 Interpreter::~Interpreter()
 {
-	m_input->close();
 }
 
 void Interpreter::parseHeader()
@@ -65,7 +63,9 @@ void Interpreter::readInAll()
 	qDebug() << "Reading in code";
 	QString line;
 
-	int pos[2] = {0,0};
+	FungeSpace<2>::Coord pos;
+	pos[0] = 0;
+	pos[1] = 0;
 
 	while((line = m_input->readLine()) != NULL)
 	{
@@ -237,9 +237,11 @@ bool Interpreter::compute(QChar command)
 
 void Interpreter::parse()
 {
+	m_input->open(QIODevice::ReadOnly);
 	parseHeader();
 
 	readInAll();
+	m_input->close();
 }
 
 
