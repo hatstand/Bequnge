@@ -8,15 +8,19 @@ DEPENDPATH += .
 INCLUDEPATH += .
 QT += opengl
 
+INCLUDEPATH += /usr/include/freetype2
+
 # Input
 SOURCES += main.cpp
 SOURCES += mainwindow.cpp
 SOURCES += interpreter.cpp
 SOURCES += glview.cpp
+SOURCES += OGLFT.cpp
 
 HEADERS += mainwindow.h
 HEADERS += interpreter.h
 HEADERS += fungespace.h
 HEADERS += glview.h
+HEADERS += OGLFT.h
 
 FORMS += mainwindow.ui

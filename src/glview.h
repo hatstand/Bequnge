@@ -3,6 +3,7 @@
 
 #include <QGLWidget>
 #include <QTime>
+#include <QFont>
 
 class QMouseEvent;
 
@@ -57,10 +58,6 @@ private:
 	float m_preDragCameraRotation[2];
 	
 	QPoint m_preDragMousePosition;
-	
-	float rtri;
-	/* rotation angle for the quadrilateral. */
-	float rquad;
 };
 
 #endif

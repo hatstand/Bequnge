@@ -81,9 +81,6 @@ GLView::GLView(QWidget* parent)
 	
 	m_actualCameraRotation[0] = m_destinationCameraRotation[0];
 	m_actualCameraRotation[1] = m_destinationCameraRotation[1];
-	
-	rtri = 0.0f;
-	rquad = 0.0f;
 }
 
 
@@ -205,18 +202,15 @@ void GLView::paintGL()
 		glEnd();					// Done Drawing The Cube
 	glPopMatrix();
 	
+	glColor3f(1.0f, 1.0f, 1.0f);
 	renderText(0, 15, "Offset: " + QString::number(m_actualCameraOffset[0]) + ", " + QString::number(m_actualCameraOffset[1]) + ", " + QString::number(m_actualCameraOffset[2]));
 	renderText(0, 30, "Rotation: " + QString::number(m_actualCameraRotation[0]) + ", " + QString::number(m_actualCameraRotation[1]));
-	
-	rtri+=15.0f;					// Increase The Rotation Variable For The Pyramid
-	rquad-=15.0f;					// Decrease The Rotation Variable For The Cube
 	
 	m_redrawTimer->start(m_delayMs);
 }
 
 float GLView::degreesToRadians(float degrees)
 {
-	qDebug() << degrees << "degrees =" << (degrees / 180.0f) * M_PI << "radians";
 	return (degrees / 180.0f) * M_PI;
 }
 
