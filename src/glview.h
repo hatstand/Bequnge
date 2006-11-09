@@ -59,6 +59,7 @@ private:
 	void updateCamera(int i);
 	float degreesToRadians(float degrees);
 	float modulo(float value, float mod);
+	float snapToPlane(int i, float value);
 	QList<int> glToFungeSpace(float x, float y, float z);
 
 private:

@@ -303,12 +303,13 @@ float GLView::degreesToRadians(float degrees)
 
 float GLView::modulo(float value, float mod)
 {
-	if (fabs(value/mod) < 1.0f)
-		return value;
-	
-	if (value > 0.0f)
+	if (value >= 0.0f)
+	{
+		if (abs(value/mod) < 1.0f)
+			return value;
 		return value - floorf(value/mod)*mod;
-	return value - ceilf(value/mod)*mod;
+	}
+	return value - ceilf(value/mod)*mod + mod;
 }
 
 void GLView::mouseMoveEvent(QMouseEvent* event)
@@ -326,9 +327,22 @@ void GLView::mouseMoveEvent(QMouseEvent* event)
 		float xOffset = event->pos().x() - m_preDragMousePosition.x();
 		float yOffset = event->pos().y() - m_preDragMousePosition.y();
 		
-		m_destinationCameraRotation[1] = m_preDragCameraRotation[1] + (xOffset / 5.0f);
-		m_destinationCameraRotation[0] = m_preDragCameraRotation[0] + (yOffset / 5.0f);
+		xOffset = m_destinationCameraRotation[1] = m_preDragCameraRotation[1] + (xOffset / 5.0f);
+		yOffset = m_destinationCameraRotation[0] = m_preDragCameraRotation[0] + (yOffset / 5.0f);
+		
+		snapToPlane(0, yOffset);
+		snapToPlane(1, xOffset);
 	}
+}
+
+float GLView::snapToPlane(int i, float value)
+{
+	float angle = modulo(value, 90.0f);
+	
+	if (angle < 20.0f || angle > 70.0f)
+		m_destinationCameraRotation[i] = nearbyintf(value/90.0f) * 90.0f;
+	else
+		m_destinationCameraRotation[i] = value;
 }
 
 void GLView::wheelEvent(QWheelEvent* event)
