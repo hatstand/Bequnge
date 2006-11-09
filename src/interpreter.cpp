@@ -66,9 +66,10 @@ void Interpreter::readInAll()
 	qDebug() << "Reading in code";
 	QString line;
 
+
 	Coord pos;
-	pos << 0;
-	pos << 0;
+	for(uint i = 0; i < m_dimensions; ++i)
+		pos << 0;
 
 	while((line = m_input->readLine()) != NULL)
 	{
@@ -100,43 +101,26 @@ void Interpreter::jumpSpaces()
 
 void Interpreter::move()
 {
-	switch(m_direction)
+	for(uint i = 0; i < m_dimensions; ++i)
 	{
-		case 1:
-			++m_pos[0];
-			break;
-		case 2:
-			++m_pos[1];
-			break;
-		case -1:
-			--m_pos[0];
-			break;
-		case -2:
-			--m_pos[1];
-			break;
-		default:
-			panic();
+		if(qAbs(m_direction)-1 == i)
+		{
+			if(m_direction > 0)
+			{
+				++m_pos[i];
+				if(m_pos[i] > m_space->getPositiveEdge(i))
+					m_pos[i] = m_space->getNegativeEdge(i);
+			}
+			else
+			{
+				--m_pos[i];
+				if(m_pos[i] < m_space->getNegativeEdge(i))
+					m_pos[i] = m_space->getPositiveEdge(i);
+			}
+		}
 	}
 
-	//qDebug() << "Moved to:" << m_pos[0] << m_pos[1] << m_space.getChar(m_pos);
-
-	if(m_pos[0] < m_space->getNegativeEdge(0))
-	{
-		m_pos[0] = m_space->getPositiveEdge(0);
-	}
-	else if(m_pos[0] > m_space->getPositiveEdge(0))
-	{
-		m_pos[0] = m_space->getNegativeEdge(0);
-	}
-	else if(m_pos[1] < m_space->getNegativeEdge(1))
-	{
-		m_pos[1] = m_space->getPositiveEdge(1);
-	}
-	else if(m_pos[1] > m_space->getPositiveEdge(1))
-	{
-		m_pos[1] = m_space->getNegativeEdge(1);
-	}
-
+	//qDebug() << "Moved to:" << m_pos[0] << m_pos[1] << m_space->getChar(m_pos);
 	jumpSpaces();
 }
 
