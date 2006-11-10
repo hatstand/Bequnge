@@ -19,13 +19,13 @@ GLView::GLView(QWidget* parent)
 	  m_fungeSpace(NULL),
 	  m_cursorBlinkOn(true),
 	  m_cursorDirection(1),
+	  m_selectDragging(false),
 	  m_fpsCounter(0.0f),
 	  m_frameCount(0),
 	  m_stringMode(false),
-	  m_rotateDragging(false),
 	  m_zoomLevel(6.0f),
-	  m_selectDragging(false),
-	  m_moveDragging(false)
+	  m_moveDragging(false),
+	  m_rotateDragging(false)
 {
 	setFocusPolicy(Qt::WheelFocus);
 	
@@ -225,14 +225,10 @@ void GLView::paintGL()
 				coord = fungeSpaceToGl(m_selectionStart, true);
 				QList<float> endCoord = fungeSpaceToGl(m_selectionEnd, true);
 				
-				float bigFontSize = m_fontSize + 5.0f;
-				
 				QList<float> cubeStart;
 				cubeStart.append(qMin(coord[0], endCoord[0]) - 2.5f);
 				cubeStart.append(qMin(coord[1], endCoord[1]) + m_fontSize);
 				cubeStart.append(qMin(coord[2], endCoord[2]) - m_fontSize/2 - 2.5f);
-				
-				qDebug() << cubeStart.count();
 				
 				QList<float> cubeEnd;
 				cubeEnd.append(qMax(coord[0], endCoord[0]) + m_fontSize - 2.5f);
@@ -361,11 +357,8 @@ void GLView::mouseMoveEvent(QMouseEvent* event)
 	else if (m_selectDragging)
 	{
 		QList<int> p = pointToFungeSpace(event->pos());
-		qDebug() << "start" << m_selectionStart;
 		if (m_fungeSpace->getChar(p) != ' ')
-		{
 			m_selectionEnd = p;
-		}
 	}
 }
 
