@@ -10,37 +10,9 @@
 
 class QMouseEvent;
 class QKeyEvent;
+class FungeSpace;
 
 #include "OGLFT.h"
-
-class FungeSpaceEntry
-{
-public:
-	FungeSpaceEntry(QChar d, int x, int y, int z)
-	{
-		data = d;
-		coords.append(x);
-		coords.append(y);
-		coords.append(z);
-	}
-	
-	QChar data;
-	QList<int> coords;
-};
-
-class ThreeDFungeSpace
-{
-public:
-	ThreeDFungeSpace(int dimensions);
-	
-	void setChar(int p0, int p1, int p2, QChar data);
-	QChar getChar(int p0, int p1, int p2);
-	QList<FungeSpaceEntry> getEntries();
-
-private:
-	QMap<int, QMap<int, QMap<int, QChar> > > m_data;
-};
-
 
 class GLView : public QGLWidget
 {
@@ -50,11 +22,14 @@ public:
 	GLView(QWidget* parent = 0);
 	~GLView();
 	
+	int cursorDirection();
+	
 public slots:
 	void setStringMode(bool enabled);
 	
 signals:
 	void stringModeChanged(bool enabled);
+	void cursorDirectionChanged(int direction);
 	
 private:
 	void initializeGL();
@@ -77,7 +52,7 @@ private:
 
 private:
 	// Funge space
-	ThreeDFungeSpace* m_fungeSpace;
+	FungeSpace* m_fungeSpace;
 	
 	// Cursor
 	QList<int> m_cursor;

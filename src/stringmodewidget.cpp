@@ -46,7 +46,7 @@ void StringModeWidget::setStringMode(bool enabled)
 
 void StringModeWidget::mousePressEvent(QMouseEvent* event)
 {
-	m_enabled = !m_enabled;
+	setStringMode(!m_enabled);
 	emit stringModeChanged(m_enabled);
 }
 

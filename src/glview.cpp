@@ -1,4 +1,5 @@
 #include "glview.h"
+#include "fungespace.h"
 
 #include <QTimer>
 #include <QMouseEvent>
@@ -11,70 +12,6 @@
 #include <QDebug>
 
 #include <math.h>
-
-ThreeDFungeSpace::ThreeDFungeSpace(int dimensions)
-{
-	if (dimensions != 3)
-		qWarning("%d dimensions requested.  Only 3 dimensional funge space is supported in this implementation.", dimensions);
-}
-
-void ThreeDFungeSpace::setChar(int p0, int p1, int p2, QChar data)
-{
-	if (data.isSpace())
-	{
-		if (m_data.contains(p0))
-		{
-			if (m_data[p0].contains(p1))
-			{
-				m_data[p0][p1].remove(p2);
-				if (m_data[p0][p1].isEmpty())
-					m_data[p0].remove(p1);
-			}
-			if (m_data[p0].isEmpty())
-				m_data.remove(p0);
-		}
-	}
-	
-	m_data[p0][p1][p2] = data;
-}
-
-QChar ThreeDFungeSpace::getChar(int p0, int p1, int p2)
-{
-	if (!m_data.contains(p0))
-		return ' ';
-	if (!m_data[p0].contains(p1))
-		return ' ';
-	if (!m_data[p0][p1].contains(p2))
-		return ' ';
-	return m_data[p0][p1][p2];
-}
-
-QList<FungeSpaceEntry> ThreeDFungeSpace::getEntries()
-{
-	QList<FungeSpaceEntry> ret;
-	
-	QMapIterator<int, QMap<int, QMap<int, QChar> > > i1(m_data);
-	while (i1.hasNext())
-	{
-		i1.next();
-		int x = i1.key();
-		QMapIterator<int, QMap<int, QChar> > i2(i1.value());
-		while (i2.hasNext())
-		{
-			i2.next();
-			int y = i2.key();
-			QMapIterator<int, QChar> i3(i2.value());
-			while (i3.hasNext())
-			{
-				i3.next();
-				ret.append(FungeSpaceEntry(i3.value(), x, y, i3.key()));
-			}
-		}
-	}
-	return ret;
-}
-
-
 
 
 GLView::GLView(QWidget* parent)
@@ -95,7 +32,7 @@ GLView::GLView(QWidget* parent)
 	m_activePlane = 2;
 	
 	// Initialize funge space
-	m_fungeSpace = new ThreeDFungeSpace(3);
+	m_fungeSpace = new FungeSpace(3);
 	
 	// Setup the redraw timer
 	m_redrawTimer = new QTimer(this);
@@ -112,7 +49,7 @@ GLView::GLView(QWidget* parent)
 	m_actualCameraOffset[1] = m_destinationCameraOffset[1];
 	m_actualCameraOffset[2] = m_destinationCameraOffset[2];
 	
-	setEye(m_zoomLevel, 35.0f, 0.0f);
+	setCursorDirection(1);
 	
 	m_actualEyeOffset[0] = m_destinationEyeOffset[0];
 	m_actualEyeOffset[1] = m_destinationEyeOffset[1];
@@ -228,11 +165,16 @@ void GLView::paintGL()
 	glPushMatrix();
 		glEnable(GL_TEXTURE_2D);
 		QList<float> coord;
-		QList<FungeSpaceEntry> entries = m_fungeSpace->getEntries();
-		foreach(FungeSpaceEntry entry, entries)
+		QHash<Coord, QChar> entries = m_fungeSpace->getCode();
+		QHashIterator<Coord, QChar> i(entries);
+		while (i.hasNext())
 		{
+			i.next();
+			Coord coords = i.key();
+			QChar data = i.value();
+			
 			glPushMatrix();
-				int diff = abs(entry.coords[m_activePlane] - m_cursor[m_activePlane]);
+				int diff = abs(coords[m_activePlane] - m_cursor[m_activePlane]);
 				
 				if (diff == 0)
 					m_font->setForegroundColor(0.0f, 1.0f, 0.0f, 1.0f);
@@ -241,11 +183,11 @@ void GLView::paintGL()
 				else
 					m_font->setForegroundColor(1.0f, 1.0f, 1.0f, 0.2f);
 				
-				coord = fungeSpaceToGl(entry.coords, true);
+				coord = fungeSpaceToGl(coords, true);
 				glTranslatef(coord[0], coord[1], coord[2]);
 				if (m_activePlane == 0)
 					glRotatef(90.0f, 0.0f, 1.0f, 0.0f);
-				m_font->draw(entry.data);
+				m_font->draw(data);
 			glPopMatrix();
 		}
 		glDisable(GL_TEXTURE_2D);
@@ -268,6 +210,61 @@ void GLView::paintGL()
 	
 	glColor3f(1.0f, 1.0f, 1.0f);
 	renderText(0, 15, "Cursor: " + QString::number(m_cursor[0]) + ", " + QString::number(m_cursor[1]) + ", " + QString::number(m_cursor[2]));
+	
+	glPushMatrix();
+		glLoadIdentity();
+		glColor3f(1.0f, 1.0f, 1.0f);
+		glTranslatef(0.0f, -0.85f, -2.0f);
+		
+		switch (m_cursorDirection)
+		{
+		case -2:
+			glBegin(GL_LINES);
+				glVertex3f(0.0f, -0.05f, 0.0f);
+				glVertex3f(0.0f, 0.05f, 0.0f);
+				glVertex3f(-0.03f, 0.02f, 0.0f);
+				glVertex3f(0.0f, 0.05f, 0.0f);
+				glVertex3f(0.0f, 0.05f, 0.0f);
+				glVertex3f(0.03f, 0.02f, 0.0f);
+			glEnd();
+			break;
+		
+		case 2:
+			glBegin(GL_LINES);
+				glVertex3f(0.0f, -0.05f, 0.0f);
+				glVertex3f(0.0f, 0.05f, 0.0f);
+				glVertex3f(-0.03f, -0.02f, 0.0f);
+				glVertex3f(0.0f, -0.05f, 0.0f);
+				glVertex3f(0.0f, -0.05f, 0.0f);
+				glVertex3f(0.03f, -0.02f, 0.0f);
+			glEnd();
+			break;
+		
+		case -1:
+		case -3:
+			glBegin(GL_LINES);
+				glVertex3f(-0.05f, 0.0f, 0.0f);
+				glVertex3f(0.05f, 0.0f, 0.0f);
+				glVertex3f(-0.02f, 0.03f, 0.0f);
+				glVertex3f(-0.05f, 0.0f, 0.0f);
+				glVertex3f(-0.05f, 0.0f, 0.0f);
+				glVertex3f(-0.02f, -0.03f, 0.0f);
+			glEnd();
+			break;
+		
+		case 1:
+		case 3:
+			glBegin(GL_LINES);
+				glVertex3f(-0.05f, 0.0f, 0.0f);
+				glVertex3f(0.05f, 0.0f, 0.0f);
+				glVertex3f(0.02f, 0.03f, 0.0f);
+				glVertex3f(0.05f, 0.0f, 0.0f);
+				glVertex3f(0.05f, 0.0f, 0.0f);
+				glVertex3f(0.02f, -0.03f, 0.0f);
+			glEnd();
+			break;
+		}
+	glPopMatrix();
 	
 	if (m_cursorBlinkTime.elapsed() > 500)
 	{
@@ -396,7 +393,7 @@ void GLView::mousePressEvent(QMouseEvent* event)
 				projection, viewport, &objx, &objy, &objz );
 		
 		QList<int> p = glToFungeSpace(objx, objy, objz);
-		if (m_fungeSpace->getChar(p[0], p[1], p[2]) != ' ')
+		if (m_fungeSpace->getChar(p) != ' ')
 			m_cursor = p;
 		
 		event->accept();
@@ -430,6 +427,24 @@ void GLView::keyPressEvent(QKeyEvent* event)
 {
 	int otherPlane = m_activePlane == 0 ? 2 : 0;
 	
+	if (event->modifiers() & Qt::AltModifier)
+	{
+		bool handled = true;
+		if (event->key() == Qt::Key_Right)
+			setCursorDirection(otherPlane + 1);
+		else if (event->key() == Qt::Key_Left)
+			setCursorDirection(-(otherPlane + 1));
+		else if (event->key() == Qt::Key_Down)
+			setCursorDirection(2);
+		else if (event->key() == Qt::Key_Up)
+			setCursorDirection(-2);
+		else
+			handled = false;
+		
+		if (handled)
+			return;
+	}
+	
 	if (event->matches(QKeySequence::MoveToNextChar))
 		m_cursor[otherPlane]++;
 	else if (event->matches(QKeySequence::MoveToPreviousChar))
@@ -446,15 +461,15 @@ void GLView::keyPressEvent(QKeyEvent* event)
 	{
 		int a = abs(m_cursorDirection);
 		m_cursor[a-1] += (m_cursorDirection < 0 ? 1 : -1);
-		if (m_fungeSpace->getChar(m_cursor[0], m_cursor[1], m_cursor[2]) == '"')
+		if (m_fungeSpace->getChar(m_cursor) == '"')
 			toggleStringMode();
 		
-		m_fungeSpace->setChar(m_cursor[0], m_cursor[1], m_cursor[2], ' ');
+		m_fungeSpace->setChar(m_cursor, ' ');
 	}
 	else if (!event->text().isEmpty())
 	{
 		QChar c = event->text()[0];
-		m_fungeSpace->setChar(m_cursor[0], m_cursor[1], m_cursor[2], c);
+		m_fungeSpace->setChar(m_cursor, c);
 		
 		if (!m_stringMode)
 		{
@@ -478,6 +493,11 @@ void GLView::keyPressEvent(QKeyEvent* event)
 		int a = abs(m_cursorDirection);
 		m_cursor[a-1] += (m_cursorDirection > 0 ? 1 : -1);
 	}
+	else
+		return;
+	
+	m_cursorBlinkTime.start();
+	m_cursorBlinkOn = true;
 }
 
 void GLView::toggleStringMode()
@@ -501,6 +521,8 @@ void GLView::setCursorDirection(int direction)
 		m_activePlane = 0;
 	
 	setEye(m_zoomLevel, 30.0f, 0.0f);
+	
+	emit cursorDirectionChanged(direction);
 }
 
 void GLView::setEye(float radius, float vert, float horiz)
@@ -529,6 +551,11 @@ void GLView::setEye(float radius, float vert, float horiz)
 	m_destinationEyeOffset[m_activePlane] = radius * cos(v) * cos(h);
 	m_destinationEyeOffset[1] = radius * sin(v);
 	m_destinationEyeOffset[otherPlane] = radius * sin(h);
+}
+
+int GLView::cursorDirection()
+{
+	return m_cursorDirection;
 }
 
 
