@@ -232,13 +232,15 @@ bool Interpreter::compute(QChar command)
 	return true;
 }
 
-void Interpreter::parse()
+FungeSpace* Interpreter::parse()
 {
 	m_input->open(QIODevice::ReadOnly);
 	parseHeader();
 
 	readInAll();
 	m_input->close();
+	
+	return m_space;
 }
 
 

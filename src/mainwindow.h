@@ -7,6 +7,7 @@
 
 class GLView;
 class QLabel;
+class Interpreter;
 
 class MainWindow : public QMainWindow
 {
@@ -17,12 +18,16 @@ public:
 
 private slots:
 	void cursorDirectionChanged(int direction);
+	
+	void slotOpen();
 
 private:
 	Ui_MainWindow m_ui;
 	
 	GLView* m_glView;
 	QLabel* m_cursorDirectionLabel;
+	
+	Interpreter* m_interpreter;
 };
 
 

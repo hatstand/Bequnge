@@ -14,7 +14,7 @@ public:
 	Interpreter(QIODevice* input, QObject* parent = 0);
 	virtual ~Interpreter();
 
-	void parse();
+	FungeSpace* parse();
 	void run();
 
 	void provideInput(QChar);

@@ -24,6 +24,11 @@ public:
 	
 	int cursorDirection();
 	
+	void setFungeSpace(FungeSpace* funge);
+	FungeSpace* getFungeSpace() { return m_fungeSpace; }
+	
+	void resetView();
+	
 public slots:
 	void setStringMode(bool enabled);
 	

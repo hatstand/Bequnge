@@ -18,21 +18,14 @@ GLView::GLView(QWidget* parent)
 	: QGLWidget(parent),
 	  m_cursorBlinkOn(true),
 	  m_cursorDirection(1),
-	  m_moveDragging(false),
 	  m_stringMode(false),
+	  m_moveDragging(false),
 	  m_zoomLevel(6.0f)
 {
-	// Initialize the curser
 	setFocusPolicy(Qt::WheelFocus);
-	m_cursor.append(0);
-	m_cursor.append(0);
-	m_cursor.append(0);
-	m_cursorBlinkTime.start();
-	
-	m_activePlane = 2;
 	
 	// Initialize funge space
-	m_fungeSpace = new FungeSpace(3);
+	setFungeSpace(new FungeSpace(3));
 	
 	// Setup the redraw timer
 	m_redrawTimer = new QTimer(this);
@@ -40,24 +33,8 @@ GLView::GLView(QWidget* parent)
 	
 	m_delayMs = 1000/30; // 30fps
 	
-	// Setup the camera offset and rotation
-	m_destinationCameraOffset[0] = 0.0f;
-	m_destinationCameraOffset[1] = 0.0f;
-	m_destinationCameraOffset[2] = 0.0f;
-	
-	m_actualCameraOffset[0] = m_destinationCameraOffset[0];
-	m_actualCameraOffset[1] = m_destinationCameraOffset[1];
-	m_actualCameraOffset[2] = m_destinationCameraOffset[2];
-	
-	setCursorDirection(1);
-	
-	m_actualEyeOffset[0] = m_destinationEyeOffset[0];
-	m_actualEyeOffset[1] = m_destinationEyeOffset[1];
-	m_actualEyeOffset[0] = m_destinationEyeOffset[2];
-	
-	m_actualCursorPos[0] = 0.0f;
-	m_actualCursorPos[1] = 0.0f;
-	m_actualCursorPos[2] = 0.0f;
+	// Reset the view
+	resetView();
 	
 	// Load the font
 	QResource fontResource("luximr.ttf");
@@ -466,6 +443,18 @@ void GLView::keyPressEvent(QKeyEvent* event)
 		
 		m_fungeSpace->setChar(m_cursor, ' ');
 	}
+	else if (event->key() == Qt::Key_Tab)
+	{
+		m_activePlane = otherPlane;
+		switch (m_cursorDirection)
+		{
+			case 1: setCursorDirection(3); break;
+			case -1: setCursorDirection(-3); break;
+			case 3: setCursorDirection(1); break;
+			case -3: setCursorDirection(-1); break;
+			default: setCursorDirection(m_cursorDirection); break;
+		}
+	}
 	else if (!event->text().isEmpty())
 	{
 		QChar c = event->text()[0];
@@ -556,6 +545,43 @@ void GLView::setEye(float radius, float vert, float horiz)
 int GLView::cursorDirection()
 {
 	return m_cursorDirection;
+}
+
+void GLView::setFungeSpace(FungeSpace* funge)
+{
+	m_fungeSpace = funge;
+}
+
+void GLView::resetView()
+{
+	// Initialize the curser
+	m_cursorBlinkTime.start();
+	m_cursor.clear();
+	for (int i=0 ; i<m_fungeSpace->dimensions() ; ++i)
+		m_cursor.append(0);
+	
+	m_destinationCameraOffset[0] = 0.0f;
+	m_destinationCameraOffset[1] = 0.0f;
+	m_destinationCameraOffset[2] = 0.0f;
+	
+	setCursorDirection(1);
+	
+	m_actualEyeOffset[0] = m_destinationEyeOffset[0];
+	m_actualEyeOffset[1] = m_destinationEyeOffset[1];
+	m_actualEyeOffset[2] = m_destinationEyeOffset[2];
+	
+	m_actualCameraOffset[0] = m_destinationCameraOffset[0];
+	m_actualCameraOffset[1] = m_destinationCameraOffset[1];
+	m_actualCameraOffset[2] = m_destinationCameraOffset[2];
+	
+	m_actualCursorPos[0] = 0.0f;
+	m_actualCursorPos[1] = 0.0f;
+	m_actualCursorPos[2] = 0.0f;
+	
+	m_activePlane = 2;
+	
+	if (m_stringMode)
+		toggleStringMode();
 }
 
 

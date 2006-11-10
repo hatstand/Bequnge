@@ -25,6 +25,9 @@ public:
 	// Get the code edges (only correct if code doesn't shrink)
 	int getPositiveEdge(int dimension){ return positiveEdges[dimension]; }
 	int getNegativeEdge(int dimension) { return negativeEdges[dimension]; }
+	
+	int dimensions() { return m_dimensions; }
+	void setDimensions(int dimensions);
 
 private:
 	int* positiveEdges;
