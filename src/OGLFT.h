@@ -22,6 +22,8 @@
 #ifndef OGLFT_H
 #define OGLFT_H
 
+#define OGLFT_NO_SOLID 1
+
 #include <cmath>
 #include <map>
 #include <list>

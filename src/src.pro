@@ -5,10 +5,11 @@
 TEMPLATE = app
 TARGET = ../bin/bequnge
 DEPENDPATH += .
-INCLUDEPATH += . ../gle
+INCLUDEPATH += . #../gle
 QT += opengl
-LIBS += -lgle -L../gle
 INCLUDEPATH += /usr/include/freetype2
+
+#LIBS += -lgle -L../gle
 
 # Input
 SOURCES += main.cpp
