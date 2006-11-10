@@ -92,6 +92,29 @@ void GLView::initializeGL()
 	
 	glEnable( GL_BLEND );
 	glBlendFunc( GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA );
+	
+	// Display lists
+	m_displayListsBase = glGenLists(2);
+	glNewList(m_displayListsBase + ARROW, GL_COMPILE);
+		glBegin(GL_LINES);
+			glVertex3f(0.0f, -0.05f, 0.0f);
+			glVertex3f(0.0f, 0.05f, 0.0f);
+			glVertex3f(-0.03f, 0.02f, 0.0f);
+			glVertex3f(0.0f, 0.05f, 0.0f);
+			glVertex3f(0.0f, 0.05f, 0.0f);
+			glVertex3f(0.03f, 0.02f, 0.0f);
+		glEnd();
+	glEndList();
+	
+	glNewList(m_displayListsBase + CURSOR, GL_COMPILE);
+		glBegin(GL_QUADS);
+			glColor4f(0.0f, 1.0f, 0.0f, 1.0f);
+			glVertex3f(m_fontSize - 5.0f, m_fontSize, 0.0f);
+			glVertex3f(0.0f, m_fontSize, 0.0f);
+			glVertex3f(0.0f, 0.0f, 0.0f);
+			glVertex3f(m_fontSize - 5.0f, 0.0f, 0.0f);
+		glEnd();
+	glEndList();
 }
 
 void GLView::resizeGL(int width, int height)
@@ -189,13 +212,7 @@ void GLView::paintGL()
 			glTranslatef(coord[0], coord[1] - 2.5f, coord[2] - 0.01f);
 			if (m_activePlane == 0)
 				glRotatef(90.0f, 0.0f, 1.0f, 0.0f);
-			glBegin(GL_QUADS);
-				glColor4f(0.0f, 1.0f, 0.0f, 1.0f);
-				glVertex3f(m_fontSize - 5.0f, m_fontSize, 0.0f);
-				glVertex3f(0.0f, m_fontSize, 0.0f);
-				glVertex3f(0.0f, 0.0f, 0.0f);
-				glVertex3f(m_fontSize - 5.0f, 0.0f, 0.0f);
-			glEnd();
+			glCallList(m_displayListsBase + CURSOR);
 		}
 	glPopMatrix();
 	
@@ -210,52 +227,19 @@ void GLView::paintGL()
 		
 		switch (m_cursorDirection)
 		{
-		case -2:
-			glBegin(GL_LINES);
-				glVertex3f(0.0f, -0.05f, 0.0f);
-				glVertex3f(0.0f, 0.05f, 0.0f);
-				glVertex3f(-0.03f, 0.02f, 0.0f);
-				glVertex3f(0.0f, 0.05f, 0.0f);
-				glVertex3f(0.0f, 0.05f, 0.0f);
-				glVertex3f(0.03f, 0.02f, 0.0f);
-			glEnd();
-			break;
-		
 		case 2:
-			glBegin(GL_LINES);
-				glVertex3f(0.0f, -0.05f, 0.0f);
-				glVertex3f(0.0f, 0.05f, 0.0f);
-				glVertex3f(-0.03f, -0.02f, 0.0f);
-				glVertex3f(0.0f, -0.05f, 0.0f);
-				glVertex3f(0.0f, -0.05f, 0.0f);
-				glVertex3f(0.03f, -0.02f, 0.0f);
-			glEnd();
+			glRotatef(180.0f, 0.0f, 0.0f, 1.0f);
 			break;
-		
 		case -1:
 		case -3:
-			glBegin(GL_LINES);
-				glVertex3f(-0.05f, 0.0f, 0.0f);
-				glVertex3f(0.05f, 0.0f, 0.0f);
-				glVertex3f(-0.02f, 0.03f, 0.0f);
-				glVertex3f(-0.05f, 0.0f, 0.0f);
-				glVertex3f(-0.05f, 0.0f, 0.0f);
-				glVertex3f(-0.02f, -0.03f, 0.0f);
-			glEnd();
+			glRotatef(90.0f, 0.0f, 0.0f, 1.0f);
 			break;
-		
 		case 1:
 		case 3:
-			glBegin(GL_LINES);
-				glVertex3f(-0.05f, 0.0f, 0.0f);
-				glVertex3f(0.05f, 0.0f, 0.0f);
-				glVertex3f(0.02f, 0.03f, 0.0f);
-				glVertex3f(0.05f, 0.0f, 0.0f);
-				glVertex3f(0.05f, 0.0f, 0.0f);
-				glVertex3f(0.02f, -0.03f, 0.0f);
-			glEnd();
+			glRotatef(-90.0f, 0.0f, 0.0f, 1.0f);
 			break;
 		}
+		glCallList(m_displayListsBase + ARROW);
 	glPopMatrix();
 	
 	if (m_cursorBlinkTime.elapsed() > 500)

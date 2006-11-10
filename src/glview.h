@@ -96,6 +96,14 @@ private:
 	FT_Face m_fontFace;
 	OGLFT::Face* m_font;
 	float m_fontSize;
+	
+	// Display lists
+	uint m_displayListsBase;
+	enum DisplayListEntry
+	{
+		ARROW = 0,
+		CURSOR = 1
+	};
 };
 
 #endif
