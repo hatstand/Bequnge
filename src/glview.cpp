@@ -22,7 +22,9 @@ GLView::GLView(QWidget* parent)
 	  m_fpsCounter(0.0f),
 	  m_frameCount(0),
 	  m_stringMode(false),
+	  m_rotateDragging(false),
 	  m_zoomLevel(6.0f),
+	  m_selectDragging(false),
 	  m_moveDragging(false)
 {
 	setFocusPolicy(Qt::WheelFocus);
@@ -208,11 +210,80 @@ void GLView::paintGL()
 		
 		if (m_cursorBlinkOn)
 		{
-			coord = fungeSpaceToGl(m_cursor, true);
-			glTranslatef(coord[0], coord[1] - 2.5f, coord[2] - 0.01f);
-			if (m_activePlane == 0)
-				glRotatef(90.0f, 0.0f, 1.0f, 0.0f);
-			glCallList(m_displayListsBase + CURSOR);
+			glPushMatrix();
+				coord = fungeSpaceToGl(m_cursor, true);
+				glTranslatef(coord[0], coord[1] - 2.5f, coord[2] - 0.01f);
+				if (m_activePlane == 0)
+					glRotatef(90.0f, 0.0f, 1.0f, 0.0f);
+				glCallList(m_displayListsBase + CURSOR);
+			glPopMatrix();
+		}
+		
+		if (m_selectionStart != m_selectionEnd)
+		{
+			glPushMatrix();
+				coord = fungeSpaceToGl(m_selectionStart, true);
+				QList<float> endCoord = fungeSpaceToGl(m_selectionEnd, true);
+				
+				float bigFontSize = m_fontSize + 5.0f;
+				
+				QList<float> cubeStart;
+				cubeStart.append(qMin(coord[0], endCoord[0]) - 2.5f);
+				cubeStart.append(qMin(coord[1], endCoord[1]) + m_fontSize);
+				cubeStart.append(qMin(coord[2], endCoord[2]) - m_fontSize/2 - 2.5f);
+				
+				qDebug() << cubeStart.count();
+				
+				QList<float> cubeEnd;
+				cubeEnd.append(qMax(coord[0], endCoord[0]) + m_fontSize - 2.5f);
+				cubeEnd.append(qMax(coord[1], endCoord[1]));
+				cubeEnd.append(qMax(coord[2], endCoord[2]) + m_fontSize/2);
+				
+				cubeEnd[0] -= cubeStart[0];
+				cubeEnd[1] -= cubeStart[1];
+				cubeEnd[2] -= cubeStart[2];
+				
+				glTranslatef(cubeStart[0], cubeStart[1] - 2.5f, cubeStart[2]);
+				glColor4f(0.0f, 0.0f, 1.0f, 0.5f);
+				// draw a cube (6 quadrilaterals)
+				glBegin(GL_QUADS);				// start drawing the cube.
+					// top of cube
+					glVertex3f(cubeEnd[0], cubeEnd[1], 0.0f);		// Top Right Of The Quad (Top)
+					glVertex3f(0.0f, cubeEnd[1], 0.0f);		// Top Left Of The Quad (Top)
+					glVertex3f(0.0f, cubeEnd[1], cubeEnd[2]);		// Bottom Left Of The Quad (Top)
+					glVertex3f(cubeEnd[0], cubeEnd[1], cubeEnd[2]);		// Bottom Right Of The Quad (Top)
+					
+					// bottom of cube
+					glVertex3f(cubeEnd[0],0.0f, cubeEnd[2]);		// Top Right Of The Quad (Bottom)
+					glVertex3f(0.0f, 0.0f, cubeEnd[2]);		// Top Left Of The Quad (Bottom)
+					glVertex3f(0.0f, 0.0f, 0.0f);		// Bottom Left Of The Quad (Bottom)
+					glVertex3f(cubeEnd[0], 0.0f, 0.0f);		// Bottom Right Of The Quad (Bottom)
+					
+					// front of cube
+					glVertex3f(cubeEnd[0], cubeEnd[1], cubeEnd[2]);		// Top Right Of The Quad (Front)
+					glVertex3f(0.0f, cubeEnd[1], cubeEnd[2]);		// Top Left Of The Quad (Front)
+					glVertex3f(0.0f, 0.0f, cubeEnd[2]);		// Bottom Left Of The Quad (Front)
+					glVertex3f(cubeEnd[0],0.0f, cubeEnd[2]);		// Bottom Right Of The Quad (Front)
+					
+					// back of cube.
+					glVertex3f(cubeEnd[0], 0.0f, 0.0f);		// Top Right Of The Quad (Back)
+					glVertex3f(0.0f, 0.0f, 0.0f);		// Top Left Of The Quad (Back)
+					glVertex3f(0.0f, cubeEnd[1], 0.0f);		// Bottom Left Of The Quad (Back)
+					glVertex3f(cubeEnd[0], cubeEnd[1], 0.0f);		// Bottom Right Of The Quad (Back)
+					
+					// left of cube
+					glVertex3f(0.0f, cubeEnd[1], cubeEnd[2]);		// Top Right Of The Quad (Left)
+					glVertex3f(0.0f, cubeEnd[1], 0.0f);		// Top Left Of The Quad (Left)
+					glVertex3f(0.0f, 0.0f, 0.0f);		// Bottom Left Of The Quad (Left)
+					glVertex3f(0.0f, 0.0f, cubeEnd[2]);		// Bottom Right Of The Quad (Left)
+					
+					// Right of cube
+					glVertex3f(cubeEnd[0], cubeEnd[1], 0.0f);	        // Top Right Of The Quad (Right)
+					glVertex3f(cubeEnd[0], cubeEnd[1], cubeEnd[2]);		// Top Left Of The Quad (Right)
+					glVertex3f(cubeEnd[0], 0.0f, cubeEnd[2]);		// Bottom Left Of The Quad (Right)
+					glVertex3f(cubeEnd[0], 0.0f, 0.0f);		// Bottom Right Of The Quad (Right)
+				glEnd();					// Done Drawing The Cube
+			glPopMatrix();
 		}
 	glPopMatrix();
 	
@@ -287,6 +358,15 @@ void GLView::mouseMoveEvent(QMouseEvent* event)
 		
 		setEye(m_zoomLevel, yOffset, xOffset);
 	}
+	else if (m_selectDragging)
+	{
+		QList<int> p = pointToFungeSpace(event->pos());
+		qDebug() << "start" << m_selectionStart;
+		if (m_fungeSpace->getChar(p) != ' ')
+		{
+			m_selectionEnd = p;
+		}
+	}
 }
 
 void GLView::wheelEvent(QWheelEvent* event)
@@ -323,6 +403,34 @@ QList<float> GLView::fungeSpaceToGl(QList<int> c, bool premultiplied)
 	return ret;
 }
 
+QList<int> GLView::pointToFungeSpace(const QPoint& pos)
+{
+	double objx, objy, objz;
+	float x = pos.x();
+	float y = pos.y();
+	double modelview[16], projection[16];
+	int viewport[4];
+	float z;
+		//get the projection matrix             
+	glGetDoublev( GL_PROJECTION_MATRIX, projection );
+		//get the modelview matrix              
+	glGetDoublev( GL_MODELVIEW_MATRIX, modelview );
+		//get the viewport              
+	glGetIntegerv( GL_VIEWPORT, viewport );
+		
+	//Read the window z co-ordinate 
+	//(the z value on that point in unit cube)          
+	glReadPixels( (GLint)x, (GLint)(viewport[3]-y), 1, 1,
+			GL_DEPTH_COMPONENT, GL_FLOAT, &z );
+	
+	//Unproject the window co-ordinates to 
+	//find the world co-ordinates.
+	gluUnProject( x, viewport[3]-y, z, modelview, 
+			projection, viewport, &objx, &objy, &objz );
+	
+	return glToFungeSpace(objx, objy, objz);
+}
+
 void GLView::mousePressEvent(QMouseEvent* event)
 {
 	m_preDragMousePosition = event->pos();
@@ -346,32 +454,13 @@ void GLView::mousePressEvent(QMouseEvent* event)
 			return;
 		}
 		
-		double objx, objy, objz;
-		float x = event->pos().x();
-		float y = event->pos().y();
-		double modelview[16], projection[16];
-		int viewport[4];
-		float z;
-			//get the projection matrix             
-		glGetDoublev( GL_PROJECTION_MATRIX, projection );
-			//get the modelview matrix              
-		glGetDoublev( GL_MODELVIEW_MATRIX, modelview );
-			//get the viewport              
-		glGetIntegerv( GL_VIEWPORT, viewport );
-			
-		//Read the window z co-ordinate 
-		//(the z value on that point in unit cube)          
-		glReadPixels( (GLint)x, (GLint)(viewport[3]-y), 1, 1,
-				GL_DEPTH_COMPONENT, GL_FLOAT, &z );
-		
-		//Unproject the window co-ordinates to 
-		//find the world co-ordinates.
-		gluUnProject( x, viewport[3]-y, z, modelview, 
-				projection, viewport, &objx, &objy, &objz );
-		
-		QList<int> p = glToFungeSpace(objx, objy, objz);
+		QList<int> p = pointToFungeSpace(event->pos());
 		if (m_fungeSpace->getChar(p) != ' ')
-			m_cursor = p;
+		{
+			m_selectionStart = p;
+			m_selectionEnd = p;
+			m_selectDragging = true;
+		}
 		
 		event->accept();
 	}
@@ -393,6 +482,10 @@ void GLView::mouseReleaseEvent(QMouseEvent* event)
 		m_moveDragging = false;
 		m_destinationCameraOffset[0] = 0.0f;
 		m_destinationCameraOffset[1] = 0.0f;
+		
+		if (m_selectDragging)
+			m_cursor = m_selectionEnd;
+		m_selectDragging = false;
 		break;
 		
 	default:

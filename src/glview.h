@@ -50,6 +50,7 @@ private:
 	void updateCamera(int i);
 	float degreesToRadians(float degrees);
 	float modulo(float value, float mod);
+	QList<int> pointToFungeSpace(const QPoint& pos);
 	QList<int> glToFungeSpace(float x, float y, float z);
 	QList<float> fungeSpaceToGl(QList<int> c, bool premultiplied);
 	void toggleStringMode();
@@ -67,6 +68,10 @@ private:
 	int m_cursorDirection;
 	int m_activePlane;
 	float m_actualCursorPos[3];
+	
+	QList<int> m_selectionStart;
+	QList<int> m_selectionEnd;
+	bool m_selectDragging;
 	
 	// Frame updates
 	QTimer* m_redrawTimer;
