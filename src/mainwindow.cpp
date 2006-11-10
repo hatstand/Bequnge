@@ -65,9 +65,8 @@ void MainWindow::slotOpen()
 	
 	delete m_interpreter;
 	QFile file(fileName);
-	m_interpreter = new Interpreter(&file, this);
 	
-	FungeSpace* space = m_interpreter->parse();
+	FungeSpace* space = new FungeSpace(&file);
 	if (space->dimensions() < 3)
 		space->setDimensions(3);
 	

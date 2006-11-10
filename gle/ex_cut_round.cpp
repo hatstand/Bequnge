@@ -118,6 +118,10 @@ draw_cut_style_cap_callback (int iloop,
                                   double norms[][3], 
                                   int frontwards)
 {
+	(void)frontwards;
+	(void)norms;
+	(void)bisect_vector;
+
 #ifdef GL_32
    int i;
 #endif /* GL_32 */
@@ -273,7 +277,15 @@ null_cap_callback (int iloop,
                         gleDouble bisect_vector[3],
                         double norms[][3], 
                         int frontwards)
-{}
+{
+	(void)iloop;
+	(void)cap;
+	(void)face_color;
+	(void)cut_vector;
+	(void)bisect_vector;
+	(void)norms;
+	(void)frontwards;
+}
 
 /* ============================================================ */
 /* 
@@ -302,6 +314,7 @@ draw_fillet_triangle_plain
                            float front_color[3],
                            float back_color[3])
 {
+	(void)back_color;
 
    if (front_color != NULL) C3F (front_color);
    BGNTMESH (-5, 0.0);
@@ -345,6 +358,7 @@ static void draw_fillet_triangle_n_norms
                            double na[3],
                            double nb[3])
 {
+	(void)back_color;
 
    if (front_color != NULL) C3F (front_color);
    BGNTMESH (-5, 0.0);
@@ -856,7 +870,7 @@ extrusion_round_or_cut_join (int ncp,	/* number of contour points */
    int valid_cut_0, valid_cut_1;	/* flag -- cut vector is valid */
    gleDouble end_point_0[3], end_point_1[3]; 
    gleDouble torsion_point_0[3], torsion_point_1[3]; 
-   gleDouble isect_point[3];
+   gleDouble isect_point[3] = {0,0,0};
    gleDouble origin[3], neg_z[3];
    gleDouble yup[3];		/* alternate up vector */
    gleDouble *front_cap, *back_cap;	/* arrays containing the end caps */

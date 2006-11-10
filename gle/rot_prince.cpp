@@ -24,16 +24,17 @@ void urotx_cs (gleDouble m[4][4], 	/* returned */
 
 /* ========================================================== */
 
-static 
-void rotx_cs (gleDouble cosine,		/* input */
-                gleDouble sine) 	/* input */
-{
+/*static */
+//void rotx_cs (gleDouble cosine,		/* input */
+//                gleDouble sine) 	/* input */
+//{
    /* create and load matrix that represents rotation about the x-axis */
-   gleDouble m[4][4];
-
-   urotx_cs (m, cosine, sine);
-   MULTMATRIX (m);
-}
+/*   gleDouble m[4][4];
+*
+*   urotx_cs (m, cosine, sine);
+*   MULTMATRIX (m);
+*}
+*/
 
 /* ========================================================== */
 
@@ -49,16 +50,16 @@ void uroty_cs (gleDouble m[4][4], 	/* returned */
 
 /* ========================================================== */
 
-static 
-void roty_cs (gleDouble cosine,		/* input */
-                gleDouble sine) 	/* input */
-{
+//static 
+//void roty_cs (gleDouble cosine,		/* input */
+//               gleDouble sine) 	/* input */
+//{
    /* create and load matriy that represents rotation about the y-ayis */
-   gleDouble m[4][4];
+//   gleDouble m[4][4];
 
-   uroty_cs (m, cosine, sine);
-   MULTMATRIX (m);
-}
+//   uroty_cs (m, cosine, sine);
+//   MULTMATRIX (m);
+//}
 
 /* ========================================================== */
 
@@ -73,16 +74,16 @@ void urotz_cs (gleDouble m[4][4], 	/* returned */
 
 /* ========================================================== */
 
-static 
-void rotz_cs (gleDouble cosine,		/* input */
-              gleDouble sine) 		/* input */
-{
+//static 
+//void rotz_cs (gleDouble cosine,		/* input */
+//              gleDouble sine) 		/* input */
+//{
    /* create and load matrix that represents rotation about the z-azis */
-   gleDouble m[4][4];
+//   gleDouble m[4][4];
 
-   urotz_cs (m, cosine, sine);
-   MULTMATRIX (m);
-}
+//   urotz_cs (m, cosine, sine);
+//   MULTMATRIX (m);
+//}
 
 /* ========================================================== */
 
@@ -115,17 +116,17 @@ void urot_cs (gleDouble m[4][4],	/* returned */
 
 /* ========================================================== */
 
-static 
-void rot_cs (gleDouble cosine,		/* input */
-             gleDouble sine,		/* input */
-             char axis)  		/* input */
-{
+//static 
+//void rot_cs (gleDouble cosine,		/* input */
+//             gleDouble sine,		/* input */
+//             char axis)  		/* input */
+//{
    /* create and load matrix that represents rotation about the z-axis */
-   gleDouble m[4][4];
+//   gleDouble m[4][4];
 
-   urot_cs (m, cosine, sine, axis);
-   MULTMATRIX (m);
-}
+//   urot_cs (m, cosine, sine, axis);
+//   MULTMATRIX (m);
+//}
 
 /* ========================================================== */
 

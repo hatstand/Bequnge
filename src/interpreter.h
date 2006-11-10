@@ -11,10 +11,9 @@ class Interpreter: public QObject
 	Q_OBJECT
 
 public:
-	Interpreter(QIODevice* input, QObject* parent = 0);
+	Interpreter(FungeSpace* space, QObject* parent = 0);
 	virtual ~Interpreter();
 
-	FungeSpace* parse();
 	void run();
 
 	void provideInput(QChar);
@@ -28,7 +27,6 @@ private:
 	QStack<int>* m_stack;
 	QStack<QStack<int>* > m_stackStack;
 	QString m_version;
-	uint m_dimensions;
 
 	FungeSpace* m_space;
 	Coord m_pos;
@@ -39,8 +37,6 @@ private:
 
 	QChar outputChar;
 
-	void parseHeader();
-	void readInAll();
 	bool compute(QChar);
 	void move();
 	void jumpSpaces();

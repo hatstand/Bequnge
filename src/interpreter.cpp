@@ -3,95 +3,31 @@
 #include <QDebug>
 #include <QStringList>
 
-Interpreter::Interpreter(QIODevice* input, QObject* parent)
-	: QObject(parent),m_input(input),m_space(NULL)
+Interpreter::Interpreter(FungeSpace* space, QObject* parent)
+	: QObject(parent),m_space(space)
 {
 	m_version = "1";
-	m_dimensions = 2;
 
 	m_stringMode = false;
 
 	m_stack = new QStack<int>();
 
 	m_stackStack.push(m_stack);
+
+	for(uint i = 0; i < m_space->dimensions(); ++i)
+		m_pos << 0;
+
+	m_direction << 1;
+	for(uint i = 1; i < m_space->dimensions(); ++i)
+		m_direction << 0;
 }
 
 Interpreter::~Interpreter()
 {
-}
-
-void Interpreter::parseHeader()
-{
-	qDebug() << "Parsing header";
-
-	QString line;
-	while(((line = m_input->readLine()).trimmed().isEmpty()));
-
-	QStringList args = line.split(",");
-	foreach(QString i, args)
+	foreach(QStack<int>* i, m_stackStack)
 	{
-		QStringList t = i.split(" ");
-		if(t.size() != 2)
-		{
-			qFatal("Expected space separated key->value");
-		}
-		else
-		{
-			if(t[0].toLower() == "version")
-			{
-				m_version = t[1];
-			}
-			else if(t[0].toLower() == "dimensions")
-			{
-				bool ok = false;
-				m_dimensions = t[1].toUInt(&ok);
-				if(!ok)
-				{
-					qFatal("Expected unsigned integer for value of dimensions");
-				}
-			}
-		}
+		delete(i);
 	}
-
-	m_space = new FungeSpace(m_dimensions);
-	for(uint i = 0; i < m_dimensions; ++i)
-	{
-		m_pos << 0;
-		m_direction << 0;
-	}
-
-	m_direction[0] = 1;
-
-	qDebug() << "Finished parsing header";
-}
-
-void Interpreter::readInAll()
-{
-	qDebug() << "Reading in code";
-	QString line;
-
-
-	Coord pos;
-	for(uint i = 0; i < m_dimensions; ++i)
-		pos << 0;
-
-	while((line = m_input->readLine()) != NULL)
-	{
-		int i = 0;
-		for(; i < line.length(); ++i)
-		{
-			if(line[i] == '\n')
-				break;
-
-			pos[0] = i;
-			//qDebug() << "Putting:" << line[i] << "in:" << pos[0] << pos[1];
-			m_space->setChar(pos, line[i]);
-		}
-
-		++pos[1];
-	}
-
-	qDebug() << "Finished reading code";
 }
 
 void Interpreter::jumpSpaces()
@@ -105,7 +41,7 @@ void Interpreter::jumpSpaces()
 
 void Interpreter::move()
 {
-	for(uint i = 0; i < m_dimensions; ++i)
+	for(uint i = 0; i < m_space->dimensions(); ++i)
 	{
 		m_pos[i] += m_direction[i];
 		if(m_pos[i] > m_space->getPositiveEdge(i))
@@ -235,18 +171,6 @@ bool Interpreter::compute(QChar command)
 	return true;
 }
 
-FungeSpace* Interpreter::parse()
-{
-	m_input->open(QIODevice::ReadOnly);
-	parseHeader();
-
-	readInAll();
-	m_input->close();
-	
-	return m_space;
-}
-
-
 //Instructions
 void Interpreter::add()
 {
@@ -328,7 +252,7 @@ void Interpreter::up()
 	m_direction[0] = 0;
 	m_direction[1] = -1;
 
-	for(uint i = 2; i < m_dimensions; ++i)
+	for(uint i = 2; i < m_space->dimensions(); ++i)
 		m_direction[i] = 0;
 }
 
@@ -337,7 +261,7 @@ void Interpreter::right()
 	m_direction[0] = 1;
 	m_direction[1] = 0;
 
-	for(uint i = 2; i < m_dimensions; ++i)
+	for(uint i = 2; i < m_space->dimensions(); ++i)
 		m_direction[i] = 0;
 }
 
@@ -346,7 +270,7 @@ void Interpreter::left()
 	m_direction[0] = -1;
 	m_direction[1] = 0;
 
-	for(uint i = 2; i < m_dimensions; ++i)
+	for(uint i = 2; i < m_space->dimensions(); ++i)
 		m_direction[i] = 0;
 }
 
@@ -355,7 +279,7 @@ void Interpreter::down()
 	m_direction[0] = 0;
 	m_direction[1] = 1;
 
-	for(uint i = 2; i < m_dimensions; ++i)
+	for(uint i = 2; i < m_space->dimensions(); ++i)
 		m_direction[i] = 0;
 }
 
@@ -365,7 +289,7 @@ void Interpreter::higher()
 	m_direction[1] = 0;
 	m_direction[2] = 1;
 
-	for(uint i = 3; i < m_dimensions; ++i)
+	for(uint i = 3; i < m_space->dimensions(); ++i)
 		m_direction[i] = 0;
 }
 
@@ -375,7 +299,7 @@ void Interpreter::lower()
 	m_direction[1] = 0;
 	m_direction[2] = -1;
 
-	for(uint i = 3; i < m_dimensions; ++i)
+	for(uint i = 3; i < m_space->dimensions(); ++i)
 		m_direction[i] = 0;
 }
 
@@ -398,13 +322,13 @@ void Interpreter::turnRight()
 
 void Interpreter::reverse()
 {
-	for(uint i = 0; i < m_dimensions; ++i)
+	for(uint i = 0; i < m_space->dimensions(); ++i)
 		m_direction[i] *= -1;
 }
 
 void Interpreter::absolute()
 {
-	for(int i = m_dimensions - 1; i > 0; --i)
+	for(int i = m_space->dimensions() - 1; i > 0; --i)
 	{
 		m_direction[i] = m_stack->pop();
 	}

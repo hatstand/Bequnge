@@ -4,6 +4,7 @@
 #include <QChar>
 #include <QHash>
 #include <QDebug>
+#include <QIODevice>
 
 typedef QList<int> Coord;
 
@@ -12,6 +13,7 @@ class FungeSpace
 public:
 
 	FungeSpace(int dimensions);
+	FungeSpace(QIODevice* dev);
 	~FungeSpace();
 
 	// Place a char in FungeSpace
@@ -26,14 +28,18 @@ public:
 	int getPositiveEdge(int dimension){ return positiveEdges[dimension]; }
 	int getNegativeEdge(int dimension) { return negativeEdges[dimension]; }
 	
-	int dimensions() { return m_dimensions; }
-	void setDimensions(int dimensions);
+	uint dimensions() { return m_dimensions; }
+	void setDimensions(uint dimensions);
 
 private:
+	void parseHeader(QIODevice* dev);
+	void readInAll(QIODevice* dev);
+
 	int* positiveEdges;
 	int* negativeEdges;
 
-	int m_dimensions;
+	QString m_version;
+	uint m_dimensions;
 
 	//QMap<QList<int>, QChar> m_space;
 	QHash<Coord, QChar> m_space;

@@ -166,6 +166,9 @@ static void bgn_sphere_texgen (int inext, double len) {
 static void sphere_texgen (double x, double y, double z,
                            int jcnt, int which_end) 
 {
+	(void)jcnt;
+	(void)which_end;
+
    double theta, phi;
 
    /* let phi and theta range fro 0 to 1 */
@@ -218,6 +221,7 @@ static void vertex_sphere_texgen_v (double *v, int jcnt, int which_end)  {
 }
 
 static void normal_sphere_texgen_v (double *v, int jcnt, int which_end)  {
+	(void)v;
    sphere_texgen (save_nx, save_ny, save_nz, jcnt, which_end);
 }
 
@@ -235,6 +239,8 @@ static void vertex_sphere_model_v (double *v, int jcnt, int which_end) {
 }
 
 static void normal_sphere_model_v (double *v, int jcnt, int which_end) {
+	(void)v;
+
    if (!(_gle_gc -> cont_normal)) return;
    sphere_texgen (_gle_gc->cont_normal[jcnt][0], 
                 _gle_gc->cont_normal[jcnt][1], 0.0, jcnt, which_end);
@@ -262,6 +268,9 @@ static void bgn_z_texgen (int inext, double len) {
 static void cylinder_texgen (double x, double y, double z,
                              int jcnt, int which_end) 
 {
+	(void)z;
+	(void)jcnt;
+
    double phi;
 
    /* let phi and theta range fro 0 to 1 */
@@ -304,6 +313,7 @@ static void vertex_cylinder_texgen_v (double *v, int jcnt, int which_end) {
 }
 
 static void normal_cylinder_texgen_v (double *v, int jcnt, int which_end) {
+	(void)v;
    cylinder_texgen (save_nx, save_ny, save_nz, jcnt, which_end);
 }
 
@@ -320,6 +330,7 @@ static void vertex_cylinder_model_v (double *v, int jcnt, int which_end) {
 }
 
 static void normal_cylinder_model_v (double *v, int jcnt, int which_end) {
+	(void)v;
    if (!(_gle_gc -> cont_normal)) return;
    cylinder_texgen (_gle_gc->cont_normal[jcnt][0], 
                 _gle_gc->cont_normal[jcnt][1], 0.0, jcnt, which_end);
@@ -330,6 +341,11 @@ static void normal_cylinder_model_v (double *v, int jcnt, int which_end) {
 static void flat_texgen (double x, double y, double z,
                              int jcnt, int which_end) 
 {
+	(void)y;
+	(void)z;
+	(void)jcnt;
+	(void)which_end;
+
    if (FRONT == which_end) {
       T2F_D (x, accum_seg_len);
    }
@@ -346,15 +362,18 @@ static void vertex_flat_texgen_v (double *v, int jcnt, int which_end) {
 }
 
 static void normal_flat_texgen_v (double *v, int jcnt, int which_end) {
+	(void)v;
    flat_texgen (save_nx, save_ny, save_nz, jcnt, which_end);
 }
 
 static void vertex_flat_model_v (double *v, int jcnt, int which_end) {
+	(void)v;
    flat_texgen (_gle_gc->contour[jcnt][0], 
                 _gle_gc->contour[jcnt][1], v[2], jcnt, which_end);
 }
 
 static void normal_flat_model_v (double *v, int jcnt, int which_end) {
+	(void)v;
    if (!(_gle_gc -> cont_normal)) return;
    flat_texgen (_gle_gc->cont_normal[jcnt][0], 
                 _gle_gc->cont_normal[jcnt][1], 0.0, jcnt, which_end);

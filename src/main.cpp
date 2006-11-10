@@ -5,6 +5,7 @@
 
 #include "mainwindow.h"
 #include "interpreter.h"
+#include "fungespace.h"
 
 int main(int argc, char** argv)
 {
@@ -19,7 +20,7 @@ int main(int argc, char** argv)
 	}
 
 	QFile* f = new QFile(argv[1]);
-	Interpreter i(f);
-	i.parse();
+	FungeSpace s(f);
+	Interpreter i(&s);
 	i.run();
 }

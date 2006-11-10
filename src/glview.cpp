@@ -16,14 +16,14 @@
 
 GLView::GLView(QWidget* parent)
 	: QGLWidget(parent),
+	  m_fungeSpace(NULL),
 	  m_cursorBlinkOn(true),
 	  m_cursorDirection(1),
-	  m_stringMode(false),
-	  m_moveDragging(false),
-	  m_zoomLevel(6.0f),
-	  m_fungeSpace(NULL),
 	  m_fpsCounter(0.0f),
-	  m_frameCount(0)
+	  m_frameCount(0),
+	  m_stringMode(false),
+	  m_zoomLevel(6.0f),
+	  m_moveDragging(false)
 {
 	setFocusPolicy(Qt::WheelFocus);
 	
@@ -554,7 +554,7 @@ void GLView::resetView()
 	// Initialize the curser
 	m_cursorBlinkTime.start();
 	m_cursor.clear();
-	for (int i=0 ; i<m_fungeSpace->dimensions() ; ++i)
+	for (uint i=0 ; i<m_fungeSpace->dimensions() ; ++i)
 		m_cursor.append(0);
 	
 	m_destinationCameraOffset[0] = 0.0f;
