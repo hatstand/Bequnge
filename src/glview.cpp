@@ -21,7 +21,9 @@ GLView::GLView(QWidget* parent)
 	  m_stringMode(false),
 	  m_moveDragging(false),
 	  m_zoomLevel(6.0f),
-	  m_fungeSpace(NULL)
+	  m_fungeSpace(NULL),
+	  m_fpsCounter(0.0f),
+	  m_frameCount(0)
 {
 	setFocusPolicy(Qt::WheelFocus);
 	
@@ -33,6 +35,10 @@ GLView::GLView(QWidget* parent)
 	connect(m_redrawTimer, SIGNAL(timeout()), SLOT(updateGL()));
 	
 	m_delayMs = 1000/30; // 30fps
+	
+	m_fpsCounterTimer = new QTimer(this);
+	m_fpsCounterTimer->start(2000);
+	connect(m_fpsCounterTimer, SIGNAL(timeout()), SLOT(updateFPSCounter()));
 	
 	// Reset the view
 	resetView();
@@ -47,7 +53,7 @@ GLView::GLView(QWidget* parent)
 	FT_Open_Face(OGLFT::Library::instance(), &args, 0, &m_fontFace);
 	
 	m_fontSize = 29;
-	m_font = new OGLFT::TranslucentTexture(m_fontFace, m_fontSize - 5);
+	m_font = new OGLFT::Filled(m_fontFace, m_fontSize - 5);
 	
 	if ( m_font == 0 || !m_font->isValid() )
 	{
@@ -57,6 +63,7 @@ GLView::GLView(QWidget* parent)
 	}
 	
 	m_font->setForegroundColor(1.0f, 1.0f, 1.0f);
+	//m_font->setDepth(1.0f);
 }
 
 
@@ -122,6 +129,9 @@ void GLView::updateCamera(int i)
 
 void GLView::paintGL()
 {
+	QTime frameTime;
+	frameTime.start();
+	
 	glClear(GL_DEPTH_BUFFER_BIT | GL_COLOR_BUFFER_BIT);	// Clear The Screen And The Depth Buffer
 	glLoadIdentity();				// Reset The View
 	
@@ -141,7 +151,7 @@ void GLView::paintGL()
 	
 	glScalef(0.004f, 0.004f, 0.004f);
 	glPushMatrix();
-		glEnable(GL_TEXTURE_2D);
+		//glEnable(GL_TEXTURE_2D);
 		QList<float> coord;
 		QHash<Coord, QChar> entries = m_fungeSpace->getCode();
 		QHashIterator<Coord, QChar> i(entries);
@@ -154,30 +164,33 @@ void GLView::paintGL()
 			glPushMatrix();
 				int diff = abs(coords[m_activePlane] - m_cursor[m_activePlane]);
 				
-				if (diff == 0)
-					m_font->setForegroundColor(0.0f, 1.0f, 0.0f, 1.0f);
+				if ((coords == m_cursor) && (m_cursorBlinkOn))
+					glColor4f(0.0f, 0.0f, 0.0f, 1.0f);
+				else if (diff == 0)
+					glColor4f(0.0f, 1.0f, 0.0f, 1.0f);
 				else if (diff <= 8)
-					m_font->setForegroundColor(1.0f, 1.0f, 1.0f, 1.0f - diff * 0.1f);
+					glColor4f(1.0f, 1.0f, 1.0f, 1.0f - diff * 0.1f);
 				else
-					m_font->setForegroundColor(1.0f, 1.0f, 1.0f, 0.2f);
+					glColor4f(1.0f, 1.0f, 1.0f, 0.2f);
 				
 				coord = fungeSpaceToGl(coords, true);
 				glTranslatef(coord[0], coord[1], coord[2]);
+				
 				if (m_activePlane == 0)
 					glRotatef(90.0f, 0.0f, 1.0f, 0.0f);
 				m_font->draw(data);
 			glPopMatrix();
 		}
-		glDisable(GL_TEXTURE_2D);
+		//glDisable(GL_TEXTURE_2D);
 		
 		if (m_cursorBlinkOn)
 		{
 			coord = fungeSpaceToGl(m_cursor, true);
-			glTranslatef(coord[0], coord[1] - 2.5f, coord[2] - 0.001f);
+			glTranslatef(coord[0], coord[1] - 2.5f, coord[2] - 0.01f);
 			if (m_activePlane == 0)
 				glRotatef(90.0f, 0.0f, 1.0f, 0.0f);
 			glBegin(GL_QUADS);
-				glColor3f(1.0f, 1.0f, 1.0f);
+				glColor4f(0.0f, 1.0f, 0.0f, 1.0f);
 				glVertex3f(m_fontSize - 5.0f, m_fontSize, 0.0f);
 				glVertex3f(0.0f, m_fontSize, 0.0f);
 				glVertex3f(0.0f, 0.0f, 0.0f);
@@ -188,6 +201,7 @@ void GLView::paintGL()
 	
 	glColor3f(1.0f, 1.0f, 1.0f);
 	renderText(0, 15, "Cursor: " + QString::number(m_cursor[0]) + ", " + QString::number(m_cursor[1]) + ", " + QString::number(m_cursor[2]));
+	renderText(0, 30, "FPS: " + QString::number(m_fpsCounter));
 	
 	glPushMatrix();
 		glLoadIdentity();
@@ -250,7 +264,8 @@ void GLView::paintGL()
 		m_cursorBlinkOn = !m_cursorBlinkOn;
 	}
 	
-	m_redrawTimer->start(m_delayMs);
+	m_redrawTimer->start(qAbs(m_delayMs - frameTime.elapsed()));
+	m_frameCount++;
 }
 
 float GLView::degreesToRadians(float degrees)
@@ -530,13 +545,9 @@ void GLView::setEye(float radius, float vert, float horiz)
 		h = 85.0f;
 	if (h < -85.0f)
 		h = -85.0f;
-		
-		qDebug() << h;
 	
 	v = degreesToRadians(v);
 	h = degreesToRadians(h);
-	
-	qDebug() << h;
 	
 	m_destinationEyeOffset[m_activePlane] = radius * cos(v) * cos(h);
 	m_destinationEyeOffset[1] = radius * sin(v);
@@ -584,6 +595,12 @@ void GLView::resetView()
 	
 	if (m_stringMode)
 		toggleStringMode();
+}
+
+void GLView::updateFPSCounter()
+{
+	m_fpsCounter = m_frameCount / 2.0f;
+	m_frameCount = 0;
 }
 
 

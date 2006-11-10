@@ -31,6 +31,7 @@ public:
 	
 public slots:
 	void setStringMode(bool enabled);
+	void updateFPSCounter();
 	
 signals:
 	void stringModeChanged(bool enabled);
@@ -70,6 +71,9 @@ private:
 	// Frame updates
 	QTimer* m_redrawTimer;
 	int m_delayMs;
+	float m_fpsCounter;
+	int m_frameCount;
+	QTimer* m_fpsCounterTimer;
 	
 	bool m_stringMode;
 	
