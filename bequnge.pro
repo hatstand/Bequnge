@@ -7,4 +7,4 @@ TEMPLATE = subdirs
 CONFIG += debug
 
 # Subdirs
-SUBDIRS = src
+SUBDIRS = gle src

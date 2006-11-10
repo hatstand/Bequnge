@@ -22,8 +22,6 @@
 #ifndef OGLFT_H
 #define OGLFT_H
 
-#define OGLFT_NO_SOLID 1
-
 #include <cmath>
 #include <map>
 #include <list>
@@ -35,7 +33,7 @@
 #include <GL/glu.h>
 
 #ifndef OGLFT_NO_SOLID
-#include <GL/gle.h>
+#include <gle.h>
 #endif
 
 #ifndef OGLFT_NO_QT
