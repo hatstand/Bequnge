@@ -20,7 +20,8 @@ GLView::GLView(QWidget* parent)
 	  m_cursorDirection(1),
 	  m_stringMode(false),
 	  m_moveDragging(false),
-	  m_zoomLevel(6.0f)
+	  m_zoomLevel(6.0f),
+	  m_fungeSpace(NULL)
 {
 	setFocusPolicy(Qt::WheelFocus);
 	
@@ -549,6 +550,7 @@ int GLView::cursorDirection()
 
 void GLView::setFungeSpace(FungeSpace* funge)
 {
+	delete m_fungeSpace;
 	m_fungeSpace = funge;
 }
 

@@ -20,6 +20,7 @@ private slots:
 	void cursorDirectionChanged(int direction);
 	
 	void slotOpen();
+	void slotNew();
 
 private:
 	Ui_MainWindow m_ui;

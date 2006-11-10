@@ -39,6 +39,7 @@ MainWindow::MainWindow(QWidget* parent)
 	
 	// Connect actions
 	connect(m_ui.actionOpen, SIGNAL(triggered(bool)), SLOT(slotOpen()));
+	connect(m_ui.actionNew, SIGNAL(triggered(bool)), SLOT(slotNew()));
 }
 
 void MainWindow::cursorDirectionChanged(int direction)
@@ -71,6 +72,12 @@ void MainWindow::slotOpen()
 		space->setDimensions(3);
 	
 	m_glView->setFungeSpace(space);
+	m_glView->resetView();
+}
+
+void MainWindow::slotNew()
+{
+	m_glView->setFungeSpace(new FungeSpace(3));
 	m_glView->resetView();
 }
 
