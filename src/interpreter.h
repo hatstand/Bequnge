@@ -27,12 +27,12 @@ private:
 	QIODevice* m_input;
 	QStack<int>* m_stack;
 	QStack<QStack<int>* > m_stackStack;
-	int m_direction;
 	QString m_version;
 	uint m_dimensions;
 
 	FungeSpace* m_space;
 	Coord m_pos;
+	Coord m_direction;
 
 	bool m_stringMode;
 	bool m_jumpedSpace;
@@ -66,6 +66,7 @@ private:
 	void turnLeft();
 	void turnRight();
 	void reverse();
+	void absolute();
 	void string();
 	void character();
 	void duplicate();

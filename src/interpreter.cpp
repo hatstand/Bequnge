@@ -8,7 +8,6 @@ Interpreter::Interpreter(QIODevice* input, QObject* parent)
 {
 	m_version = "1";
 	m_dimensions = 2;
-	m_direction = 1;
 
 	m_stringMode = false;
 
@@ -56,7 +55,12 @@ void Interpreter::parseHeader()
 
 	m_space = new FungeSpace(m_dimensions);
 	for(uint i = 0; i < m_dimensions; ++i)
+	{
 		m_pos << 0;
+		m_direction << 0;
+	}
+
+	m_direction[0] = 1;
 
 	qDebug() << "Finished parsing header";
 }
@@ -101,21 +105,18 @@ void Interpreter::jumpSpaces()
 
 void Interpreter::move()
 {
-	if(m_direction > 0)
+	for(uint i = 0; i < m_dimensions; ++i)
 	{
-		m_pos[m_direction - 1]++;
-		if(m_pos[m_direction - 1] > m_space->getPositiveEdge(m_direction - 1))
-			m_pos[m_direction - 1] = m_space->getNegativeEdge(m_direction - 1);
-	}
-	else if(m_direction < 0)
-	{
-		int t = qAbs(m_direction) - 1;
-		m_pos[t]--;
-		if(m_pos[t] < m_space->getNegativeEdge(t))
-			m_pos[t] = m_space->getPositiveEdge(t);
+		m_pos[i] += m_direction[i];
+		if(m_pos[i] > m_space->getPositiveEdge(i))
+			m_pos[i] = m_space->getNegativeEdge(i);
+		else if(m_pos[i] < m_space->getNegativeEdge(i))
+			m_pos[i] = m_space->getPositiveEdge(i);
 	}
 
 	jumpSpaces();
+
+	//qDebug() << "Moved to:" << m_pos;
 }
 
 bool Interpreter::step()
@@ -188,6 +189,8 @@ bool Interpreter::compute(QChar command)
 		turnRight();
 	else if(command == 'r')
 		reverse();
+	else if(command == 'x')
+		absolute();
 	else if(command == '"')
 		string();
 	else if(command == '\'')
@@ -322,32 +325,58 @@ void Interpreter::greaterThan()
 
 void Interpreter::up()
 {
-	m_direction = -2;
+	m_direction[0] = 0;
+	m_direction[1] = -1;
+
+	for(uint i = 2; i < m_dimensions; ++i)
+		m_direction[i] = 0;
 }
 
 void Interpreter::right()
 {
-	m_direction = 1;
+	m_direction[0] = 1;
+	m_direction[1] = 0;
+
+	for(uint i = 2; i < m_dimensions; ++i)
+		m_direction[i] = 0;
 }
 
 void Interpreter::left()
 {
-	m_direction = -1;
+	m_direction[0] = -1;
+	m_direction[1] = 0;
+
+	for(uint i = 2; i < m_dimensions; ++i)
+		m_direction[i] = 0;
 }
 
 void Interpreter::down()
 {
-	m_direction = 2;
+	m_direction[0] = 0;
+	m_direction[1] = 1;
+
+	for(uint i = 2; i < m_dimensions; ++i)
+		m_direction[i] = 0;
 }
 
 void Interpreter::higher()
 {
-	m_direction = -3;
+	m_direction[0] = 0;
+	m_direction[1] = 0;
+	m_direction[2] = 1;
+
+	for(uint i = 3; i < m_dimensions; ++i)
+		m_direction[i] = 0;
 }
 
 void Interpreter::lower()
 {
-	m_direction = 3;
+	m_direction[0] = 0;
+	m_direction[1] = 0;
+	m_direction[2] = -1;
+
+	for(uint i = 3; i < m_dimensions; ++i)
+		m_direction[i] = 0;
 }
 
 void Interpreter::random()
@@ -357,45 +386,28 @@ void Interpreter::random()
 
 void Interpreter::turnLeft()
 {
-	switch(m_direction)
-	{
-		case 1:
-			m_direction = -2;
-			break;
-		case 2:
-			m_direction = 1;
-			break;
-		case -1:
-			m_direction = 2;
-			break;
-		case -2:
-			m_direction = -1;
-			break;
-	}
+	m_direction[0] = -m_direction[1];
+	m_direction[1] = m_direction[0];
 }
 
 void Interpreter::turnRight()
 {
-	switch(m_direction)
-	{
-		case 1:
-			m_direction = 2;
-			break;
-		case 2:
-			m_direction = -1;
-			break;
-		case -1:
-			m_direction = -2;
-			break;
-		case -2:
-			m_direction = 1;
-			break;
-	}
+	m_direction[0] = m_direction[1];
+	m_direction[1] = -m_direction[0];
 }
 
 void Interpreter::reverse()
 {
-	m_direction *= -1;
+	for(uint i = 0; i < m_dimensions; ++i)
+		m_direction[i] *= -1;
+}
+
+void Interpreter::absolute()
+{
+	for(int i = m_dimensions - 1; i > 0; --i)
+	{
+		m_direction[i] = m_stack->pop();
+	}
 }
 
 void Interpreter::string()
