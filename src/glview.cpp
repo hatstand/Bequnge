@@ -169,7 +169,7 @@ void GLView::paintGL()
 	          m_actualEyeOffset[2] + m_actualCursorPos[2] + m_actualCameraOffset[2],
 	          m_actualCursorPos[0] + m_actualCameraOffset[0],
 	          m_actualCursorPos[1] + m_actualCameraOffset[1],
-	          m_actualCursorPos[2],
+	          m_actualCursorPos[2] + m_actualCameraOffset[2],
 	          0.0f,
 	          1.0f,
 	          0.0f);
@@ -342,15 +342,20 @@ void GLView::mouseMoveEvent(QMouseEvent* event)
 		float xOffset = event->pos().x() - m_preDragMousePosition.x();
 		float yOffset = event->pos().y() - m_preDragMousePosition.y();
 		
-		int otherPlane = m_activePlane == 0 ? 2 : 0;
+		if (m_activePlane == 2)
+			m_destinationCameraOffset[0] = - xOffset / 135.0f;
+		else
+			m_destinationCameraOffset[2] = xOffset / 135.0f;
 		
-		m_destinationCameraOffset[otherPlane] = - xOffset / 135.0f;
 		m_destinationCameraOffset[1] = yOffset / 135.0f;
 	}
 	else if (m_rotateDragging)
 	{
 		float xOffset = - (event->pos().x() - m_preDragMousePosition.x()) / 4.0f;
 		float yOffset = 30.0f + (event->pos().y() - m_preDragMousePosition.y()) / 4.0f;
+		
+		if (m_activePlane == 0)
+			xOffset *= -1;
 		
 		setEye(m_zoomLevel, yOffset, xOffset);
 	}
@@ -475,6 +480,7 @@ void GLView::mouseReleaseEvent(QMouseEvent* event)
 		m_moveDragging = false;
 		m_destinationCameraOffset[0] = 0.0f;
 		m_destinationCameraOffset[1] = 0.0f;
+		m_destinationCameraOffset[2] = 0.0f;
 		
 		if (m_selectDragging)
 			m_cursor = m_selectionEnd;
