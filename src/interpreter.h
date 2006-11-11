@@ -15,12 +15,20 @@ public:
 	virtual ~Interpreter();
 
 	void run();
-
+	bool step();
+	
 	void provideInput(QChar);
+	
+	void pushItem(int c);
+	int popItem();
 
 signals:
 	void output(QChar);
 	void input();
+	void pcChanged(Coord position, Coord direction);
+	
+	void stackPushed(int value);
+	void stackPopped();
 
 private:
 	QIODevice* m_input;
@@ -40,7 +48,6 @@ private:
 	bool compute(QChar);
 	void move();
 	void jumpSpaces();
-	bool step();
 	void getNext();
 
 
@@ -81,7 +88,6 @@ private:
 
 	void beginBlock();
 	void endBlock();
-
 
 	void pushNumber(QChar n);
 

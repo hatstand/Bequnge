@@ -19,8 +19,6 @@ uint qHash(Coord c)
 
 
 FungeSpace::FungeSpace(int dimensions)
-	: positiveEdges(NULL),
-	  negativeEdges(NULL)
 {
 	setDimensions(dimensions);
 	
@@ -28,8 +26,6 @@ FungeSpace::FungeSpace(int dimensions)
 }
 
 FungeSpace::FungeSpace(QIODevice* dev)
-	: positiveEdges(NULL),
-	  negativeEdges(NULL)
 {
 	m_version = "0";
 
@@ -37,6 +33,19 @@ FungeSpace::FungeSpace(QIODevice* dev)
 	parseHeader(dev);
 	readInAll(dev);
 	dev->close();
+}
+
+FungeSpace::FungeSpace(FungeSpace* space)
+{
+	m_version = "0";
+	
+	setDimensions(space->dimensions());
+	m_space = space->getCode();
+	for (int i=0 ; i<m_dimensions ; ++i)
+	{
+		m_positiveEdges.append(space->getPositiveEdge(i));
+		m_negativeEdges.append(space->getNegativeEdge(i));
+	}
 }
 
 void FungeSpace::parseHeader(QIODevice* dev)
@@ -113,8 +122,6 @@ void FungeSpace::readInAll(QIODevice* dev)
 
 FungeSpace::~FungeSpace()
 {
-	delete[] positiveEdges;
-	delete[] negativeEdges;
 }
 
 QHash<Coord, QChar> FungeSpace::getCode()
@@ -134,8 +141,8 @@ void FungeSpace::setChar(Coord pos, QChar c)
 
 		for(uint i = 0; i < m_dimensions; ++i)
 		{
-			positiveEdges[i] = qMax(positiveEdges[i], pos[i]);
-			negativeEdges[i] = qMin(negativeEdges[i], pos[i]);
+			m_positiveEdges[i] = qMax(m_positiveEdges[i], pos[i]);
+			m_negativeEdges[i] = qMin(m_negativeEdges[i], pos[i]);
 		}
 	}
 	else
@@ -177,15 +184,9 @@ void FungeSpace::setDimensions(uint dimensions)
 	
 	m_dimensions = dimensions;
 	
-	delete[] positiveEdges;
-	delete[] negativeEdges;
-	positiveEdges = new int[m_dimensions];
-	negativeEdges = new int[m_dimensions];
-
-	for(uint i = 0; i < m_dimensions; ++i)
-	{
-		positiveEdges[i] = 0;
-		negativeEdges[i] = 0;
-	}
+	while (m_positiveEdges.count() < m_dimensions)
+		m_positiveEdges.append(0);
+	while (m_negativeEdges.count() < m_dimensions)
+		m_negativeEdges.append(0);
 }
 

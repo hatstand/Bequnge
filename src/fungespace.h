@@ -14,6 +14,7 @@ public:
 
 	FungeSpace(int dimensions);
 	FungeSpace(QIODevice* dev);
+	FungeSpace(FungeSpace* space);
 	~FungeSpace();
 
 	// Place a char in FungeSpace
@@ -25,8 +26,8 @@ public:
 	QHash<Coord, QChar> getCode();
 	
 	// Get the code edges (only correct if code doesn't shrink)
-	int getPositiveEdge(int dimension){ return positiveEdges[dimension]; }
-	int getNegativeEdge(int dimension) { return negativeEdges[dimension]; }
+	int getPositiveEdge(int dimension){ return m_positiveEdges[dimension]; }
+	int getNegativeEdge(int dimension) { return m_negativeEdges[dimension]; }
 	
 	uint dimensions() { return m_dimensions; }
 	void setDimensions(uint dimensions);
@@ -35,8 +36,8 @@ private:
 	void parseHeader(QIODevice* dev);
 	void readInAll(QIODevice* dev);
 
-	int* positiveEdges;
-	int* negativeEdges;
+	QList<int> m_positiveEdges;
+	QList<int> m_negativeEdges;
 
 	QString m_version;
 	uint m_dimensions;

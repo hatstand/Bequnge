@@ -14,9 +14,9 @@
 #include <math.h>
 
 
-GLView::GLView(QWidget* parent)
+GLView::GLView(FungeSpace* fungeSpace, QWidget* parent)
 	: QGLWidget(parent),
-	  m_fungeSpace(NULL),
+	  m_fungeSpace(fungeSpace),
 	  m_cursorBlinkOn(true),
 	  m_cursorDirection(1),
 	  m_selectDragging(false),
@@ -28,9 +28,6 @@ GLView::GLView(QWidget* parent)
 	  m_rotateDragging(false)
 {
 	setFocusPolicy(Qt::WheelFocus);
-	
-	// Initialize funge space
-	setFungeSpace(new FungeSpace(3));
 	
 	// Setup the redraw timer
 	m_redrawTimer = new QTimer(this);
@@ -637,7 +634,6 @@ int GLView::cursorDirection()
 
 void GLView::setFungeSpace(FungeSpace* funge)
 {
-	delete m_fungeSpace;
 	m_fungeSpace = funge;
 }
 

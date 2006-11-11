@@ -53,6 +53,7 @@ void Interpreter::move()
 	jumpSpaces();
 
 	//qDebug() << "Moved to:" << m_pos;
+	emit pcChanged(m_pos, m_direction);
 }
 
 bool Interpreter::step()
@@ -61,7 +62,7 @@ bool Interpreter::step()
 	{
 		m_jumpedSpace = false;
 		if(m_stringMode)
-			m_stack->push(QChar(' ').unicode());
+			pushItem(QChar(' ').unicode());
 	}
 	QChar c = m_space->getChar(m_pos);
 	bool ret = compute(c);
@@ -87,7 +88,7 @@ bool Interpreter::compute(QChar command)
 	//qDebug() << "Instruction:" << command;
 	if(m_stringMode && command != '"')
 	{
-		m_stack->push(command.unicode());
+		pushItem(command.unicode());
 		return true;
 	}
 
@@ -174,77 +175,77 @@ bool Interpreter::compute(QChar command)
 //Instructions
 void Interpreter::add()
 {
-	int x = m_stack->pop();
-	int y = m_stack->pop();
+	int x = popItem();
+	int y = popItem();
 
 	int z = y + x;
 
 	qDebug() << x << "+" << y << "=" << z;
-	m_stack->push(z);
+	pushItem(z);
 }
 
 void Interpreter::subtract()
 {
-	int x = m_stack->pop();
-	int y = m_stack->pop();
+	int x = popItem();
+	int y = popItem();
 
 	int z = y - x;
 
 	qDebug() << y << "-" << x << "=" << z;
-	m_stack->push(z);
+	pushItem(z);
 }
 
 void Interpreter::multiply()
 {
-	int x = m_stack->pop();
-	int y = m_stack->pop();
+	int x = popItem();
+	int y = popItem();
 
 	int z = y * x;
 
 	qDebug() << y << "*" << x << "=" << z;
-	m_stack->push(z);
+	pushItem(z);
 }
 
 void Interpreter::divide()
 {
-	int x = m_stack->pop();
-	int y = m_stack->pop();
+	int x = popItem();
+	int y = popItem();
 
 	int z = y * x;
 
 	qDebug() << y << "/" << x << "=" << z;
-	m_stack->push(z);
+	pushItem(z);
 }
 
 void Interpreter::modulo()
 {
-	int x = m_stack->pop();
-	int y = m_stack->pop();
+	int x = popItem();
+	int y = popItem();
 
 	int z = y % x;
 
 	qDebug() << y << "%" << x << "=" << z;
-	m_stack->push(z);
+	pushItem(z);
 }
 
 void Interpreter::notf()
 {
-	int x = m_stack->pop();
+	int x = popItem();
 	if(x)
-		m_stack->push(1);
+		pushItem(1);
 	else
-		m_stack->push(0);
+		pushItem(0);
 }
 
 void Interpreter::greaterThan()
 {
-	int x = m_stack->pop();
-	int y = m_stack->pop();
+	int x = popItem();
+	int y = popItem();
 
 	if(y > x)
-		m_stack->push(1);
+		pushItem(1);
 	else
-		m_stack->push(0);
+		pushItem(0);
 }
 
 void Interpreter::up()
@@ -330,14 +331,14 @@ void Interpreter::absolute()
 {
 	for(int i = m_space->dimensions() - 1; i > 0; --i)
 	{
-		m_direction[i] = m_stack->pop();
+		m_direction[i] = popItem();
 	}
 }
 
 void Interpreter::string()
 {
 	if(!m_stringMode)
-		m_stack->push('\0');
+		pushItem('\0');
 
 	m_stringMode = !m_stringMode;
 }
@@ -345,15 +346,15 @@ void Interpreter::string()
 void Interpreter::character()
 {
 	move();
-	m_stack->push(QChar('\0').unicode());
-	m_stack->push(m_space->getChar(m_pos).unicode());
+	pushItem(QChar('\0').unicode());
+	pushItem(m_space->getChar(m_pos).unicode());
 }
 
 void Interpreter::duplicate()
 {
-	int x = m_stack->pop();
-	m_stack->push(x);
-	m_stack->push(x);
+	int x = popItem();
+	pushItem(x);
+	pushItem(x);
 }
 
 void Interpreter::pop()
@@ -363,11 +364,11 @@ void Interpreter::pop()
 
 void Interpreter::swap()
 {
-	int a = m_stack->pop();
-	int b = m_stack->pop();
+	int a = popItem();
+	int b = popItem();
 
-	m_stack->push(a);
-	m_stack->push(b);
+	pushItem(a);
+	pushItem(b);
 }
 
 void Interpreter::clear()
@@ -377,7 +378,7 @@ void Interpreter::clear()
 
 void Interpreter::vertIf()
 {
-	int x = m_stack->pop();
+	int x = popItem();
 	if(x)
 		up();
 	else
@@ -386,8 +387,8 @@ void Interpreter::vertIf()
 
 void Interpreter::compare()
 {
-	int b = m_stack->pop();
-	int a = m_stack->pop();
+	int b = popItem();
+	int a = popItem();
 
 	if(a < b)
 		turnLeft();
@@ -397,14 +398,14 @@ void Interpreter::compare()
 
 void Interpreter::printChar()
 {
-	outputChar = QChar(m_stack->pop());
+	outputChar = QChar(popItem());
 	qDebug() << outputChar;
 	emit(output(outputChar));
 }
 
 void Interpreter::printDec()
 {
-	outputChar = QString::number(m_stack->pop())[0];
+	outputChar = QString::number(popItem())[0];
 	qDebug() << outputChar;
 	emit(output(outputChar));
 }
@@ -426,7 +427,7 @@ void Interpreter::trampoline()
 
 void Interpreter::jump()
 {
-	int x = m_stack->pop();
+	int x = popItem();
 
 	if(x > 0)
 	{
@@ -445,7 +446,7 @@ void Interpreter::jump()
 
 void Interpreter::iterate()
 {
-	int x = m_stack->pop();
+	int x = popItem();
 	move();
 
 	for(int i = 0; i < x; ++i)
@@ -454,7 +455,7 @@ void Interpreter::iterate()
 
 void Interpreter::beginBlock()
 {
-	int x = qAbs(m_stack->pop());
+	int x = qAbs(popItem());
 	QStack<int>* newStack;
 
 	int s = m_stack->size();
@@ -487,7 +488,22 @@ void Interpreter::endBlock()
 
 void Interpreter::pushNumber(QChar n)
 {
-	m_stack->push(QString(n).toInt());
+	pushItem(QString(n).toInt());
+}
+
+void Interpreter::pushItem(int c)
+{
+	m_stack->push(c);
+	emit stackPushed(c);
+}
+
+int Interpreter::popItem()
+{
+	int n = m_stack->pop();
+	
+	emit stackPopped();
+	
+	return n;
 }
 
 void Interpreter::panic(QString message)

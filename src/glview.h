@@ -19,7 +19,7 @@ class GLView : public QGLWidget
 	Q_OBJECT
 	
 public:
-	GLView(QWidget* parent = 0);
+	GLView(FungeSpace* fungeSpace, QWidget* parent = 0);
 	~GLView();
 	
 	int cursorDirection();
