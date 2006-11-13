@@ -201,7 +201,7 @@ void GLView::paintGL()
 			glPushMatrix();
 				int diff = abs(coords[m_activePlane] - m_cursor[m_activePlane]);
 				
-				if ((coords == m_cursor) && (m_cursorBlinkOn))
+				if ((coords == m_cursor) && (m_cursorBlinkOn || !hasFocus()))
 					glColor4f(0.0f, 0.0f, 0.0f, 1.0f);
 				else if (diff == 0)
 					glColor4f(0.0f, 1.0f, 0.0f, 1.0f);
@@ -220,7 +220,7 @@ void GLView::paintGL()
 		}
 		//glDisable(GL_TEXTURE_2D);
 		
-		if (m_cursorBlinkOn)
+		if (m_cursorBlinkOn || !hasFocus())
 		{
 			glPushMatrix();
 				coord = fungeSpaceToGl(m_cursor, true);
