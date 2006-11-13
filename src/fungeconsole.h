@@ -14,6 +14,8 @@ public:
 private:
 	int m_lastAnchor;
 	int m_lastPosition;
+
+	QTextCursor* m_cursor;
 };
 
 #endif

@@ -16,7 +16,6 @@ FungeConsole::~FungeConsole()
 
 void FungeConsole::append(QString text)
 {
-	document()->
 }
 
 
