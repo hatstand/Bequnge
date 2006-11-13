@@ -148,7 +148,7 @@ void MainWindow::slotStep()
 	if (m_interpreter == NULL)
 		slotDebug();
 	
-	if (!m_interpreter->step())
+	if (m_interpreter->step() != Interpreter::Success)
 		slotStop();
 }
 

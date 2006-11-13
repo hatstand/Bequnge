@@ -11,11 +11,19 @@ class Interpreter: public QObject
 	Q_OBJECT
 
 public:
+	enum Status
+	{
+		Success,
+		End,
+		Invalid
+	};
+
+
 	Interpreter(FungeSpace* space, QObject* parent = 0);
 	virtual ~Interpreter();
 
 	void run();
-	bool step();
+	Status step();
 	
 	void provideInput(QChar);
 	

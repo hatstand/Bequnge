@@ -56,7 +56,7 @@ void Interpreter::move()
 	emit pcChanged(m_pos, m_direction);
 }
 
-bool Interpreter::step()
+Interpreter::Status Interpreter::step()
 {
 	if(m_jumpedSpace)
 	{
@@ -69,9 +69,12 @@ bool Interpreter::step()
 
 	//qDebug() << "Direction: " << m_direction;
 	if(ret)
+	{
 		move();
+		return Success;
+	}
 
-	return ret;
+	return Invalid;
 }
 
 void Interpreter::run()
@@ -166,11 +169,12 @@ bool Interpreter::compute(QChar command)
 	else if(command.isNumber())
 		pushNumber(command);
 	else if(command == '@')
-		return false;
+		return End;
 	else
-		panic("Don't understand character: " + QString(command));
+		return Invalid;
+		//panic("Don't understand character: " + QString(command));
 
-	return true;
+	return Success;
 }
 
 //Instructions
