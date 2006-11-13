@@ -176,7 +176,7 @@ void FungeSpace::setDimensions(uint dimensions)
 		Coord coord = i.key();
 		
 		while ((uint)coord.count() > dimensions)
-			coord.removeLast();
+			coord.pop_back();
 		while ((uint)coord.count() < dimensions)
 			coord.append(0);
 		

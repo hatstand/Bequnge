@@ -3,8 +3,15 @@
 #include <QDebug>
 #include <QStringList>
 
+#include <stdlib.h>
+#include <time.h>
+#include <unistd.h>
+
 Interpreter::Interpreter(FungeSpace* space, QObject* parent)
-	: QObject(parent),m_space(space)
+	: QObject(parent),m_space(space),
+	m_pos(m_space->dimensions(), 0),
+	m_direction(m_space->dimensions(), 0),
+	m_storageOffset(m_space->dimensions(), 0)
 {
 	m_version = "1";
 
@@ -14,12 +21,9 @@ Interpreter::Interpreter(FungeSpace* space, QObject* parent)
 
 	m_stackStack.push(m_stack);
 
-	for(uint i = 0; i < m_space->dimensions(); ++i)
-		m_pos << 0;
+	m_direction[0] = 1;
 
-	m_direction << 1;
-	for(uint i = 1; i < m_space->dimensions(); ++i)
-		m_direction << 0;
+	srand((int)time(NULL) / (int)getpid());
 }
 
 Interpreter::~Interpreter()
@@ -162,6 +166,12 @@ Interpreter::Status Interpreter::compute(QChar command)
 		beginBlock();
 	else if(command == '}')
 		endBlock();
+	else if(command == 'u')
+		stackUnderStack();
+	else if(command == 'p')
+		putFunge();
+	else if(command == 'g')
+		getFunge();
 	else if(command.isNumber())
 		pushNumber(command);
 	else if(command == '@')
@@ -251,6 +261,8 @@ void Interpreter::greaterThan()
 
 void Interpreter::up()
 {
+	Q_ASSERT(m_direction.count() >= 2);
+
 	m_direction[0] = 0;
 	m_direction[1] = -1;
 
@@ -261,23 +273,23 @@ void Interpreter::up()
 void Interpreter::right()
 {
 	m_direction[0] = 1;
-	m_direction[1] = 0;
 
-	for(uint i = 2; i < m_space->dimensions(); ++i)
+	for(uint i = 1; i < m_space->dimensions(); ++i)
 		m_direction[i] = 0;
 }
 
 void Interpreter::left()
 {
 	m_direction[0] = -1;
-	m_direction[1] = 0;
 
-	for(uint i = 2; i < m_space->dimensions(); ++i)
+	for(uint i = 1; i < m_space->dimensions(); ++i)
 		m_direction[i] = 0;
 }
 
 void Interpreter::down()
 {
+	Q_ASSERT(m_direction.count() >= 2);
+
 	m_direction[0] = 0;
 	m_direction[1] = 1;
 
@@ -287,6 +299,8 @@ void Interpreter::down()
 
 void Interpreter::higher()
 {
+	Q_ASSERT(m_direction.count() >= 3);
+
 	m_direction[0] = 0;
 	m_direction[1] = 0;
 	m_direction[2] = 1;
@@ -297,6 +311,8 @@ void Interpreter::higher()
 
 void Interpreter::lower()
 {
+	Q_ASSERT(m_direction.count() >= 3);
+
 	m_direction[0] = 0;
 	m_direction[1] = 0;
 	m_direction[2] = -1;
@@ -307,17 +323,24 @@ void Interpreter::lower()
 
 void Interpreter::random()
 {
-	
+	int dim = rand() % m_space->dimensions();
+	int dir = rand() % 1;
+
+	m_direction[dim] = (dir == 1) ? dir : -1;
 }
 
 void Interpreter::turnLeft()
 {
+	Q_ASSERT(m_space->dimensions() >= 2);
+
 	m_direction[0] = -m_direction[1];
 	m_direction[1] = m_direction[0];
 }
 
 void Interpreter::turnRight()
 {
+	Q_ASSERT(m_space->dimensions() >= 2);
+
 	m_direction[0] = m_direction[1];
 	m_direction[1] = -m_direction[0];
 }
@@ -407,9 +430,9 @@ void Interpreter::printChar()
 
 void Interpreter::printDec()
 {
-	QString outputString = QString::number(popItem());
-	qDebug() << outputString;
-	emit(output(outputString));
+	QChar outputChar = QString::number(popItem())[0];
+	qDebug() << outputChar;
+	emit(output(outputChar));
 }
 
 void Interpreter::inputChar()
@@ -457,21 +480,26 @@ void Interpreter::iterate()
 
 void Interpreter::beginBlock()
 {
-	int x = qAbs(popItem());
+	int x = popItem();
 	QStack<int>* newStack;
 
 	int s = m_stack->size();
+	newStack = new QStack<int>();
+
 	if(s >= x)
 	{
-		newStack = new QStack<int>();
 		foreach(int o, m_stack->mid(s-x))
 		{
 			newStack->push(o);
 		}
 	}
+	else if(x < 0)
+	{
+		for(int i = 0; i < qAbs(x); ++i)
+			m_stack->push(QChar(' ').unicode());
+	}
 	else
 	{
-		newStack = new QStack<int>();
 		foreach(int o, m_stack->mid(0))
 			newStack->push(o);
 
@@ -479,13 +507,83 @@ void Interpreter::beginBlock()
 			newStack->push(QChar(' ').unicode());
 	}
 
+	pushVector(m_storageOffset);
+
+	for(uint i = 0; i < m_space->dimensions(); ++i)
+		m_storageOffset[i] = m_pos[i] + m_direction[i];
+
 	m_stack = newStack;
 	m_stackStack.push(m_stack);
 }
 
 void Interpreter::endBlock()
 {
+	int x = qAbs(popItem());
 	
+	QStack<int>* oldStack = m_stackStack.pop();
+	m_stack = m_stackStack.top();
+	m_storageOffset = popVector();
+	int s = oldStack->size();
+
+	if(s >= x)
+	{
+		foreach(int i, oldStack->mid(s-x))
+		{
+			m_stack->push(i);
+		}
+	}
+	else
+	{
+		for(int i = 0; i < x-s; ++i)
+			m_stack->push(QChar(' ').unicode());
+
+		foreach(int i, *oldStack)
+		{
+			m_stack->push(i);
+		}
+	}
+
+
+	delete(oldStack);
+}
+
+void Interpreter::stackUnderStack()
+{
+	if(m_stackStack.size() == 1)
+		reverse();
+
+	int n = qAbs(popItem());
+	if(n == 0)
+		return;
+
+	QStack<int>* over = m_stackStack.pop();
+	QStack<int>* under = m_stackStack.top();
+
+	m_stackStack.push(over);
+
+	while(n > 0 && !under->isEmpty())
+	{
+		over->push(under->pop());
+		--n;
+	}
+}
+
+void Interpreter::getFunge()
+{
+	Coord c = popVector();
+	for(uint i = 0; i < m_space->dimensions(); ++i)
+		c[i] += m_storageOffset[i];
+
+	pushItem(m_space->getChar(c).unicode());
+}
+
+void Interpreter::putFunge()
+{
+	Coord c = popVector();
+	for(uint i = 0; i < m_space->dimensions(); ++i)
+		c[i] += m_storageOffset[i];
+
+	m_space->setChar(c, popItem());
 }
 
 void Interpreter::pushNumber(QChar n)
@@ -497,6 +595,30 @@ void Interpreter::pushItem(int c)
 {
 	m_stack->push(c);
 	emit stackPushed(c);
+}
+
+void Interpreter::pushVector(Coord c)
+{
+	foreach(int x, c)
+	{
+		pushItem(x);
+	}
+}
+
+Coord Interpreter::popVector()
+{
+	Coord c;
+	QStack<int> t;
+
+	for(uint i = 0; i < m_space->dimensions(); ++i)
+		t.push(popItem());
+
+	while(!t.isEmpty())
+	{
+		c << t.pop();
+	}
+
+	return c;
 }
 
 int Interpreter::popItem()

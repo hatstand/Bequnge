@@ -165,6 +165,24 @@ void GLView::updateCamera(int i)
 		m_actualCursorPos[i] += diff * 0.2f;
 }
 
+/*void GLView::explode(Coord c)
+{
+	// GOTCHA
+	QList<float> f = fungeSpaceToGl(c, true); 
+
+	for(int i = 0; i < 100; ++i)
+	{
+		float radians = ((float)rand())/RAND_MAX * M_PI * 2;
+		float x = sin(radians);
+		float y = cos(radians);
+		float z = 0;
+
+		float p[3] = {f[0], f[1], f[2]};
+
+		m_particles << new Particle(p,x,y,z);
+	}
+}*/
+
 void GLView::paintGL()
 {
 	QTime frameTime;
@@ -312,6 +330,13 @@ void GLView::paintGL()
 				glEnd();					// Done Drawing The Cube
 			glPopMatrix();
 		}
+
+		/*foreach(Particle* p, m_particles)
+		{
+			glPushMatrix();
+				p->paintGL(1000/30, 1.0);
+			glPopMatrix();
+		}*/
 	glPopMatrix();
 	
 	glColor3f(1.0f, 1.0f, 1.0f);

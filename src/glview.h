@@ -31,6 +31,8 @@ public:
 	void setPC(int pc, Coord position, Coord direction);
 	void followPC(int pc);
 	void resetView();
+
+	void explode(Coord c);
 	
 public slots:
 	void setStringMode(bool enabled);
@@ -127,6 +129,8 @@ private:
 		ARROW = 0,
 		CURSOR = 1
 	};
+
+	//QList<Particle*> m_particles;
 };
 
 #endif

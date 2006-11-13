@@ -51,6 +51,7 @@ private:
 	FungeSpace* m_space;
 	Coord m_pos;
 	Coord m_direction;
+	Coord m_storageOffset;
 
 	bool m_stringMode;
 	bool m_jumpedSpace;
@@ -97,8 +98,14 @@ private:
 
 	void beginBlock();
 	void endBlock();
+	void stackUnderStack();
+
+	void getFunge();
+	void putFunge();
 
 	void pushNumber(QChar n);
+	void pushVector(Coord c);
+	Coord popVector();
 
 	void panic(QString message = NULL);
 };

@@ -6,7 +6,7 @@
 #include <QDebug>
 #include <QIODevice>
 
-typedef QList<int> Coord;
+typedef QVector<int> Coord;
 
 class FungeSpace
 {
