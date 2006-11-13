@@ -49,6 +49,7 @@ private:
 	void mouseReleaseEvent(QMouseEvent* event);
 	void wheelEvent(QWheelEvent* event);
 	void keyPressEvent(QKeyEvent* event);
+	bool focusNextPrevChild(bool next);
 	
 	void updateCamera(int i);
 	float degreesToRadians(float degrees);
@@ -59,6 +60,8 @@ private:
 	void toggleStringMode();
 	void setCursorDirection(int direction);
 	void setEye(float radius, float vert, float horiz);
+	void setActivePlane(int plane);
+	int otherPlane();
 
 private:
 	// Funge space

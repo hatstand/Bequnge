@@ -35,7 +35,8 @@ private slots:
 	void slotPcChanged(Coord position, Coord direction);
 	void slotStackPushed(int value);
 	void slotStackPopped();
-	void slotOutput(QChar);
+	void slotOutput(QChar c);
+	void slotOutput(QString str);
 	
 	void speedSliderMoved(int value);
 	void slotDisplayFungeSpaceChanged(int index);

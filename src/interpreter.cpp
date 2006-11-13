@@ -400,16 +400,16 @@ void Interpreter::compare()
 
 void Interpreter::printChar()
 {
-	outputChar = QChar(popItem());
+	QChar outputChar = QChar(popItem());
 	qDebug() << outputChar;
 	emit(output(outputChar));
 }
 
 void Interpreter::printDec()
 {
-	outputChar = QString::number(popItem())[0];
-	qDebug() << outputChar;
-	emit(output(outputChar));
+	QString outputString = QString::number(popItem());
+	qDebug() << outputString;
+	emit(output(outputString));
 }
 
 void Interpreter::inputChar()

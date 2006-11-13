@@ -8,6 +8,7 @@
 #include <QResource>
 #include <QMessageBox>
 #include <QCoreApplication>
+#include <QFocusEvent>
 
 #include <QDebug>
 
@@ -537,17 +538,20 @@ void GLView::mouseReleaseEvent(QMouseEvent* event)
 	}
 }
 
+int GLView::otherPlane()
+{
+	return m_activePlane == 0 ? 2 : 0;
+}
+
 void GLView::keyPressEvent(QKeyEvent* event)
 {
-	int otherPlane = m_activePlane == 0 ? 2 : 0;
-	
 	if (event->modifiers() & Qt::AltModifier)
 	{
 		bool handled = true;
 		if (event->key() == Qt::Key_Right)
-			setCursorDirection(otherPlane + 1);
+			setCursorDirection(otherPlane() + 1);
 		else if (event->key() == Qt::Key_Left)
-			setCursorDirection(-(otherPlane + 1));
+			setCursorDirection(-(otherPlane() + 1));
 		else if (event->key() == Qt::Key_Down)
 			setCursorDirection(2);
 		else if (event->key() == Qt::Key_Up)
@@ -560,9 +564,9 @@ void GLView::keyPressEvent(QKeyEvent* event)
 	}
 	
 	if (event->matches(QKeySequence::MoveToNextChar))
-		m_cursor[otherPlane]++;
+		m_cursor[otherPlane()]++;
 	else if (event->matches(QKeySequence::MoveToPreviousChar))
-		m_cursor[otherPlane]--;
+		m_cursor[otherPlane()]--;
 	else if (event->matches(QKeySequence::MoveToNextLine))
 		m_cursor[1]++;
 	else if (event->matches(QKeySequence::MoveToPreviousLine))
@@ -581,17 +585,7 @@ void GLView::keyPressEvent(QKeyEvent* event)
 		m_fungeSpace->setChar(m_cursor, ' ');
 	}
 	else if (event->key() == Qt::Key_Tab)
-	{
-		m_activePlane = otherPlane;
-		switch (m_cursorDirection)
-		{
-			case 1: setCursorDirection(3); break;
-			case -1: setCursorDirection(-3); break;
-			case 3: setCursorDirection(1); break;
-			case -3: setCursorDirection(-1); break;
-			default: setCursorDirection(m_cursorDirection); break;
-		}
-	}
+		setActivePlane(otherPlane());
 	else if (!event->text().isEmpty())
 	{
 		QChar c = event->text()[0];
@@ -624,6 +618,7 @@ void GLView::keyPressEvent(QKeyEvent* event)
 	
 	m_cursorBlinkTime.start();
 	m_cursorBlinkOn = true;
+	event->accept();
 }
 
 void GLView::toggleStringMode()
@@ -653,8 +648,6 @@ void GLView::setCursorDirection(int direction)
 
 void GLView::setEye(float radius, float vert, float horiz)
 {
-	int otherPlane = m_activePlane == 0 ? 2 : 0;
-	
 	float v = vert;
 	float h = horiz;
 	
@@ -672,7 +665,7 @@ void GLView::setEye(float radius, float vert, float horiz)
 	
 	m_destinationEyeOffset[m_activePlane] = radius * cos(v) * cos(h);
 	m_destinationEyeOffset[1] = radius * sin(v);
-	m_destinationEyeOffset[otherPlane] = radius * sin(h);
+	m_destinationEyeOffset[otherPlane()] = radius * sin(h);
 }
 
 int GLView::cursorDirection()
@@ -736,6 +729,24 @@ void GLView::setPC(int pc, Coord position, Coord direction)
 void GLView::followPC(int pc)
 {
 	m_followingPC = pc;
+}
+
+bool GLView::focusNextPrevChild(bool next)
+{
+	return false;
+}
+
+void GLView::setActivePlane(int plane)
+{
+	m_activePlane = plane;
+	switch (m_cursorDirection)
+	{
+		case 1: setCursorDirection(3); break;
+		case -1: setCursorDirection(-3); break;
+		case 3: setCursorDirection(1); break;
+		case -3: setCursorDirection(-1); break;
+		default: setCursorDirection(m_cursorDirection); break;
+	}
 }
 
 

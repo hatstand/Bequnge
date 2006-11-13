@@ -8,6 +8,7 @@
 #include <QFileDialog>
 #include <QDir>
 #include <QFile>
+#include <QKeyEvent>
 
 MainWindow::MainWindow(QWidget* parent)
 	: QMainWindow(parent),
@@ -135,6 +136,7 @@ void MainWindow::slotDebug()
 	connect(m_interpreter, SIGNAL(stackPushed(int)), SLOT(slotStackPushed(int)), Qt::DirectConnection);
 	connect(m_interpreter, SIGNAL(stackPopped()), SLOT(slotStackPopped()), Qt::DirectConnection);
 	connect(m_interpreter, SIGNAL(output(QChar)), SLOT(slotOutput(QChar)));
+	connect(m_interpreter, SIGNAL(output(QString)), SLOT(slotOutput(QString)));
 	
 	showExecutionSpace(true);
 	m_glView->followPC(0);
@@ -201,7 +203,12 @@ void MainWindow::slotStop()
 
 void MainWindow::slotOutput(QChar c)
 {
-	m_ui.consoleBox->setPlainText(m_ui.consoleBox->toPlainText() + c);
+	slotOutput(QString(c));
+}
+
+void MainWindow::slotOutput(QString str)
+{
+	m_ui.consoleBox->setPlainText(m_ui.consoleBox->toPlainText() + str);
 }
 
 void MainWindow::speedSliderMoved(int value)
@@ -213,4 +220,3 @@ void MainWindow::speedSliderMoved(int value)
 	else
 		m_autoStepTimer->setInterval(1000 / value);
 }
-

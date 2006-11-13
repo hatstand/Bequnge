@@ -35,6 +35,7 @@ public:
 
 signals:
 	void output(QChar);
+	void output(QString);
 	void input();
 	void pcChanged(Coord position, Coord direction);
 	
@@ -53,8 +54,6 @@ private:
 
 	bool m_stringMode;
 	bool m_jumpedSpace;
-
-	QChar outputChar;
 
 	Status compute(QChar);
 	void move();
