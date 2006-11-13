@@ -68,7 +68,7 @@ Interpreter::Status Interpreter::step()
 	bool ret = compute(c);
 
 	//qDebug() << "Direction: " << m_direction;
-	if(ret)
+	if(ret == Success)
 	{
 		move();
 		return Success;
@@ -82,18 +82,14 @@ void Interpreter::run()
 	while(step());
 }
 
-void Interpreter::getNext()
-{
-}
-
 // Call this with a QChar Array
-bool Interpreter::compute(QChar command)
+Interpreter::Status Interpreter::compute(QChar command)
 {
 	//qDebug() << "Instruction:" << command;
 	if(m_stringMode && command != '"')
 	{
 		pushItem(command.unicode());
-		return true;
+		return Success;
 	}
 
 	if(command == '+')

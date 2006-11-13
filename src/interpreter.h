@@ -56,10 +56,9 @@ private:
 
 	QChar outputChar;
 
-	bool compute(QChar);
+	Status compute(QChar);
 	void move();
 	void jumpSpaces();
-	void getNext();
 
 
 	// Instructions
