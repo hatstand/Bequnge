@@ -109,7 +109,7 @@ void FungeSpace::readInAll(QIODevice* dev)
 		int i = 0;
 		for(; i < line.length(); ++i)
 		{
-			if(line[i] == '\n')
+			if ((line[i] == '\n') || (line[i] == '\r'))
 				break;
 
 			pos[0] = i;
@@ -138,7 +138,7 @@ void FungeSpace::setChar(Coord pos, QChar c)
 
 	//qDebug() << pos << c;
 
-	if(c != ' ' && c != '\n')
+	if(c != ' ')
 	{
 		m_space.insert(pos, c);
 
