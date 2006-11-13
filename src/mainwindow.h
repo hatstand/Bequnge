@@ -3,6 +3,7 @@
 
 #include <QMainWindow>
 #include <QStandardItemModel>
+#include <QTimer>
 
 #include "ui_mainwindow.h"
 #include "fungespace.h"
@@ -36,6 +37,7 @@ private slots:
 	void slotStackPopped();
 	void slotOutput(QChar);
 	
+	void speedSliderMoved(int value);
 	void slotDisplayFungeSpaceChanged(int index);
 
 private:
@@ -46,6 +48,7 @@ private:
 	
 	FungeSpace* m_fungeSpace;
 	FungeSpace* m_executionFungeSpace;
+	QTimer* m_autoStepTimer;
 	Interpreter* m_interpreter;
 	
 	QStandardItemModel* m_stackModel;

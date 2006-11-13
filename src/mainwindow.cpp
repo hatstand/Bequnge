@@ -51,11 +51,16 @@ MainWindow::MainWindow(QWidget* parent)
 	connect(m_ui.actionDebug, SIGNAL(triggered(bool)), SLOT(slotDebug()));
 	connect(m_ui.actionStep, SIGNAL(triggered(bool)), SLOT(slotStep()));
 	connect(m_ui.actionStop, SIGNAL(triggered(bool)), SLOT(slotStop()));
+	connect(m_ui.speedSlider, SIGNAL(sliderMoved(int)), SLOT(speedSliderMoved(int)));
 	connect(m_ui.displayFungeSpace, SIGNAL(activated(int)), SLOT(slotDisplayFungeSpaceChanged(int)));
 	
 	// Setup the stack list
 	m_stackModel = new QStandardItemModel(this);
 	m_ui.stackList->setModel(m_stackModel);
+	
+	// Setup the auto-step timer
+	m_autoStepTimer = new QTimer(this);
+	connect(m_autoStepTimer, SIGNAL(timeout()), SLOT(slotStep()));
 }
 
 void MainWindow::cursorDirectionChanged(int direction)
@@ -134,6 +139,8 @@ void MainWindow::slotDebug()
 	showExecutionSpace(true);
 	m_glView->followPC(0);
 	m_glView->setPC(0, m_interpreter->pcPosition(0), m_interpreter->pcDirection(0));
+	
+	speedSliderMoved(m_ui.speedSlider->value());
 }
 
 void MainWindow::slotStep()
@@ -141,7 +148,8 @@ void MainWindow::slotStep()
 	if (m_interpreter == NULL)
 		slotDebug();
 	
-	m_interpreter->step();
+	if (!m_interpreter->step())
+		slotStop();
 }
 
 void MainWindow::slotPcChanged(Coord position, Coord direction)
@@ -187,10 +195,22 @@ void MainWindow::slotStop()
 	
 	m_ui.stackDock->setEnabled(false);
 	m_ui.debuggerDock->setEnabled(false);
+	
+	m_autoStepTimer->stop();
 }
 
 void MainWindow::slotOutput(QChar c)
 {
 	m_ui.consoleBox->setPlainText(m_ui.consoleBox->toPlainText() + c);
+}
+
+void MainWindow::speedSliderMoved(int value)
+{
+	if (value == 0)
+		m_autoStepTimer->stop();
+	else if (!m_autoStepTimer->isActive())
+		m_autoStepTimer->start(1000 / value);
+	else
+		m_autoStepTimer->setInterval(1000 / value);
 }
 
