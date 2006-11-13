@@ -68,7 +68,8 @@ bool Interpreter::step()
 	bool ret = compute(c);
 
 	//qDebug() << "Direction: " << m_direction;
-	move();
+	if(ret)
+		move();
 
 	return ret;
 }
@@ -500,6 +501,9 @@ void Interpreter::pushItem(int c)
 
 int Interpreter::popItem()
 {
+	if(m_stack->isEmpty())
+		return 0;
+
 	int n = m_stack->pop();
 	
 	emit stackPopped();
