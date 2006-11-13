@@ -36,8 +36,8 @@ private:
 	void parseHeader(QIODevice* dev);
 	void readInAll(QIODevice* dev);
 
-	QList<int> m_positiveEdges;
-	QList<int> m_negativeEdges;
+	Coord m_positiveEdges;
+	Coord m_negativeEdges;
 
 	QString m_version;
 	uint m_dimensions;

@@ -40,12 +40,18 @@ MainWindow::MainWindow(QWidget* parent)
 	// Hide the docks by default
 	m_ui.stackDock->hide();
 	m_ui.consoleDock->hide();
+	m_ui.debuggerDock->hide();
+	
+	m_ui.stackDock->setEnabled(false);
+	m_ui.debuggerDock->setEnabled(false);
 	
 	// Connect actions
 	connect(m_ui.actionOpen, SIGNAL(triggered(bool)), SLOT(slotOpen()));
 	connect(m_ui.actionNew, SIGNAL(triggered(bool)), SLOT(slotNew()));
 	connect(m_ui.actionDebug, SIGNAL(triggered(bool)), SLOT(slotDebug()));
 	connect(m_ui.actionStep, SIGNAL(triggered(bool)), SLOT(slotStep()));
+	connect(m_ui.actionStop, SIGNAL(triggered(bool)), SLOT(slotStop()));
+	connect(m_ui.displayFungeSpace, SIGNAL(activated(int)), SLOT(slotDisplayFungeSpaceChanged(int)));
 	
 	// Setup the stack list
 	m_stackModel = new QStandardItemModel(this);
@@ -82,11 +88,12 @@ void MainWindow::slotOpen()
 	delete m_fungeSpace;
 	m_fungeSpace = space;
 	
-	m_glView->setFungeSpace(m_fungeSpace);
+	showExecutionSpace(false);
 	m_glView->resetView();
 	
 	delete m_interpreter;
 	m_interpreter = NULL;
+	m_stackModel->clear();
 }
 
 void MainWindow::slotNew()
@@ -94,11 +101,12 @@ void MainWindow::slotNew()
 	delete m_fungeSpace;
 	m_fungeSpace = new FungeSpace(3);
 	
-	m_glView->setFungeSpace(m_fungeSpace);
+	showExecutionSpace(false);
 	m_glView->resetView();
 	
 	delete m_interpreter;
 	m_interpreter = NULL;
+	m_stackModel->clear();
 }
 
 void MainWindow::slotDebug()
@@ -106,10 +114,14 @@ void MainWindow::slotDebug()
 	// Setup UI
 	m_ui.stackDock->show();
 	m_ui.consoleDock->show();
+	m_ui.debuggerDock->show();
+	m_ui.stackDock->setEnabled(true);
+	m_ui.debuggerDock->setEnabled(true);
 	
 	// Copy the funge space
 	delete m_executionFungeSpace;
 	m_executionFungeSpace = new FungeSpace(m_fungeSpace);
+	m_stackModel->clear();
 	
 	// Make an interpreter
 	delete m_interpreter;
@@ -117,6 +129,11 @@ void MainWindow::slotDebug()
 	connect(m_interpreter, SIGNAL(pcChanged(Coord, Coord)), SLOT(slotPcChanged(Coord, Coord)));
 	connect(m_interpreter, SIGNAL(stackPushed(int)), SLOT(slotStackPushed(int)), Qt::DirectConnection);
 	connect(m_interpreter, SIGNAL(stackPopped()), SLOT(slotStackPopped()), Qt::DirectConnection);
+	connect(m_interpreter, SIGNAL(output(QChar)), SLOT(slotOutput(QChar)));
+	
+	showExecutionSpace(true);
+	m_glView->followPC(0);
+	m_glView->setPC(0, m_interpreter->pcPosition(0), m_interpreter->pcDirection(0));
 }
 
 void MainWindow::slotStep()
@@ -129,7 +146,7 @@ void MainWindow::slotStep()
 
 void MainWindow::slotPcChanged(Coord position, Coord direction)
 {
-	qDebug() << position << direction;
+	m_glView->setPC(0, position, direction);
 }
 
 void MainWindow::slotStackPushed(int value)
@@ -143,5 +160,37 @@ void MainWindow::slotStackPushed(int value)
 void MainWindow::slotStackPopped()
 {
 	m_stackModel->removeRow(0);
+}
+
+void MainWindow::showExecutionSpace(bool execution)
+{
+	if ((m_executionFungeSpace == NULL) && (execution))
+		return;
+	m_glView->setFungeSpace(execution ? m_executionFungeSpace : m_fungeSpace);
+	m_glView->setExecution(execution);
+	m_ui.displayFungeSpace->setCurrentIndex(execution ? 1 : 0);
+}
+
+void MainWindow::slotDisplayFungeSpaceChanged(int index)
+{
+	showExecutionSpace(index == 1);
+}
+
+void MainWindow::slotStop()
+{
+	delete m_interpreter;
+	m_interpreter = NULL;
+	delete m_executionFungeSpace;
+	m_executionFungeSpace = NULL;
+	m_stackModel->clear();
+	showExecutionSpace(false);
+	
+	m_ui.stackDock->setEnabled(false);
+	m_ui.debuggerDock->setEnabled(false);
+}
+
+void MainWindow::slotOutput(QChar c)
+{
+	m_ui.consoleBox->setPlainText(m_ui.consoleBox->toPlainText() + c);
 }
 

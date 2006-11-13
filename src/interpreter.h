@@ -21,6 +21,9 @@ public:
 	
 	void pushItem(int c);
 	int popItem();
+	
+	Coord pcPosition(int pc) { return m_pos; }
+	Coord pcDirection(int pc) { return m_direction; }
 
 signals:
 	void output(QChar);

@@ -337,8 +337,9 @@ void Interpreter::absolute()
 
 void Interpreter::string()
 {
-	if(!m_stringMode)
-		pushItem('\0');
+	// Huh?
+	//if(!m_stringMode)
+	//	pushItem('\0');
 
 	m_stringMode = !m_stringMode;
 }

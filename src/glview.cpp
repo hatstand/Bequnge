@@ -25,7 +25,8 @@ GLView::GLView(FungeSpace* fungeSpace, QWidget* parent)
 	  m_stringMode(false),
 	  m_zoomLevel(6.0f),
 	  m_moveDragging(false),
-	  m_rotateDragging(false)
+	  m_rotateDragging(false),
+	  m_execution(false)
 {
 	setFocusPolicy(Qt::WheelFocus);
 	
@@ -62,13 +63,24 @@ GLView::GLView(FungeSpace* fungeSpace, QWidget* parent)
 	}
 	
 	m_font->setForegroundColor(1.0f, 1.0f, 1.0f);
-	//m_font->setDepth(1.0f);
+	
+	m_fontLarge.setPointSize(14);
+	m_fontLarge.setBold(true);
+	m_fontSmall.setPointSize(10);
+	m_metricsSmall = new QFontMetrics(m_fontSmall);
+	
+	m_executionStr = "Execution fungespace";
+	m_execution2Str = "Changes made here will not affect your original source";
+	m_executionRect = QFontMetrics(m_fontLarge).boundingRect(m_executionStr);
+	m_execution2Rect = QFontMetrics(m_fontSmall).boundingRect(m_execution2Str);
+	m_executionRect.setWidth(m_executionRect.width() + 7);
 }
 
 
 GLView::~GLView()
 {
 	delete m_font;
+	delete m_metricsSmall;
 }
 
 void GLView::initializeGL()
@@ -107,7 +119,6 @@ void GLView::initializeGL()
 	
 	glNewList(m_displayListsBase + CURSOR, GL_COMPILE);
 		glBegin(GL_QUADS);
-			glColor4f(0.0f, 1.0f, 0.0f, 1.0f);
 			glVertex3f(m_fontSize - 5.0f, m_fontSize, 0.0f);
 			glVertex3f(0.0f, m_fontSize, 0.0f);
 			glVertex3f(0.0f, 0.0f, 0.0f);
@@ -141,7 +152,11 @@ void GLView::updateCamera(int i)
 	else
 		m_actualEyeOffset[i] += diff * 0.2f;
 	
-	QList<float> c = fungeSpaceToGl(m_cursor, false);
+	QList<float> c;
+	if ((!m_execution) || (m_followingPC == -1))
+		c = fungeSpaceToGl(m_cursor, false);
+	else
+		c = fungeSpaceToGl(m_pcs[m_followingPC].first, false);
 	diff = c[i] - m_actualCursorPos[i];
 	if (fabs(diff) < 0.01)
 		m_actualCursorPos[i] = c[i];
@@ -212,8 +227,26 @@ void GLView::paintGL()
 				glTranslatef(coord[0], coord[1] - 2.5f, coord[2] - 0.01f);
 				if (m_activePlane == 0)
 					glRotatef(90.0f, 0.0f, 1.0f, 0.0f);
+				glColor4f(0.0f, 1.0f, 0.0f, 1.0f);
 				glCallList(m_displayListsBase + CURSOR);
 			glPopMatrix();
+		}
+		
+		if (m_execution)
+		{
+			QMapIterator<int, QPair<Coord, Coord > > i(m_pcs);
+			while (i.hasNext())
+			{
+				i.next();
+				glPushMatrix();
+					coord = fungeSpaceToGl(i.value().first, true);
+					glTranslatef(coord[0], coord[1] - 2.5f, coord[2] - 0.01f);
+					if (m_activePlane == 0)
+						glRotatef(90.0f, 0.0f, 1.0f, 0.0f);
+					glColor4f(1.0f, 0.0f, 0.0f, 1.0f);
+					glCallList(m_displayListsBase + CURSOR);
+				glPopMatrix();
+			}
 		}
 		
 		if (m_selectionStart != m_selectionEnd)
@@ -283,6 +316,21 @@ void GLView::paintGL()
 	glColor3f(1.0f, 1.0f, 1.0f);
 	renderText(0, 15, "Cursor: " + QString::number(m_cursor[0]) + ", " + QString::number(m_cursor[1]) + ", " + QString::number(m_cursor[2]));
 	renderText(0, 30, "FPS: " + QString::number(m_fpsCounter));
+	
+	if (m_execution)
+	{
+		QString followingStr;
+		if (m_followingPC == -1)
+			followingStr = "Following editor cursor";
+		else
+			followingStr = "Following PC " + QString::number(m_followingPC);
+		QRect boundingRect = m_metricsSmall->boundingRect(followingStr);
+		
+		renderText(width() - boundingRect.width(), m_executionRect.height() + m_execution2Rect.height() + boundingRect.height(), followingStr, m_fontSmall);
+		renderText(width() - m_execution2Rect.width(), m_executionRect.height() + m_execution2Rect.height(), m_execution2Str, m_fontSmall);
+		glColor3f(0.0f, 1.0f, 0.0f);
+		renderText(width() - m_executionRect.width(), m_executionRect.height(), m_executionStr, m_fontLarge);
+	}
 	
 	glPushMatrix();
 		glLoadIdentity();
@@ -358,7 +406,7 @@ void GLView::mouseMoveEvent(QMouseEvent* event)
 	}
 	else if (m_selectDragging)
 	{
-		QList<int> p = pointToFungeSpace(event->pos());
+		Coord p = pointToFungeSpace(event->pos());
 		if (m_fungeSpace->getChar(p) != ' ')
 			m_selectionEnd = p;
 	}
@@ -374,18 +422,18 @@ void GLView::wheelEvent(QWheelEvent* event)
 	setEye(m_zoomLevel, 35.0f, 0.0f);
 }
 
-QList<int> GLView::glToFungeSpace(float x, float y, float z)
+Coord GLView::glToFungeSpace(float x, float y, float z)
 {
 	float size = m_fontSize;
 	
-	QList<int> ret;
+	Coord ret;
 	ret.append((int)(floor(x/size)));
 	ret.append((int)(- floor(y/size)));
 	ret.append((int)(floor((z*-1)/size - 0.5f) + 1));
 	return ret;
 }
 
-QList<float> GLView::fungeSpaceToGl(QList<int> c, bool premultiplied)
+QList<float> GLView::fungeSpaceToGl(Coord c, bool premultiplied)
 {
 	float size = m_fontSize;
 	if (!premultiplied)
@@ -398,7 +446,7 @@ QList<float> GLView::fungeSpaceToGl(QList<int> c, bool premultiplied)
 	return ret;
 }
 
-QList<int> GLView::pointToFungeSpace(const QPoint& pos)
+Coord GLView::pointToFungeSpace(const QPoint& pos)
 {
 	double objx, objy, objz;
 	float x = pos.x();
@@ -449,7 +497,7 @@ void GLView::mousePressEvent(QMouseEvent* event)
 			return;
 		}
 		
-		QList<int> p = pointToFungeSpace(event->pos());
+		Coord p = pointToFungeSpace(event->pos());
 		if (m_fungeSpace->getChar(p) != ' ')
 		{
 			m_selectionStart = p;
@@ -673,6 +721,21 @@ void GLView::updateFPSCounter()
 {
 	m_fpsCounter = m_frameCount / 2.0f;
 	m_frameCount = 0;
+}
+
+void GLView::setExecution(bool execution)
+{
+	m_execution = execution;
+}
+
+void GLView::setPC(int pc, Coord position, Coord direction)
+{
+	m_pcs[pc] = QPair<Coord, Coord>(position, direction);
+}
+
+void GLView::followPC(int pc)
+{
+	m_followingPC = pc;
 }
 
 

@@ -19,6 +19,7 @@ uint qHash(Coord c)
 
 
 FungeSpace::FungeSpace(int dimensions)
+	: m_dimensions(0)
 {
 	setDimensions(dimensions);
 	
@@ -26,6 +27,7 @@ FungeSpace::FungeSpace(int dimensions)
 }
 
 FungeSpace::FungeSpace(QIODevice* dev)
+	: m_dimensions(0)
 {
 	m_version = "0";
 
@@ -36,6 +38,7 @@ FungeSpace::FungeSpace(QIODevice* dev)
 }
 
 FungeSpace::FungeSpace(FungeSpace* space)
+	: m_dimensions(0)
 {
 	m_version = "0";
 	
@@ -43,8 +46,8 @@ FungeSpace::FungeSpace(FungeSpace* space)
 	m_space = space->getCode();
 	for (int i=0 ; i<m_dimensions ; ++i)
 	{
-		m_positiveEdges.append(space->getPositiveEdge(i));
-		m_negativeEdges.append(space->getNegativeEdge(i));
+		m_positiveEdges[i] = space->getPositiveEdge(i);
+		m_negativeEdges[i] = space->getNegativeEdge(i);
 	}
 }
 

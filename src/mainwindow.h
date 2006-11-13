@@ -18,6 +18,9 @@ class MainWindow : public QMainWindow
 
 public:
 	MainWindow(QWidget* parent = 0);
+	
+private:
+	void showExecutionSpace(bool execution);
 
 private slots:
 	void cursorDirectionChanged(int direction);
@@ -26,10 +29,14 @@ private slots:
 	void slotNew();
 	void slotDebug();
 	void slotStep();
+	void slotStop();
 	
 	void slotPcChanged(Coord position, Coord direction);
 	void slotStackPushed(int value);
 	void slotStackPopped();
+	void slotOutput(QChar);
+	
+	void slotDisplayFungeSpaceChanged(int index);
 
 private:
 	Ui_MainWindow m_ui;

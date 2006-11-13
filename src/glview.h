@@ -10,9 +10,9 @@
 
 class QMouseEvent;
 class QKeyEvent;
-class FungeSpace;
 
 #include "OGLFT.h"
+#include "fungespace.h"
 
 class GLView : public QGLWidget
 {
@@ -27,6 +27,9 @@ public:
 	void setFungeSpace(FungeSpace* funge);
 	FungeSpace* getFungeSpace() { return m_fungeSpace; }
 	
+	void setExecution(bool execution);
+	void setPC(int pc, Coord position, Coord direction);
+	void followPC(int pc);
 	void resetView();
 	
 public slots:
@@ -50,9 +53,9 @@ private:
 	void updateCamera(int i);
 	float degreesToRadians(float degrees);
 	float modulo(float value, float mod);
-	QList<int> pointToFungeSpace(const QPoint& pos);
-	QList<int> glToFungeSpace(float x, float y, float z);
-	QList<float> fungeSpaceToGl(QList<int> c, bool premultiplied);
+	Coord pointToFungeSpace(const QPoint& pos);
+	Coord glToFungeSpace(float x, float y, float z);
+	QList<float> fungeSpaceToGl(Coord c, bool premultiplied);
 	void toggleStringMode();
 	void setCursorDirection(int direction);
 	void setEye(float radius, float vert, float horiz);
@@ -61,16 +64,25 @@ private:
 	// Funge space
 	FungeSpace* m_fungeSpace;
 	
+	// Debugger
+	bool m_execution;
+	QMap<int, QPair<Coord, Coord > > m_pcs;
+	int m_followingPC;
+	QString m_executionStr;
+	QString m_execution2Str;
+	QRect m_executionRect;
+	QRect m_execution2Rect;
+	
 	// Cursor
-	QList<int> m_cursor;
+	Coord m_cursor;
 	QTime m_cursorBlinkTime;
 	bool m_cursorBlinkOn;
 	int m_cursorDirection;
 	int m_activePlane;
 	float m_actualCursorPos[3];
 	
-	QList<int> m_selectionStart;
-	QList<int> m_selectionEnd;
+	Coord m_selectionStart;
+	Coord m_selectionEnd;
 	bool m_selectDragging;
 	
 	// Frame updates
@@ -101,6 +113,9 @@ private:
 	FT_Face m_fontFace;
 	OGLFT::Face* m_font;
 	float m_fontSize;
+	QFont m_fontLarge;
+	QFont m_fontSmall;
+	QFontMetrics* m_metricsSmall;
 	
 	// Display lists
 	uint m_displayListsBase;
