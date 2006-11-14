@@ -64,8 +64,12 @@ private:
 	void setEye(float radius, float vert, float horiz);
 	void setActivePlane(int plane);
 	int otherPlane();
+	Coord selectionTopLeft();
+	Coord selectionBottomRight();
 
 private:
+	Coord m_origin;
+	
 	// Funge space
 	FungeSpace* m_fungeSpace;
 	
@@ -85,6 +89,9 @@ private:
 	int m_cursorDirection;
 	int m_activePlane;
 	float m_actualCursorPos[3];
+	
+	bool m_mouseHoveringOverChar;
+	Coord m_mouseHover;
 	
 	Coord m_selectionStart;
 	Coord m_selectionEnd;

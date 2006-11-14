@@ -31,6 +31,10 @@ GLView::GLView(FungeSpace* fungeSpace, QWidget* parent)
 {
 	setFocusPolicy(Qt::WheelFocus);
 	
+	m_origin.append(0);
+	m_origin.append(0);
+	m_origin.append(0);
+	
 	// Setup the redraw timer
 	m_redrawTimer = new QTimer(this);
 	connect(m_redrawTimer, SIGNAL(timeout()), SLOT(updateGL()));
@@ -75,6 +79,9 @@ GLView::GLView(FungeSpace* fungeSpace, QWidget* parent)
 	m_executionRect = QFontMetrics(m_fontLarge).boundingRect(m_executionStr);
 	m_execution2Rect = QFontMetrics(m_fontSmall).boundingRect(m_execution2Str);
 	m_executionRect.setWidth(m_executionRect.width() + 7);
+	
+	// Enable mouse tracking
+	setMouseTracking(true);
 }
 
 
@@ -205,6 +212,9 @@ void GLView::paintGL()
 	          1.0f,
 	          0.0f);
 	
+	Coord selTopLeft = selectionTopLeft();
+	Coord selBottomRight = selectionBottomRight();
+	
 	glScalef(0.004f, 0.004f, 0.004f);
 	glPushMatrix();
 		//glEnable(GL_TEXTURE_2D);
@@ -220,8 +230,22 @@ void GLView::paintGL()
 			glPushMatrix();
 				int diff = abs(coords[m_activePlane] - m_cursor[m_activePlane]);
 				
+				bool withinSelection = ((m_selectionStart != m_selectionEnd) &&
+				                        (coords[0] >= selTopLeft[0]) && (coords[0] <= selBottomRight[0]) &&
+				                        (coords[1] >= selTopLeft[1]) && (coords[1] <= selBottomRight[1]) &&
+				                        (coords[2] <= selTopLeft[2]) && (coords[2] >= selBottomRight[2]));
+				
 				if ((coords == m_cursor) && (m_cursorBlinkOn || !hasFocus()))
 					glColor4f(0.0f, 0.0f, 0.0f, 1.0f);
+				else if (m_mouseHoveringOverChar && (m_mouseHover == coords))
+					glColor4f(1.0f, 0.2f, 0.2f, 1.0f);
+				else if (withinSelection)
+				{
+					if (diff == 0)
+						glColor4f(0.5f, 1.0f, 1.0f, 1.0f);
+					else
+						glColor4f(0.5f, 0.5f, 1.0f, 1.0f);
+				}
 				else if (diff == 0)
 					glColor4f(0.0f, 1.0f, 0.0f, 1.0f);
 				else if (diff <= 8)
@@ -233,7 +257,11 @@ void GLView::paintGL()
 				glTranslatef(coord[0], coord[1], coord[2]);
 				
 				if (m_activePlane == 0)
+				{
+					glTranslatef(m_fontSize/2, 0.0f, 0.0f);
 					glRotatef(90.0f, 0.0f, 1.0f, 0.0f);
+					glTranslatef(-m_fontSize/2, 0.0f, 0.0f);
+				}
 				m_font->draw(data);
 			glPopMatrix();
 		}
@@ -243,9 +271,13 @@ void GLView::paintGL()
 		{
 			glPushMatrix();
 				coord = fungeSpaceToGl(m_cursor, true);
-				glTranslatef(coord[0], coord[1] - 2.5f, coord[2] - 0.01f);
+				glTranslatef(coord[0] - 0.01f, coord[1] - 2.5f, coord[2] - 0.01f);
 				if (m_activePlane == 0)
+				{
+					glTranslatef(m_fontSize/2, 0.0f, 0.0f);
 					glRotatef(90.0f, 0.0f, 1.0f, 0.0f);
+					glTranslatef(-m_fontSize/2, 0.0f, 0.0f);
+				}
 				glColor4f(0.0f, 1.0f, 0.0f, 1.0f);
 				glCallList(m_displayListsBase + CURSOR);
 			glPopMatrix();
@@ -259,9 +291,13 @@ void GLView::paintGL()
 				i.next();
 				glPushMatrix();
 					coord = fungeSpaceToGl(i.value().first, true);
-					glTranslatef(coord[0], coord[1] - 2.5f, coord[2] - 0.01f);
+					glTranslatef(coord[0] - 0.01f, coord[1] - 2.5f, coord[2] - 0.01f);
 					if (m_activePlane == 0)
+					{
+						glTranslatef(m_fontSize/2, 0.0f, 0.0f);
 						glRotatef(90.0f, 0.0f, 1.0f, 0.0f);
+						glTranslatef(-m_fontSize/2, 0.0f, 0.0f);
+					}
 					glColor4f(1.0f, 0.0f, 0.0f, 1.0f);
 					glCallList(m_displayListsBase + CURSOR);
 				glPopMatrix();
@@ -270,26 +306,25 @@ void GLView::paintGL()
 		
 		if (m_selectionStart != m_selectionEnd)
 		{
+			//glDepthMask(false);
 			glPushMatrix();
-				coord = fungeSpaceToGl(m_selectionStart, true);
-				QList<float> endCoord = fungeSpaceToGl(m_selectionEnd, true);
+				QList<float> cubeStart = fungeSpaceToGl(selTopLeft, true);
+				QList<float> cubeEnd = fungeSpaceToGl(selBottomRight, true);
 				
-				QList<float> cubeStart;
-				cubeStart.append(qMin(coord[0], endCoord[0]) - 2.5f);
-				cubeStart.append(qMin(coord[1], endCoord[1]) + m_fontSize);
-				cubeStart.append(qMin(coord[2], endCoord[2]) - m_fontSize/2 - 2.5f);
+				cubeStart[0] -= 2.4f;
+				cubeStart[1] += m_fontSize - 0.1f;
+				cubeStart[2] -= m_fontSize/2 - 2.4f;
 				
-				QList<float> cubeEnd;
-				cubeEnd.append(qMax(coord[0], endCoord[0]) + m_fontSize - 2.5f);
-				cubeEnd.append(qMax(coord[1], endCoord[1]));
-				cubeEnd.append(qMax(coord[2], endCoord[2]) + m_fontSize/2);
+				cubeEnd[0] += m_fontSize - 2.6f;
+				cubeEnd[1] += 0.1f;
+				cubeEnd[2] += m_fontSize/2 - 0.1f;
 				
 				cubeEnd[0] -= cubeStart[0];
 				cubeEnd[1] -= cubeStart[1];
 				cubeEnd[2] -= cubeStart[2];
 				
 				glTranslatef(cubeStart[0], cubeStart[1] - 2.5f, cubeStart[2]);
-				glColor4f(0.0f, 0.0f, 1.0f, 0.5f);
+				glColor4f(0.5f, 0.5f, 1.0f, 0.3f);
 				// draw a cube (6 quadrilaterals)
 				glBegin(GL_QUADS);				// start drawing the cube.
 					// top of cube
@@ -329,7 +364,10 @@ void GLView::paintGL()
 					glVertex3f(cubeEnd[0], 0.0f, 0.0f);		// Bottom Right Of The Quad (Right)
 				glEnd();					// Done Drawing The Cube
 			glPopMatrix();
+			//glDepthMask(true);
 		}
+		
+		glClear(GL_DEPTH_BUFFER_BIT);
 		
 		i.toFront();
 		glColorMask(false, false, false, false);
@@ -343,7 +381,11 @@ void GLView::paintGL()
 				coord = fungeSpaceToGl(coords, true);
 				glTranslatef(coord[0], coord[1], coord[2]);
 				if (m_activePlane == 0)
+				{
+					glTranslatef(m_fontSize/2, 0.0f, 0.0f);
 					glRotatef(90.0f, 0.0f, 1.0f, 0.0f);
+					glTranslatef(-m_fontSize/2, 0.0f, 0.0f);
+				}
 				glCallList(m_displayListsBase + CURSOR);
 			glPopMatrix();
 		}
@@ -426,6 +468,7 @@ float GLView::modulo(float value, float mod)
 
 void GLView::mouseMoveEvent(QMouseEvent* event)
 {
+	m_mouseHoveringOverChar = false;
 	if (m_moveDragging)
 	{
 		float xOffset = event->pos().x() - m_preDragMousePosition.x();
@@ -453,6 +496,16 @@ void GLView::mouseMoveEvent(QMouseEvent* event)
 		Coord p = pointToFungeSpace(event->pos());
 		if (m_fungeSpace->getChar(p) != ' ')
 			m_selectionEnd = p;
+	}
+	else
+	{
+		// Hovering
+		Coord p = pointToFungeSpace(event->pos());
+		if (m_fungeSpace->getChar(p) != ' ')
+		{
+			m_mouseHover = p;
+			m_mouseHoveringOverChar = true;
+		}
 	}
 }
 
@@ -790,6 +843,28 @@ void GLView::setActivePlane(int plane)
 		case -3: setCursorDirection(-1); break;
 		default: setCursorDirection(m_cursorDirection); break;
 	}
+}
+
+Coord GLView::selectionTopLeft()
+{
+	if (m_selectionStart.count() < 3)
+		return m_origin;
+	Coord ret;
+	ret.append(qMin(m_selectionStart[0], m_selectionEnd[0]));
+	ret.append(qMin(m_selectionStart[1], m_selectionEnd[1]));
+	ret.append(qMax(m_selectionStart[2], m_selectionEnd[2]));
+	return ret;
+}
+
+Coord GLView::selectionBottomRight()
+{
+	if (m_selectionEnd.count() < 3)
+		return m_origin;
+	Coord ret;
+	ret.append(qMax(m_selectionStart[0], m_selectionEnd[0]));
+	ret.append(qMax(m_selectionStart[1], m_selectionEnd[1]));
+	ret.append(qMin(m_selectionStart[2], m_selectionEnd[2]));
+	return ret;
 }
 
 
