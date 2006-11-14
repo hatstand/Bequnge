@@ -249,24 +249,24 @@ void FungeSpace::save(QString filename)
 
 	// Write header
 	stream << "Version 1,Dimensions " << m_dimensions << '\n';
+	QString line;
+
+	stream.setString(&line);
 
 	for(QHash<Coord,Plane*>::const_iterator it = planes.constBegin(); it != planes.constEnd(); ++it)
 	{
-		if(!it.key().isEmpty())
-		{
-			stream << "Plane at:";
-			foreach(int i, it.key())
-			{
-				stream << i;
-			}
-			stream << '\n';
-		}
-
-		int minx = it.value()->constBegin().key()[1];
 		int miny = it.value()->constBegin().key()[0];
 
-		int currentx = 0;
-		int currenty = 0;
+		int minx = it.value()->constBegin().key()[1];
+		foreach(PlaneCoord q, it.value()->keys())
+		{
+			minx = qMin(minx, q[1]);
+		}
+
+		int currentx = minx;
+		int currenty = miny;
+
+		int lines = 0;
 		
 		for(Plane::const_iterator jt = it.value()->constBegin(); jt != it.value()->constEnd(); ++jt)
 		{
@@ -274,7 +274,8 @@ void FungeSpace::save(QString filename)
 			for(; currenty < jt.key()[0]; ++currenty)
 			{
 				stream << '\n';
-				currentx = 0;
+				currentx = minx;
+				++lines;
 			}
 
 			// Write spaces until we get to the x position
@@ -285,6 +286,24 @@ void FungeSpace::save(QString filename)
 			stream << jt.value();
 			++currentx;
 		}
+		++lines;
+
+		stream.setDevice(&file);
+		stream << "Lines " << lines << ',';
+		stream << "Origin " << minx << ':' << miny;
+		if(!it.key().isEmpty())
+		{
+			stream << ",Coord ";
+			foreach(int i, it.key())
+			{
+				stream << i << ':';
+			}
+		}
+		stream << '\n';
+		stream << line << '\n';
+
+		line.clear();
+		stream.setString(&line);
 	}
 
 	file.close();
