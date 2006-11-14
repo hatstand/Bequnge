@@ -330,6 +330,24 @@ void GLView::paintGL()
 				glEnd();					// Done Drawing The Cube
 			glPopMatrix();
 		}
+		
+		i.toFront();
+		glColorMask(false, false, false, false);
+		while (i.hasNext())
+		{
+			i.next();
+			Coord coords = i.key();
+			QChar data = i.value();
+			
+			glPushMatrix();
+				coord = fungeSpaceToGl(coords, true);
+				glTranslatef(coord[0], coord[1], coord[2]);
+				if (m_activePlane == 0)
+					glRotatef(90.0f, 0.0f, 1.0f, 0.0f);
+				glCallList(m_displayListsBase + CURSOR);
+			glPopMatrix();
+		}
+		glColorMask(true, true, true, true);
 
 		/*foreach(Particle* p, m_particles)
 		{
