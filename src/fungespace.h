@@ -32,6 +32,8 @@ public:
 	uint dimensions() { return m_dimensions; }
 	void setDimensions(uint dimensions);
 
+	void save(QString filename);
+
 private:
 	void parseHeader(QIODevice* dev);
 	void readInAll(QIODevice* dev);

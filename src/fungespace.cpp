@@ -1,6 +1,9 @@
 #include "fungespace.h"
 
 #include <QStringList>
+#include <QFile>
+
+#include <boost/multi_array.hpp>
 
 uint qHash(Coord c)
 {
@@ -191,5 +194,23 @@ void FungeSpace::setDimensions(uint dimensions)
 		m_positiveEdges.append(0);
 	while (m_negativeEdges.count() < m_dimensions)
 		m_negativeEdges.append(0);
+}
+
+void FungeSpace::save(QString filename)
+{
+	QFile file(filename);
+	if(!file.open(QIODevice::WriteOnly))
+	{
+		qWarning() << "Cannot open file:" << filename << ":-S";
+		return;
+	}
+
+	foreach(Coord p, m_space.keys())
+	{
+		
+	}
+
+
+	file.close();
 }
 

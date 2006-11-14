@@ -40,6 +40,8 @@ private slots:
 	
 	void speedSliderMoved(int value);
 	void slotDisplayFungeSpaceChanged(int index);
+	
+	void saveFile();
 
 private:
 	Ui_MainWindow m_ui;

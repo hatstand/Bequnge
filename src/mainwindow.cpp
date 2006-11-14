@@ -53,6 +53,7 @@ MainWindow::MainWindow(QWidget* parent)
 	connect(m_ui.actionStep, SIGNAL(triggered(bool)), SLOT(slotStep()));
 	connect(m_ui.actionStop, SIGNAL(triggered(bool)), SLOT(slotStop()));
 	connect(m_ui.speedSlider, SIGNAL(sliderMoved(int)), SLOT(speedSliderMoved(int)));
+	connect(m_ui.actionSave, SIGNAL(triggered(bool)), SLOT(saveFile()));
 	connect(m_ui.displayFungeSpace, SIGNAL(activated(int)), SLOT(slotDisplayFungeSpaceChanged(int)));
 	
 	// Setup the stack list
@@ -220,3 +221,13 @@ void MainWindow::speedSliderMoved(int value)
 	else
 		m_autoStepTimer->setInterval(1000 / value);
 }
+
+void MainWindow::saveFile()
+{
+	QString filename = QFileDialog::getSaveFileName(this, "Save File...", QDir::home().path(), "BeQunge source (*.beq)");
+
+	m_fungeSpace->save(filename);
+}
+
+
+
