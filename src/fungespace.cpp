@@ -162,7 +162,7 @@ void FungeSpace::readPlane(QIODevice* dev)
 	for(int i = 0; i < noLines; ++i)
 	{
 		line = dev->readLine();
-		for(int j = 0; j < line.length(); ++j)
+		for(int j = 0; j < line.length() -1; ++j)
 		{
 			Coord p(m_dimensions);
 			// Insert x and y
@@ -358,6 +358,11 @@ void FungeSpace::save(QString filename)
 
 		line.clear();
 		stream.setString(&line);
+	}
+
+	foreach(Plane* i, planes)
+	{
+		delete i;
 	}
 
 	file.close();

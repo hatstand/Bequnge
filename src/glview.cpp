@@ -667,9 +667,9 @@ void GLView::keyPressEvent(QKeyEvent* event)
 	else if (event->matches(QKeySequence::MoveToPreviousLine))
 		moveCursor(0, -1, 0);
 	else if (event->matches(QKeySequence::MoveToNextPage))
-		moveCursor(m_activePlane + 1);
-	else if (event->matches(QKeySequence::MoveToPreviousPage))
 		moveCursor(-m_activePlane - 1);
+	else if (event->matches(QKeySequence::MoveToPreviousPage))
+		moveCursor(m_activePlane + 1);
 	else if (event->matches(QKeySequence::SelectNextChar))
 		moveCursor(otherPlane() + 1, QTextCursor::KeepAnchor);
 	else if (event->matches(QKeySequence::SelectPreviousChar))
@@ -689,6 +689,10 @@ void GLView::keyPressEvent(QKeyEvent* event)
 		if (m_fungeSpace->getChar(m_cursor) == '"')
 			toggleStringMode();
 		
+		m_fungeSpace->setChar(m_cursor, ' ');
+	}
+	else if (event->matches(QKeySequence::Delete))
+	{
 		m_fungeSpace->setChar(m_cursor, ' ');
 	}
 	else if (event->key() == Qt::Key_Tab)

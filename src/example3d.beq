@@ -1,17 +1,9 @@
-Version 1
-Lines 5,Dimension 2 0
-<             v
-v"Hello World"<
-  >,v
+Version 1,Dimensions 3
+Lines 1,Origin 0:0,Coord 0:
+hl"Hello World"<
+Lines 3,Origin 1:0,Coord -1:
+v >,v
 >:| >
   @
-Lines 5,Dimension 2 1
-blah
-blah
-blah
-blah
-Lines 3, Dimension 2 2
-blah
-blah
-blah
-Lines 1,Dimension 3 0
+Lines 1,Origin 0:0,Coord 1:
+>              l

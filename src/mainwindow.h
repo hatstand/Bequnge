@@ -4,6 +4,7 @@
 #include <QMainWindow>
 #include <QStandardItemModel>
 #include <QTimer>
+#include <QSettings>
 
 #include "ui_mainwindow.h"
 #include "fungespace.h"
@@ -55,6 +56,8 @@ private:
 	Interpreter* m_interpreter;
 	
 	QStandardItemModel* m_stackModel;
+
+	QSettings m_settings;
 };
 
 

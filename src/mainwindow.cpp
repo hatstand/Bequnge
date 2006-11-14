@@ -13,7 +13,8 @@
 MainWindow::MainWindow(QWidget* parent)
 	: QMainWindow(parent),
 	  m_interpreter(NULL),
-	  m_executionFungeSpace(NULL)
+	  m_executionFungeSpace(NULL),
+	  m_settings("BeQunge", "BeQunge", this)
 {
 	m_ui.setupUi(this);
 	
@@ -43,9 +44,8 @@ MainWindow::MainWindow(QWidget* parent)
 	m_ui.consoleDock->hide();
 	m_ui.debuggerDock->hide();
 	
-	m_ui.stackDock->setEnabled(false);
-	m_ui.debuggerDock->setEnabled(false);
-	
+	m_ui.displayFungeSpace->setEnabled(false);
+
 	// Connect actions
 	connect(m_ui.actionOpen, SIGNAL(triggered(bool)), SLOT(slotOpen()));
 	connect(m_ui.actionNew, SIGNAL(triggered(bool)), SLOT(slotNew()));
@@ -63,6 +63,12 @@ MainWindow::MainWindow(QWidget* parent)
 	// Setup the auto-step timer
 	m_autoStepTimer = new QTimer(this);
 	connect(m_autoStepTimer, SIGNAL(timeout()), SLOT(slotStep()));
+
+	if(!m_settings.contains("filedir"))
+	{
+		m_settings.setValue("filedir", QDir::home().absolutePath());
+		m_settings.sync();
+	}
 }
 
 void MainWindow::cursorDirectionChanged(int direction)
@@ -82,11 +88,13 @@ void MainWindow::cursorDirectionChanged(int direction)
 
 void MainWindow::slotOpen()
 {
-	QString fileName = QFileDialog::getOpenFileName(this, "Open file", QDir::home().path(), "BeQunge source (*.beq)");
+	QString fileName = QFileDialog::getOpenFileName(this, "Open file", m_settings.value("filedir").toString(), "BeQunge source (*.beq)");
 	if (fileName.isNull())
 		return;
 	
 	QFile file(fileName);
+	QDir dir(fileName);
+	m_settings.setValue("filedir", dir.absolutePath());
 	
 	FungeSpace* space = new FungeSpace(&file);
 	if (space->dimensions() < 3)
@@ -122,8 +130,7 @@ void MainWindow::slotDebug()
 	m_ui.stackDock->show();
 	m_ui.consoleDock->show();
 	m_ui.debuggerDock->show();
-	m_ui.stackDock->setEnabled(true);
-	m_ui.debuggerDock->setEnabled(true);
+	m_ui.displayFungeSpace->setEnabled(true);
 	
 	// Copy the funge space
 	delete m_executionFungeSpace;
@@ -191,13 +198,8 @@ void MainWindow::slotStop()
 {
 	delete m_interpreter;
 	m_interpreter = NULL;
-	delete m_executionFungeSpace;
-	m_executionFungeSpace = NULL;
 	m_stackModel->clear();
 	showExecutionSpace(false);
-	
-	m_ui.stackDock->setEnabled(false);
-	m_ui.debuggerDock->setEnabled(false);
 	
 	m_autoStepTimer->stop();
 }
@@ -224,7 +226,10 @@ void MainWindow::speedSliderMoved(int value)
 
 void MainWindow::saveFile()
 {
-	QString filename = QFileDialog::getSaveFileName(this, "Save File...", QDir::home().path(), "BeQunge source (*.beq)");
+	QString filename = QFileDialog::getSaveFileName(this, "Save File...", m_settings.value("filedir").toString(), "BeQunge source (*.beq)");
+	
+	QDir dir(filename);
+	m_settings.setValue("filedir", dir.absolutePath());
 
 	m_fungeSpace->save(filename);
 }
