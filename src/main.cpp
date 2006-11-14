@@ -23,4 +23,6 @@ int main(int argc, char** argv)
 	FungeSpace s(f);
 	Interpreter i(&s);
 	i.run();
+
+	s.save("temp");
 }

@@ -6,6 +6,8 @@
 #include <QDebug>
 #include <QIODevice>
 
+#include <boost/array.hpp>
+
 typedef QVector<int> Coord;
 
 class FungeSpace
@@ -35,8 +37,12 @@ public:
 	void save(QString filename);
 
 private:
+	typedef boost::array<int,2> PlaneCoord;
+
 	void parseHeader(QIODevice* dev);
 	void readInAll(QIODevice* dev);
+
+	PlaneCoord coordToPlaneCoord(Coord c);
 
 	Coord m_positiveEdges;
 	Coord m_negativeEdges;
