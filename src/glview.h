@@ -4,6 +4,7 @@
 #include <QGLWidget>
 #include <QTime>
 #include <QFont>
+#include <QTextCursor>
 
 #include <ft2build.h>
 #include FT_FREETYPE_H
@@ -66,6 +67,10 @@ private:
 	int otherPlane();
 	Coord selectionTopLeft();
 	Coord selectionBottomRight();
+	void moveCursor(int x, int y, int z, QTextCursor::MoveMode mode = QTextCursor::MoveAnchor);
+	void moveCursor(int direction, QTextCursor::MoveMode mode = QTextCursor::MoveAnchor);
+	void setCursor(int x, int y, int z, QTextCursor::MoveMode mode = QTextCursor::MoveAnchor);
+	void setCursor(Coord c, QTextCursor::MoveMode mode = QTextCursor::MoveAnchor);
 
 private:
 	Coord m_origin;
@@ -93,7 +98,7 @@ private:
 	bool m_mouseHoveringOverChar;
 	Coord m_mouseHover;
 	
-	Coord m_selectionStart;
+	Coord m_selectionAnchor;
 	Coord m_selectionEnd;
 	bool m_selectDragging;
 	

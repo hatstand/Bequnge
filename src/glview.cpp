@@ -230,7 +230,7 @@ void GLView::paintGL()
 			glPushMatrix();
 				int diff = abs(coords[m_activePlane] - m_cursor[m_activePlane]);
 				
-				bool withinSelection = ((m_selectionStart != m_selectionEnd) &&
+				bool withinSelection = ((m_selectionAnchor != m_selectionEnd) &&
 				                        (coords[0] >= selTopLeft[0]) && (coords[0] <= selBottomRight[0]) &&
 				                        (coords[1] >= selTopLeft[1]) && (coords[1] <= selBottomRight[1]) &&
 				                        (coords[2] <= selTopLeft[2]) && (coords[2] >= selBottomRight[2]));
@@ -304,7 +304,7 @@ void GLView::paintGL()
 			}
 		}
 		
-		if (m_selectionStart != m_selectionEnd)
+		if (m_selectionAnchor != m_selectionEnd)
 		{
 			//glDepthMask(false);
 			glPushMatrix();
@@ -597,8 +597,7 @@ void GLView::mousePressEvent(QMouseEvent* event)
 		Coord p = pointToFungeSpace(event->pos());
 		if (m_fungeSpace->getChar(p) != ' ')
 		{
-			m_selectionStart = p;
-			m_selectionEnd = p;
+			m_selectionAnchor = m_selectionEnd = p;
 			m_selectDragging = true;
 		}
 		
@@ -625,7 +624,7 @@ void GLView::mouseReleaseEvent(QMouseEvent* event)
 		m_destinationCameraOffset[2] = 0.0f;
 		
 		if (m_selectDragging)
-			m_cursor = m_selectionEnd;
+			setCursor(m_selectionEnd, QTextCursor::KeepAnchor);
 		m_selectDragging = false;
 		break;
 		
@@ -660,21 +659,33 @@ void GLView::keyPressEvent(QKeyEvent* event)
 	}
 	
 	if (event->matches(QKeySequence::MoveToNextChar))
-		m_cursor[otherPlane()]++;
+		moveCursor(otherPlane() + 1);
 	else if (event->matches(QKeySequence::MoveToPreviousChar))
-		m_cursor[otherPlane()]--;
+		moveCursor(-otherPlane() - 1);
 	else if (event->matches(QKeySequence::MoveToNextLine))
-		m_cursor[1]++;
+		moveCursor(0, 1, 0);
 	else if (event->matches(QKeySequence::MoveToPreviousLine))
-		m_cursor[1]--;
+		moveCursor(0, -1, 0);
 	else if (event->matches(QKeySequence::MoveToNextPage))
-		m_cursor[m_activePlane]++;
+		moveCursor(m_activePlane + 1);
 	else if (event->matches(QKeySequence::MoveToPreviousPage))
-		m_cursor[m_activePlane]--;
+		moveCursor(-m_activePlane - 1);
+	else if (event->matches(QKeySequence::SelectNextChar))
+		moveCursor(otherPlane() + 1, QTextCursor::KeepAnchor);
+	else if (event->matches(QKeySequence::SelectPreviousChar))
+		moveCursor(-otherPlane() - 1, QTextCursor::KeepAnchor);
+	else if (event->matches(QKeySequence::SelectNextLine))
+		moveCursor(0, 1, 0, QTextCursor::KeepAnchor);
+	else if (event->matches(QKeySequence::SelectPreviousLine))
+		moveCursor(0, -1, 0, QTextCursor::KeepAnchor);
+	else if (event->matches(QKeySequence::SelectNextPage))
+		moveCursor(m_activePlane + 1, QTextCursor::KeepAnchor);
+	else if (event->matches(QKeySequence::SelectPreviousPage))
+		moveCursor(-m_activePlane - 1, QTextCursor::KeepAnchor);
 	else if (event->key() == Qt::Key_Backspace)
 	{
-		int a = abs(m_cursorDirection);
-		m_cursor[a-1] += (m_cursorDirection < 0 ? 1 : -1);
+		moveCursor(-m_cursorDirection);
+		
 		if (m_fungeSpace->getChar(m_cursor) == '"')
 			toggleStringMode();
 		
@@ -706,8 +717,7 @@ void GLView::keyPressEvent(QKeyEvent* event)
 		if (c == '"')
 			toggleStringMode();
 		
-		int a = abs(m_cursorDirection);
-		m_cursor[a-1] += (m_cursorDirection > 0 ? 1 : -1);
+		moveCursor(m_cursorDirection);
 	}
 	else
 		return;
@@ -782,6 +792,8 @@ void GLView::resetView()
 	for (uint i=0 ; i<m_fungeSpace->dimensions() ; ++i)
 		m_cursor.append(0);
 	
+	m_selectionAnchor = m_selectionEnd = m_cursor;
+	
 	m_destinationCameraOffset[0] = 0.0f;
 	m_destinationCameraOffset[1] = 0.0f;
 	m_destinationCameraOffset[2] = 0.0f;
@@ -847,24 +859,68 @@ void GLView::setActivePlane(int plane)
 
 Coord GLView::selectionTopLeft()
 {
-	if (m_selectionStart.count() < 3)
-		return m_origin;
 	Coord ret;
-	ret.append(qMin(m_selectionStart[0], m_selectionEnd[0]));
-	ret.append(qMin(m_selectionStart[1], m_selectionEnd[1]));
-	ret.append(qMax(m_selectionStart[2], m_selectionEnd[2]));
+	ret.append(qMin(m_selectionEnd[0], m_selectionAnchor[0]));
+	ret.append(qMin(m_selectionEnd[1], m_selectionAnchor[1]));
+	ret.append(qMax(m_selectionEnd[2], m_selectionAnchor[2]));
 	return ret;
 }
 
 Coord GLView::selectionBottomRight()
 {
-	if (m_selectionEnd.count() < 3)
-		return m_origin;
 	Coord ret;
-	ret.append(qMax(m_selectionStart[0], m_selectionEnd[0]));
-	ret.append(qMax(m_selectionStart[1], m_selectionEnd[1]));
-	ret.append(qMin(m_selectionStart[2], m_selectionEnd[2]));
+	ret.append(qMax(m_selectionEnd[0], m_selectionAnchor[0]));
+	ret.append(qMax(m_selectionEnd[1], m_selectionAnchor[1]));
+	ret.append(qMin(m_selectionEnd[2], m_selectionAnchor[2]));
 	return ret;
+}
+
+void GLView::moveCursor(int x, int y, int z, QTextCursor::MoveMode mode)
+{
+	m_cursor[0] += x;
+	m_cursor[1] += y;
+	m_cursor[2] += z;
+	
+	m_selectionEnd = m_cursor;
+	
+	if (mode == QTextCursor::MoveAnchor)
+		m_selectionAnchor = m_cursor;
+}
+
+void GLView::moveCursor(int direction, QTextCursor::MoveMode mode)
+{
+	int x = 0;
+	int y = 0;
+	int z = 0;
+	
+	switch (direction)
+	{
+		case -3: z--; break;
+		case -2: y--; break;
+		case -1: x--; break;
+		case 1: x++; break;
+		case 2: y++; break;
+		case 3: z++; break;
+	}
+	
+	moveCursor(x, y, z, mode);
+}
+
+void GLView::setCursor(int x, int y, int z, QTextCursor::MoveMode mode)
+{
+	m_cursor[0] = x;
+	m_cursor[1] = y;
+	m_cursor[2] = z;
+	
+	m_selectionEnd = m_cursor;
+	
+	if (mode == QTextCursor::MoveAnchor)
+		m_selectionAnchor = m_cursor;
+}
+
+void GLView::setCursor(Coord c, QTextCursor::MoveMode mode)
+{
+	setCursor(c[0], c[1], c[2], mode);
 }
 
 
