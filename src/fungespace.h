@@ -41,6 +41,7 @@ private:
 
 	void parseHeader(QIODevice* dev);
 	void readInAll(QIODevice* dev);
+	void readPlane(QIODevice* dev);
 
 	PlaneCoord coordToPlaneCoord(Coord c);
 

@@ -101,27 +101,81 @@ void FungeSpace::readInAll(QIODevice* dev)
 	qDebug() << "Reading in code";
 	QString line;
 
-	Coord pos;
-	for(uint i = 0; i < m_dimensions; ++i)
-		pos << 0;
-
-	while((line = dev->readLine()) != NULL)
+	if(m_dimensions < 3)
 	{
-		int i = 0;
-		for(; i < line.length(); ++i)
+		Coord pos;
+		for(uint i = 0; i < m_dimensions; ++i)
+			pos << 0;
+
+		while((line = dev->readLine()) != NULL)
 		{
-			if ((line[i] == '\n') || (line[i] == '\r'))
-				break;
+			int i = 0;
+			for(; i < line.length(); ++i)
+			{
+				if ((line[i] == '\n') || (line[i] == '\r'))
+					break;
 
-			pos[0] = i;
-			//qDebug() << "Putting:" << line[i] << "in:" << pos[0] << pos[1];
-			setChar(pos, line[i]);
+				pos[0] = i;
+				//qDebug() << "Putting:" << line[i] << "in:" << pos[0] << pos[1];
+				setChar(pos, line[i]);
+			}
+	
+			++pos[1];
 		}
-
-		++pos[1];
 	}
 
+	// Parse planes
+	while(dev->bytesAvailable() > 1)
+		readPlane(dev);
+
 	qDebug() << "Finished reading code";
+}
+
+void FungeSpace::readPlane(QIODevice* dev)
+{
+	QString line = dev->readLine();
+	int noLines;
+	PlaneCoord origin;
+	Coord pos;
+	QStringList t = line.split(',');
+	foreach(QString i, t)
+	{
+		QStringList l = i.split(' ');
+		if(l[0] == "Lines")
+			noLines = l[1].toInt();
+		else if(l[0] == "Origin")
+		{
+			QStringList x = l[1].split(':');
+			origin[0] = x[0].toInt();
+			origin[1] = x[1].toInt();
+		}
+		else if(l[0] == "Coord")
+		{
+			QStringList x = l[1].split(':', QString::SkipEmptyParts);
+			foreach(QString j, x)
+			{
+				pos << j.toInt();
+			}
+		}
+	}
+
+	for(int i = 0; i < noLines; ++i)
+	{
+		line = dev->readLine();
+		for(int j = 0; j < line.length(); ++j)
+		{
+			Coord p(m_dimensions);
+			// Insert x and y
+			p[0] = j + origin[0];
+			p[1] = i + origin[1];
+
+			// Insert z...
+			for(uint z = 2; z < m_dimensions; ++z)
+				p[z] = pos[z-2];
+
+			setChar(p, line[j]);
+		}
+	}
 }
 
 FungeSpace::~FungeSpace()
