@@ -5,6 +5,7 @@
 #include <QTime>
 #include <QFont>
 #include <QTextCursor>
+#include <QUndoGroup>
 
 #include <ft2build.h>
 #include FT_FREETYPE_H
@@ -35,10 +36,15 @@ public:
 	void displayChanges(bool displayChanges) { m_displayChanges = displayChanges; }
 
 	void explode(Coord c);
-	
+
+	QUndoGroup* getUndo() { return &m_undoGroup; }
+
 public slots:
 	void setStringMode(bool enabled);
 	void updateFPSCounter();
+
+private slots:
+	void spaceDeleted(QObject* space);
 	
 signals:
 	void stringModeChanged(bool enabled);
@@ -74,11 +80,15 @@ private:
 	void setCursor(Coord c, QTextCursor::MoveMode mode = QTextCursor::MoveAnchor);
 	void drawCube(Coord startPos, Coord endPos);
 
+	void setChar(Coord p, QChar newchar);
+
 private:
 	Coord m_origin;
 	
 	// Funge space
 	FungeSpace* m_fungeSpace;
+	QUndoGroup m_undoGroup;
+	QMap<FungeSpace*, QUndoStack*> m_undos;
 	
 	// Debugger
 	bool m_execution;

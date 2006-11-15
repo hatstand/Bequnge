@@ -5,8 +5,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>1680</width>
-    <height>1004</height>
+    <width>1272</width>
+    <height>964</height>
    </rect>
   </property>
   <property name="windowTitle" >
@@ -18,8 +18,8 @@
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>1680</width>
-     <height>27</height>
+     <width>1272</width>
+     <height>29</height>
     </rect>
    </property>
    <widget class="QMenu" name="menuFile" >
@@ -34,7 +34,15 @@
     <addaction name="separator" />
     <addaction name="actionQuit" />
    </widget>
+   <widget class="QMenu" name="menuEdit" >
+    <property name="title" >
+     <string>Edit</string>
+    </property>
+    <addaction name="actionUndo" />
+    <addaction name="actionRedo" />
+   </widget>
    <addaction name="menuFile" />
+   <addaction name="menuEdit" />
   </widget>
   <widget class="QStatusBar" name="statusbar" />
   <widget class="QToolBar" name="toolBar" >
@@ -317,6 +325,28 @@
   <action name="actionContinue" >
    <property name="text" >
     <string>Continue</string>
+   </property>
+  </action>
+  <action name="actionUndo" >
+   <property name="icon" >
+    <iconset resource="resources.qrc" >:/icons/undo.png</iconset>
+   </property>
+   <property name="text" >
+    <string>Undo</string>
+   </property>
+   <property name="shortcut" >
+    <string>Ctrl+Z</string>
+   </property>
+  </action>
+  <action name="actionRedo" >
+   <property name="icon" >
+    <iconset resource="resources.qrc" >:/icons/redo.png</iconset>
+   </property>
+   <property name="text" >
+    <string>Redo</string>
+   </property>
+   <property name="shortcut" >
+    <string>Shift+Ctrl+Z</string>
    </property>
   </action>
  </widget>

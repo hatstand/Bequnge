@@ -1,5 +1,6 @@
 #include "glview.h"
 #include "fungespace.h"
+#include "fungecommand.h"
 
 #include <QTimer>
 #include <QMouseEvent>
@@ -9,6 +10,7 @@
 #include <QMessageBox>
 #include <QCoreApplication>
 #include <QFocusEvent>
+#include <QUndoStack>
 
 #include <QDebug>
 
@@ -83,6 +85,12 @@ GLView::GLView(FungeSpace* fungeSpace, QWidget* parent)
 	
 	// Enable mouse tracking
 	setMouseTracking(true);
+
+	// Sort out undo framework
+	QUndoStack* currentUndo = new QUndoStack(&m_undoGroup);
+	connect(currentUndo, SIGNAL(destroyed(QObject*)), SLOT(spaceDeleted(QObject*)));
+	m_undos.insert(m_fungeSpace, currentUndo);
+	m_undoGroup.setActiveStack(currentUndo);
 }
 
 
@@ -706,18 +714,18 @@ void GLView::keyPressEvent(QKeyEvent* event)
 		if (m_fungeSpace->getChar(m_cursor) == '"')
 			toggleStringMode();
 		
-		m_fungeSpace->setChar(m_cursor, ' ');
+		setChar(m_cursor, ' ');
 	}
 	else if (event->matches(QKeySequence::Delete))
 	{
-		m_fungeSpace->setChar(m_cursor, ' ');
+		setChar(m_cursor, ' ');
 	}
 	else if (event->key() == Qt::Key_Tab)
 		setActivePlane(otherPlane());
 	else if (!event->text().isEmpty())
 	{
 		QChar c = event->text()[0];
-		m_fungeSpace->setChar(m_cursor, c);
+		setChar(m_cursor, c);
 		
 		if (!m_stringMode)
 		{
@@ -802,6 +810,15 @@ int GLView::cursorDirection()
 
 void GLView::setFungeSpace(FungeSpace* funge)
 {
+	if(m_undos.contains(funge))
+		m_undoGroup.setActiveStack(m_undos[funge]);
+	else
+	{
+		QUndoStack* s = new QUndoStack(&m_undoGroup);
+		m_undos.insert(funge, s);
+		m_undoGroup.setActiveStack(s);
+	}
+
 	m_fungeSpace = funge;
 }
 
@@ -944,4 +961,14 @@ void GLView::setCursor(Coord c, QTextCursor::MoveMode mode)
 	setCursor(c[0], c[1], c[2], mode);
 }
 
+void GLView::setChar(Coord p, QChar newchar)
+{
+	FungeCommand* f = new FungeCommand(m_fungeSpace, p, newchar);
+	m_undoGroup.activeStack()->push(f);
+}
+
+void GLView::spaceDeleted(QObject* space)
+{
+	m_undos.remove(dynamic_cast<FungeSpace*>(space));
+}
 

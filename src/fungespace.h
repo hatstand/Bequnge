@@ -10,8 +10,10 @@
 
 typedef QVector<int> Coord;
 
-class FungeSpace
+class FungeSpace : public QObject
 {
+	Q_OBJECT
+
 public:
 
 	FungeSpace(int dimensions);

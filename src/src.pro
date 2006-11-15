@@ -20,6 +20,7 @@ SOURCES += glview.cpp
 SOURCES += OGLFT.cpp
 SOURCES += stringmodewidget.cpp
 SOURCES += fungeconsole.cpp
+SOURCES += fungecommand.cpp
 
 HEADERS += mainwindow.h
 HEADERS += interpreter.h
@@ -28,6 +29,7 @@ HEADERS += glview.h
 HEADERS += OGLFT.h
 HEADERS += stringmodewidget.h
 HEADERS += fungeconsole.h
+HEADERS += fungecommand.h
 
 FORMS += mainwindow.ui
 

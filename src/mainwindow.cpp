@@ -55,6 +55,9 @@ MainWindow::MainWindow(QWidget* parent)
 	connect(m_ui.speedSlider, SIGNAL(sliderMoved(int)), SLOT(speedSliderMoved(int)));
 	connect(m_ui.actionSave, SIGNAL(triggered(bool)), SLOT(saveFile()));
 	connect(m_ui.displayFungeSpace, SIGNAL(activated(int)), SLOT(slotDisplayFungeSpaceChanged(int)));
+
+	connect(m_ui.actionUndo, SIGNAL(triggered(bool)), m_glView->getUndo(), SLOT(undo()));
+	connect(m_ui.actionRedo, SIGNAL(triggered(bool)), m_glView->getUndo(), SLOT(redo()));
 	
 	// Setup the stack list
 	m_stackModel = new QStandardItemModel(this);
