@@ -145,6 +145,9 @@ void MainWindow::slotDebug()
 	connect(m_interpreter, SIGNAL(stackPopped()), SLOT(slotStackPopped()), Qt::DirectConnection);
 	connect(m_interpreter, SIGNAL(output(QChar)), SLOT(slotOutput(QChar)));
 	connect(m_interpreter, SIGNAL(output(QString)), SLOT(slotOutput(QString)));
+	connect(m_interpreter, SIGNAL(input(Interpreter::WaitingForInput)), m_ui.consoleBox, SLOT(getInput(Interpreter::WaitingForInput)));
+	connect(m_ui.consoleBox, SIGNAL(charEntered(QChar)), m_interpreter, SLOT(provideInput(QChar)));
+	connect(m_ui.consoleBox, SIGNAL(intEntered(int)), m_interpreter, SLOT(provideInput(int)));
 	
 	showExecutionSpace(true);
 	m_glView->followPC(0);
@@ -158,8 +161,17 @@ void MainWindow::slotStep()
 	if (m_interpreter == NULL)
 		slotDebug();
 	
-	if (m_interpreter->step() != Interpreter::Success)
+	switch (m_interpreter->step())
+	{
+	case Interpreter::End:
+	case Interpreter::Invalid:
 		slotStop();
+		break;
+	case Interpreter::SuspendForInput:
+		break;
+	case Interpreter::Success:
+		break;
+	}
 }
 
 void MainWindow::slotPcChanged(Coord position, Coord direction)
@@ -211,7 +223,7 @@ void MainWindow::slotOutput(QChar c)
 
 void MainWindow::slotOutput(QString str)
 {
-	m_ui.consoleBox->setPlainText(m_ui.consoleBox->toPlainText() + str);
+	m_ui.consoleBox->append(str);
 }
 
 void MainWindow::speedSliderMoved(int value)

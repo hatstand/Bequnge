@@ -15,7 +15,15 @@ public:
 	{
 		Success,
 		End,
-		Invalid
+		Invalid,
+		SuspendForInput
+	};
+	
+	enum WaitingForInput
+	{
+		NotWaiting,
+		WaitingForChar,
+		WaitingForInteger
 	};
 
 
@@ -25,18 +33,22 @@ public:
 	void run();
 	Status step();
 	
-	void provideInput(QChar);
-	
 	void pushItem(int c);
 	int popItem();
 	
 	Coord pcPosition(int pc) { return m_pos; }
 	Coord pcDirection(int pc) { return m_direction; }
+	
+	WaitingForInput waitingFor() { return m_waitingForInput; }
+	
+public slots:
+	void provideInput(QChar c);
+	void provideInput(int i);
 
 signals:
 	void output(QChar);
 	void output(QString);
-	void input();
+	void input(Interpreter::WaitingForInput type);
 	void pcChanged(Coord position, Coord direction);
 	
 	void stackPushed(int value);
@@ -55,6 +67,8 @@ private:
 
 	bool m_stringMode;
 	bool m_jumpedSpace;
+	
+	WaitingForInput m_waitingForInput;
 
 	Status compute(QChar);
 	void move();
@@ -87,11 +101,12 @@ private:
 	void swap();
 	void clear();
 	void vertIf();
+	void horizIf();
 	void compare();
 	void printChar();
 	void printDec();
-	void inputDec();
-	void inputChar();
+	Status inputDec();
+	Status inputChar();
 	void trampoline();
 	void jump();
 	void iterate();

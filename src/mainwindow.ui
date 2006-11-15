@@ -5,8 +5,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>1280</width>
-    <height>1003</height>
+    <width>1680</width>
+    <height>1004</height>
    </rect>
   </property>
   <property name="windowTitle" >
@@ -18,8 +18,8 @@
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>1280</width>
-     <height>29</height>
+     <width>1680</width>
+     <height>27</height>
     </rect>
    </property>
    <widget class="QMenu" name="menuFile" >
@@ -85,7 +85,7 @@
       <number>6</number>
      </property>
      <item>
-      <widget class="QTextEdit" name="consoleBox" >
+      <widget class="FungeConsole" name="consoleBox" >
        <property name="undoRedoEnabled" >
         <bool>true</bool>
        </property>
@@ -293,6 +293,13 @@
    </property>
   </action>
  </widget>
+ <customwidgets>
+  <customwidget>
+   <class>FungeConsole</class>
+   <extends>QTextEdit</extends>
+   <header>fungeconsole.h</header>
+  </customwidget>
+ </customwidgets>
  <resources/>
  <connections>
   <connection>

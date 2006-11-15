@@ -11,7 +11,8 @@ Interpreter::Interpreter(FungeSpace* space, QObject* parent)
 	: QObject(parent),m_space(space),
 	m_pos(m_space->dimensions(), 0),
 	m_direction(m_space->dimensions(), 0),
-	m_storageOffset(m_space->dimensions(), 0)
+	m_storageOffset(m_space->dimensions(), 0),
+	m_waitingForInput(NotWaiting)
 {
 	m_version = "1";
 
@@ -69,7 +70,7 @@ Interpreter::Status Interpreter::step()
 			pushItem(QChar(' ').unicode());
 	}
 	QChar c = m_space->getChar(m_pos);
-	bool ret = compute(c);
+	Interpreter::Status ret = compute(c);
 
 	//qDebug() << "Direction: " << m_direction;
 	if(ret == Success)
@@ -78,7 +79,7 @@ Interpreter::Status Interpreter::step()
 		return Success;
 	}
 
-	return Invalid;
+	return ret;
 }
 
 void Interpreter::run()
@@ -95,6 +96,9 @@ Interpreter::Status Interpreter::compute(QChar command)
 		pushItem(command.unicode());
 		return Success;
 	}
+	
+	if (m_waitingForInput != NotWaiting)
+		return SuspendForInput;
 
 	if(command == '+')
 		add();
@@ -146,6 +150,8 @@ Interpreter::Status Interpreter::compute(QChar command)
 		clear();
 	else if(command == '|')
 		vertIf();
+	else if(command == '_')
+		horizIf();
 	else if(command == 'w')
 		compare();
 	else if(command == ',')
@@ -153,9 +159,9 @@ Interpreter::Status Interpreter::compute(QChar command)
 	else if(command == '.')
 		printDec();
 	else if(command == '&')
-		inputDec();
+		return inputDec();
 	else if(command == '~')
-		inputChar();
+		return inputChar();
 	else if(command == '#')
 		trampoline();
 	else if(command == 'j')
@@ -410,6 +416,15 @@ void Interpreter::vertIf()
 		down();
 }
 
+void Interpreter::horizIf()
+{
+	int x = popItem();
+	if(x)
+		left();
+	else
+		right();
+}
+
 void Interpreter::compare()
 {
 	int b = popItem();
@@ -430,19 +445,41 @@ void Interpreter::printChar()
 
 void Interpreter::printDec()
 {
-	QChar outputChar = QString::number(popItem())[0];
-	qDebug() << outputChar;
-	emit(output(outputChar));
+	QString outputStr = QString::number(popItem());
+	qDebug() << outputStr;
+	emit(output(outputStr));
 }
 
-void Interpreter::inputChar()
+Interpreter::Status Interpreter::inputChar()
 {
-
+	m_waitingForInput = WaitingForChar;
+	emit input(m_waitingForInput);
+	
+	return SuspendForInput;
 }
 
-void Interpreter::inputDec()
+Interpreter::Status Interpreter::inputDec()
 {
+	m_waitingForInput = WaitingForInteger;
+	emit input(m_waitingForInput);
+	
+	return SuspendForInput;
+}
 
+void Interpreter::provideInput(QChar c)
+{
+	provideInput(c.unicode());
+}
+
+void Interpreter::provideInput(int i)
+{
+	if (m_waitingForInput == NotWaiting)
+		return;
+	pushItem(i);
+	
+	m_waitingForInput = NotWaiting;
+	
+	move();
 }
 
 void Interpreter::trampoline()
