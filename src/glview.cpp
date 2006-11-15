@@ -566,7 +566,7 @@ Coord GLView::pointToFungeSpace(const QPoint& pos)
 	float x = pos.x();
 	float y = pos.y();
 	double modelview[16], projection[16];
-	int viewport[4];
+	GLint viewport[4];
 	float z;
 		//get the projection matrix             
 	glGetDoublev( GL_PROJECTION_MATRIX, projection );
