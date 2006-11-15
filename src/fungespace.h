@@ -10,6 +10,8 @@
 
 typedef QVector<int> Coord;
 
+uint qHash(Coord c);
+
 class FungeSpace : public QObject
 {
 	Q_OBJECT
@@ -38,6 +40,7 @@ public:
 	
 	void trackChanges(bool track) {m_trackChanges = track;}
 	QHash<Coord, QPair<QChar, QChar> > changes() { return m_changes; }
+	void removeChange(Coord c) { m_changes.remove(c); }
 
 	void save(QString filename);
 

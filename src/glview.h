@@ -49,6 +49,7 @@ private slots:
 signals:
 	void stringModeChanged(bool enabled);
 	void cursorDirectionChanged(int direction);
+	void copyChangeToCodeFungeSpace(Coord c);
 	
 private:
 	void initializeGL();

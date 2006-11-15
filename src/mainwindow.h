@@ -26,6 +26,7 @@ private:
 
 private slots:
 	void cursorDirectionChanged(int direction);
+	void slotCopyChangeToCodeFungeSpace(Coord c);
 	
 	void slotOpen();
 	void slotNew();

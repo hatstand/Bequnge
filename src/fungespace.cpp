@@ -211,6 +211,7 @@ void FungeSpace::setChar(Coord pos, QChar c)
 	
 	if (m_trackChanges)
 	{
+		qDebug() << "Change" << pos << oldValue << c;
 		if (oldValue == c)
 			m_changes.remove(pos);
 		else

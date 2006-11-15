@@ -26,6 +26,7 @@ MainWindow::MainWindow(QWidget* parent)
 	setCentralWidget(m_glView);
 	m_glView->setFocus(Qt::OtherFocusReason);
 	connect(m_glView, SIGNAL(cursorDirectionChanged(int)), SLOT(cursorDirectionChanged(int)));
+	connect(m_glView, SIGNAL(copyChangeToCodeFungeSpace(Coord)), SLOT(slotCopyChangeToCodeFungeSpace(Coord)));
 	
 	// Cursor direction statusbar label
 	m_cursorDirectionLabel = new QLabel(this);
@@ -265,6 +266,14 @@ void MainWindow::saveFile()
 	m_settings.setValue("filedir", dir.absolutePath());
 
 	m_fungeSpace->save(filename);
+}
+
+void MainWindow::slotCopyChangeToCodeFungeSpace(Coord c)
+{
+	qDebug() << "Copying" << c;
+	m_fungeSpace->setChar(c, m_executionFungeSpace->changes()[c].first);
+	qDebug() << m_executionFungeSpace->changes()[c].first << m_executionFungeSpace->changes()[c].second;
+	m_executionFungeSpace->removeChange(c);
 }
 
 
