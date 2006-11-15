@@ -69,6 +69,10 @@ MainWindow::MainWindow(QWidget* parent)
 		m_settings.setValue("filedir", QDir::home().absolutePath());
 		m_settings.sync();
 	}
+	
+	// Disable the stop and step actions
+	m_ui.actionStep->setEnabled(false);
+	m_ui.actionStop->setEnabled(false);
 }
 
 void MainWindow::cursorDirectionChanged(int direction)
@@ -154,6 +158,10 @@ void MainWindow::slotDebug()
 	m_glView->setPC(0, m_interpreter->pcPosition(0), m_interpreter->pcDirection(0));
 	
 	speedSliderMoved(m_ui.speedSlider->value());
+	
+	m_ui.actionStep->setEnabled(true);
+	m_ui.actionStop->setEnabled(true);
+	m_ui.actionDebug->setEnabled(false);
 }
 
 void MainWindow::slotStep()
@@ -212,6 +220,10 @@ void MainWindow::slotStop()
 	m_interpreter = NULL;
 	m_stackModel->clear();
 	showExecutionSpace(false);
+	
+	m_ui.actionStep->setEnabled(false);
+	m_ui.actionStop->setEnabled(false);
+	m_ui.actionDebug->setEnabled(true);
 	
 	m_autoStepTimer->stop();
 }

@@ -63,11 +63,9 @@
    <attribute name="toolBarArea" >
     <number>4</number>
    </attribute>
-   <addaction name="actionRun" />
    <addaction name="actionDebug" />
    <addaction name="actionStop" />
    <addaction name="actionStep" />
-   <addaction name="actionContinue" />
   </widget>
   <widget class="QDockWidget" name="consoleDock" >
    <property name="windowTitle" >
@@ -231,6 +229,9 @@
    </widget>
   </widget>
   <action name="actionNew" >
+   <property name="icon" >
+    <iconset resource="resources.qrc" >:/icons/new.png</iconset>
+   </property>
    <property name="text" >
     <string>&amp;New</string>
    </property>
@@ -239,6 +240,9 @@
    </property>
   </action>
   <action name="actionOpen" >
+   <property name="icon" >
+    <iconset resource="resources.qrc" >:/icons/open.png</iconset>
+   </property>
    <property name="text" >
     <string>&amp;Open...</string>
    </property>
@@ -247,6 +251,9 @@
    </property>
   </action>
   <action name="actionSave" >
+   <property name="icon" >
+    <iconset resource="resources.qrc" >:/icons/save.png</iconset>
+   </property>
    <property name="text" >
     <string>&amp;Save</string>
    </property>
@@ -255,11 +262,17 @@
    </property>
   </action>
   <action name="actionSave_as" >
+   <property name="icon" >
+    <iconset resource="resources.qrc" >:/icons/saveas.png</iconset>
+   </property>
    <property name="text" >
     <string>Save As...</string>
    </property>
   </action>
   <action name="actionQuit" >
+   <property name="icon" >
+    <iconset resource="resources.qrc" >:/icons/exit.png</iconset>
+   </property>
    <property name="text" >
     <string>&amp;Quit</string>
    </property>
@@ -273,16 +286,25 @@
    </property>
   </action>
   <action name="actionDebug" >
+   <property name="icon" >
+    <iconset resource="resources.qrc" >:/icons/run.png</iconset>
+   </property>
    <property name="text" >
     <string>Debug</string>
    </property>
   </action>
   <action name="actionStop" >
+   <property name="icon" >
+    <iconset resource="resources.qrc" >:/icons/stop.png</iconset>
+   </property>
    <property name="text" >
     <string>Stop</string>
    </property>
   </action>
   <action name="actionStep" >
+   <property name="icon" >
+    <iconset resource="resources.qrc" >:/icons/step.png</iconset>
+   </property>
    <property name="text" >
     <string>Step</string>
    </property>
@@ -300,7 +322,9 @@
    <header>fungeconsole.h</header>
   </customwidget>
  </customwidgets>
- <resources/>
+ <resources>
+  <include location="resources.qrc" />
+ </resources>
  <connections>
   <connection>
    <sender>actionQuit</sender>
