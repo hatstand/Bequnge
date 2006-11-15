@@ -20,7 +20,8 @@ uint qHash(Coord c)
 
 
 FungeSpace::FungeSpace(int dimensions)
-	: m_dimensions(0)
+	: m_dimensions(0),
+	  m_trackChanges(false)
 {
 	setDimensions(dimensions);
 	
@@ -28,7 +29,8 @@ FungeSpace::FungeSpace(int dimensions)
 }
 
 FungeSpace::FungeSpace(QIODevice* dev)
-	: m_dimensions(0)
+	: m_dimensions(0),
+	  m_trackChanges(false)
 {
 	m_version = "0";
 
@@ -211,9 +213,8 @@ void FungeSpace::setChar(Coord pos, QChar c)
 	
 	if (m_trackChanges)
 	{
-		qDebug() << "Change" << pos << oldValue << c;
-		if (oldValue == c)
-			m_changes.remove(pos);
+		if (m_changes.contains(pos))
+			m_changes[pos].second = c;
 		else
 			m_changes.insert(pos, QPair<QChar, QChar>(oldValue, c));
 	}

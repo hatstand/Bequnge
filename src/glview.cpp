@@ -627,15 +627,16 @@ void GLView::mousePressEvent(QMouseEvent* event)
 		}
 		
 		event->accept();
+		break;
 	}
 	case Qt::RightButton:
 	{
 		Coord p = pointToFungeSpace(event->pos());
 		if (m_fungeSpace->changes().contains(p))
 			emit(copyChangeToCodeFungeSpace(p));
+		event->accept();
 		break;
 	}
-		
 	default:
 		break;
 	}

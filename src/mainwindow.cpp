@@ -270,9 +270,7 @@ void MainWindow::saveFile()
 
 void MainWindow::slotCopyChangeToCodeFungeSpace(Coord c)
 {
-	qDebug() << "Copying" << c;
-	m_fungeSpace->setChar(c, m_executionFungeSpace->changes()[c].first);
-	qDebug() << m_executionFungeSpace->changes()[c].first << m_executionFungeSpace->changes()[c].second;
+	m_fungeSpace->setChar(c, m_executionFungeSpace->changes()[c].second);
 	m_executionFungeSpace->removeChange(c);
 }
 
