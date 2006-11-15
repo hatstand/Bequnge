@@ -27,7 +27,8 @@ GLView::GLView(FungeSpace* fungeSpace, QWidget* parent)
 	  m_zoomLevel(6.0f),
 	  m_moveDragging(false),
 	  m_rotateDragging(false),
-	  m_execution(false)
+	  m_execution(false),
+	  m_displayChanges(false)
 {
 	setFocusPolicy(Qt::WheelFocus);
 	
@@ -306,65 +307,23 @@ void GLView::paintGL()
 		
 		if (m_selectionAnchor != m_selectionEnd)
 		{
-			//glDepthMask(false);
 			glPushMatrix();
-				QList<float> cubeStart = fungeSpaceToGl(selTopLeft, true);
-				QList<float> cubeEnd = fungeSpaceToGl(selBottomRight, true);
-				
-				cubeStart[0] -= 2.4f;
-				cubeStart[1] += m_fontSize - 0.1f;
-				cubeStart[2] -= m_fontSize/2 - 2.4f;
-				
-				cubeEnd[0] += m_fontSize - 2.6f;
-				cubeEnd[1] += 0.1f;
-				cubeEnd[2] += m_fontSize/2 - 0.1f;
-				
-				cubeEnd[0] -= cubeStart[0];
-				cubeEnd[1] -= cubeStart[1];
-				cubeEnd[2] -= cubeStart[2];
-				
-				glTranslatef(cubeStart[0], cubeStart[1] - 2.5f, cubeStart[2]);
 				glColor4f(0.5f, 0.5f, 1.0f, 0.3f);
-				// draw a cube (6 quadrilaterals)
-				glBegin(GL_QUADS);				// start drawing the cube.
-					// top of cube
-					glVertex3f(cubeEnd[0], cubeEnd[1], 0.0f);		// Top Right Of The Quad (Top)
-					glVertex3f(0.0f, cubeEnd[1], 0.0f);		// Top Left Of The Quad (Top)
-					glVertex3f(0.0f, cubeEnd[1], cubeEnd[2]);		// Bottom Left Of The Quad (Top)
-					glVertex3f(cubeEnd[0], cubeEnd[1], cubeEnd[2]);		// Bottom Right Of The Quad (Top)
-					
-					// bottom of cube
-					glVertex3f(cubeEnd[0],0.0f, cubeEnd[2]);		// Top Right Of The Quad (Bottom)
-					glVertex3f(0.0f, 0.0f, cubeEnd[2]);		// Top Left Of The Quad (Bottom)
-					glVertex3f(0.0f, 0.0f, 0.0f);		// Bottom Left Of The Quad (Bottom)
-					glVertex3f(cubeEnd[0], 0.0f, 0.0f);		// Bottom Right Of The Quad (Bottom)
-					
-					// front of cube
-					glVertex3f(cubeEnd[0], cubeEnd[1], cubeEnd[2]);		// Top Right Of The Quad (Front)
-					glVertex3f(0.0f, cubeEnd[1], cubeEnd[2]);		// Top Left Of The Quad (Front)
-					glVertex3f(0.0f, 0.0f, cubeEnd[2]);		// Bottom Left Of The Quad (Front)
-					glVertex3f(cubeEnd[0],0.0f, cubeEnd[2]);		// Bottom Right Of The Quad (Front)
-					
-					// back of cube.
-					glVertex3f(cubeEnd[0], 0.0f, 0.0f);		// Top Right Of The Quad (Back)
-					glVertex3f(0.0f, 0.0f, 0.0f);		// Top Left Of The Quad (Back)
-					glVertex3f(0.0f, cubeEnd[1], 0.0f);		// Bottom Left Of The Quad (Back)
-					glVertex3f(cubeEnd[0], cubeEnd[1], 0.0f);		// Bottom Right Of The Quad (Back)
-					
-					// left of cube
-					glVertex3f(0.0f, cubeEnd[1], cubeEnd[2]);		// Top Right Of The Quad (Left)
-					glVertex3f(0.0f, cubeEnd[1], 0.0f);		// Top Left Of The Quad (Left)
-					glVertex3f(0.0f, 0.0f, 0.0f);		// Bottom Left Of The Quad (Left)
-					glVertex3f(0.0f, 0.0f, cubeEnd[2]);		// Bottom Right Of The Quad (Left)
-					
-					// Right of cube
-					glVertex3f(cubeEnd[0], cubeEnd[1], 0.0f);	        // Top Right Of The Quad (Right)
-					glVertex3f(cubeEnd[0], cubeEnd[1], cubeEnd[2]);		// Top Left Of The Quad (Right)
-					glVertex3f(cubeEnd[0], 0.0f, cubeEnd[2]);		// Bottom Left Of The Quad (Right)
-					glVertex3f(cubeEnd[0], 0.0f, 0.0f);		// Bottom Right Of The Quad (Right)
-				glEnd();					// Done Drawing The Cube
+				drawCube(selTopLeft, selBottomRight);
 			glPopMatrix();
-			//glDepthMask(true);
+		}
+		
+		if (m_displayChanges)
+		{
+			glColor4f(1.0f, 0.5f, 0.5f, 0.3f);
+			QHash<Coord, QPair<QChar, QChar> > changes = m_fungeSpace->changes();
+			QList<Coord> changeCoords = changes.keys();
+			foreach (Coord c, changeCoords)
+			{
+				glPushMatrix();
+					drawCube(c, c);
+				glPopMatrix();
+			}
 		}
 		
 		glClear(GL_DEPTH_BUFFER_BIT);
@@ -448,6 +407,64 @@ void GLView::paintGL()
 	
 	m_redrawTimer->start(qAbs(m_delayMs - frameTime.elapsed()));
 	m_frameCount++;
+}
+
+void GLView::drawCube(Coord startPos, Coord endPos)
+{
+	QList<float> cubeStart = fungeSpaceToGl(startPos, true);
+	QList<float> cubeEnd = fungeSpaceToGl(endPos, true);
+	
+	cubeStart[0] -= 2.4f;
+	cubeStart[1] += m_fontSize - 0.1f;
+	cubeStart[2] -= m_fontSize/2 - 2.4f;
+	
+	cubeEnd[0] += m_fontSize - 2.6f;
+	cubeEnd[1] += 0.1f;
+	cubeEnd[2] += m_fontSize/2 - 0.1f;
+	
+	cubeEnd[0] -= cubeStart[0];
+	cubeEnd[1] -= cubeStart[1];
+	cubeEnd[2] -= cubeStart[2];
+	
+	glTranslatef(cubeStart[0], cubeStart[1] - 2.5f, cubeStart[2]);
+	// draw a cube (6 quadrilaterals)
+	glBegin(GL_QUADS);				// start drawing the cube.
+		// top of cube
+		glVertex3f(cubeEnd[0], cubeEnd[1], 0.0f);		// Top Right Of The Quad (Top)
+		glVertex3f(0.0f, cubeEnd[1], 0.0f);		// Top Left Of The Quad (Top)
+		glVertex3f(0.0f, cubeEnd[1], cubeEnd[2]);		// Bottom Left Of The Quad (Top)
+		glVertex3f(cubeEnd[0], cubeEnd[1], cubeEnd[2]);		// Bottom Right Of The Quad (Top)
+		
+		// bottom of cube
+		glVertex3f(cubeEnd[0],0.0f, cubeEnd[2]);		// Top Right Of The Quad (Bottom)
+		glVertex3f(0.0f, 0.0f, cubeEnd[2]);		// Top Left Of The Quad (Bottom)
+		glVertex3f(0.0f, 0.0f, 0.0f);		// Bottom Left Of The Quad (Bottom)
+		glVertex3f(cubeEnd[0], 0.0f, 0.0f);		// Bottom Right Of The Quad (Bottom)
+		
+		// front of cube
+		glVertex3f(cubeEnd[0], cubeEnd[1], cubeEnd[2]);		// Top Right Of The Quad (Front)
+		glVertex3f(0.0f, cubeEnd[1], cubeEnd[2]);		// Top Left Of The Quad (Front)
+		glVertex3f(0.0f, 0.0f, cubeEnd[2]);		// Bottom Left Of The Quad (Front)
+		glVertex3f(cubeEnd[0],0.0f, cubeEnd[2]);		// Bottom Right Of The Quad (Front)
+		
+		// back of cube.
+		glVertex3f(cubeEnd[0], 0.0f, 0.0f);		// Top Right Of The Quad (Back)
+		glVertex3f(0.0f, 0.0f, 0.0f);		// Top Left Of The Quad (Back)
+		glVertex3f(0.0f, cubeEnd[1], 0.0f);		// Bottom Left Of The Quad (Back)
+		glVertex3f(cubeEnd[0], cubeEnd[1], 0.0f);		// Bottom Right Of The Quad (Back)
+		
+		// left of cube
+		glVertex3f(0.0f, cubeEnd[1], cubeEnd[2]);		// Top Right Of The Quad (Left)
+		glVertex3f(0.0f, cubeEnd[1], 0.0f);		// Top Left Of The Quad (Left)
+		glVertex3f(0.0f, 0.0f, 0.0f);		// Bottom Left Of The Quad (Left)
+		glVertex3f(0.0f, 0.0f, cubeEnd[2]);		// Bottom Right Of The Quad (Left)
+		
+		// Right of cube
+		glVertex3f(cubeEnd[0], cubeEnd[1], 0.0f);	        // Top Right Of The Quad (Right)
+		glVertex3f(cubeEnd[0], cubeEnd[1], cubeEnd[2]);		// Top Left Of The Quad (Right)
+		glVertex3f(cubeEnd[0], 0.0f, cubeEnd[2]);		// Bottom Left Of The Quad (Right)
+		glVertex3f(cubeEnd[0], 0.0f, 0.0f);		// Bottom Right Of The Quad (Right)
+	glEnd();					// Done Drawing The Cube
 }
 
 float GLView::degreesToRadians(float degrees)

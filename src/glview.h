@@ -32,6 +32,7 @@ public:
 	void setPC(int pc, Coord position, Coord direction);
 	void followPC(int pc);
 	void resetView();
+	void displayChanges(bool displayChanges) { m_displayChanges = displayChanges; }
 
 	void explode(Coord c);
 	
@@ -71,6 +72,7 @@ private:
 	void moveCursor(int direction, QTextCursor::MoveMode mode = QTextCursor::MoveAnchor);
 	void setCursor(int x, int y, int z, QTextCursor::MoveMode mode = QTextCursor::MoveAnchor);
 	void setCursor(Coord c, QTextCursor::MoveMode mode = QTextCursor::MoveAnchor);
+	void drawCube(Coord startPos, Coord endPos);
 
 private:
 	Coord m_origin;
@@ -86,6 +88,7 @@ private:
 	QString m_execution2Str;
 	QRect m_executionRect;
 	QRect m_execution2Rect;
+	bool m_displayChanges;
 	
 	// Cursor
 	Coord m_cursor;

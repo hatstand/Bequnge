@@ -33,6 +33,9 @@ public:
 	
 	uint dimensions() { return m_dimensions; }
 	void setDimensions(uint dimensions);
+	
+	void trackChanges(bool track) {m_trackChanges = track;}
+	QHash<Coord, QPair<QChar, QChar> > changes() { return m_changes; }
 
 	void save(QString filename);
 
@@ -53,6 +56,9 @@ private:
 
 	//QMap<QList<int>, QChar> m_space;
 	QHash<Coord, QChar> m_space;
+	
+	bool m_trackChanges;
+	QHash<Coord, QPair<QChar, QChar> > m_changes;
 };
 
 

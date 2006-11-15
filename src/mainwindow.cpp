@@ -139,6 +139,7 @@ void MainWindow::slotDebug()
 	// Copy the funge space
 	delete m_executionFungeSpace;
 	m_executionFungeSpace = new FungeSpace(m_fungeSpace);
+	m_executionFungeSpace->trackChanges(true);
 	m_stackModel->clear();
 	
 	// Make an interpreter
@@ -207,11 +208,16 @@ void MainWindow::showExecutionSpace(bool execution)
 	m_glView->setFungeSpace(execution ? m_executionFungeSpace : m_fungeSpace);
 	m_glView->setExecution(execution);
 	m_ui.displayFungeSpace->setCurrentIndex(execution ? 1 : 0);
+	m_glView->displayChanges(false);
 }
 
 void MainWindow::slotDisplayFungeSpaceChanged(int index)
 {
-	showExecutionSpace(index == 1);
+	if ((m_executionFungeSpace == NULL) && (index != 0))
+		return;
+	m_glView->setFungeSpace((index != 0) ? m_executionFungeSpace : m_fungeSpace);
+	m_glView->setExecution((index != 0));
+	m_glView->displayChanges(index == 2);
 }
 
 void MainWindow::slotStop()

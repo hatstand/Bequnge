@@ -39,7 +39,8 @@ FungeSpace::FungeSpace(QIODevice* dev)
 }
 
 FungeSpace::FungeSpace(FungeSpace* space)
-	: m_dimensions(0)
+	: m_dimensions(0),
+	  m_trackChanges(false)
 {
 	m_version = "0";
 	
@@ -191,7 +192,9 @@ void FungeSpace::setChar(Coord pos, QChar c)
 {
 	Q_ASSERT((uint)pos.size() == m_dimensions);
 
-	//qDebug() << pos << c;
+	QChar oldValue;
+	if (m_trackChanges)
+		oldValue = getChar(pos);
 
 	if(c != ' ')
 	{
@@ -205,6 +208,14 @@ void FungeSpace::setChar(Coord pos, QChar c)
 	}
 	else
 		m_space.remove(pos);
+	
+	if (m_trackChanges)
+	{
+		if (oldValue == c)
+			m_changes.remove(pos);
+		else
+			m_changes.insert(pos, QPair<QChar, QChar>(oldValue, c));
+	}
 }
 
 QChar FungeSpace::getChar(Coord pos)
