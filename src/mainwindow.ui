@@ -38,8 +38,8 @@
     <property name="title" >
      <string>Edit</string>
     </property>
-    <addaction name="actionUndo" />
-    <addaction name="actionRedo" />
+	<addaction name="actionUndo" />
+	<addaction name="actionRedo" />
    </widget>
    <addaction name="menuFile" />
    <addaction name="menuEdit" />
@@ -241,6 +241,19 @@
     </layout>
    </widget>
   </widget>
+  <widget class="QToolBar" name="toolBar_3" >
+   <property name="windowTitle" >
+    <string>Edit Toolbar</string>
+   </property>
+   <property name="orientation" >
+    <enum>Qt::Horizontal</enum>
+   </property>
+   <attribute name="toolBarArea" >
+    <number>4</number>
+   </attribute>
+   <addaction name="actionUndo" />
+   <addaction name="actionRedo" />
+  </widget>
   <action name="actionNew" >
    <property name="icon" >
     <iconset resource="resources.qrc" >:/icons/new.png</iconset>
@@ -346,7 +359,7 @@
     <string>Redo</string>
    </property>
    <property name="shortcut" >
-    <string>Shift+Ctrl+Z</string>
+    <string>Ctrl+Shift+Z</string>
    </property>
   </action>
  </widget>
