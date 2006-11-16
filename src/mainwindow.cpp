@@ -14,7 +14,8 @@ MainWindow::MainWindow(QWidget* parent)
 	: QMainWindow(parent),
 	  m_interpreter(NULL),
 	  m_executionFungeSpace(NULL),
-	  m_settings("BeQunge", "BeQunge", this)
+	  m_settings("BeQunge", "BeQunge", this),
+	  m_fullSpeedExecution(false)
 {
 	m_ui.setupUi(this);
 	
@@ -53,12 +54,14 @@ MainWindow::MainWindow(QWidget* parent)
 	connect(m_ui.actionDebug, SIGNAL(triggered(bool)), SLOT(slotDebug()));
 	connect(m_ui.actionStep, SIGNAL(triggered(bool)), SLOT(slotStep()));
 	connect(m_ui.actionStop, SIGNAL(triggered(bool)), SLOT(slotStop()));
-	connect(m_ui.speedSlider, SIGNAL(sliderMoved(int)), SLOT(speedSliderMoved(int)));
-	connect(m_ui.actionSave, SIGNAL(triggered(bool)), SLOT(saveFile()));
-	connect(m_ui.displayFungeSpace, SIGNAL(activated(int)), SLOT(slotDisplayFungeSpaceChanged(int)));
-
 	connect(m_ui.actionUndo, SIGNAL(triggered(bool)), m_glView->getUndo(), SLOT(undo()));
 	connect(m_ui.actionRedo, SIGNAL(triggered(bool)), m_glView->getUndo(), SLOT(redo()));
+	connect(m_ui.actionSave, SIGNAL(triggered(bool)), SLOT(slotSave()));
+	
+	connect(m_ui.speedSlider, SIGNAL(sliderMoved(int)), SLOT(speedSliderMoved(int)));
+	connect(m_ui.displayFungeSpace, SIGNAL(activated(int)), SLOT(slotDisplayFungeSpaceChanged(int)));
+	connect(m_ui.pauseButton, SIGNAL(clicked(bool)), SLOT(pauseButtonClicked(bool)));
+	connect(m_ui.fullSpeedButton, SIGNAL(clicked(bool)), SLOT(fullSpeedButtonClicked(bool)));
 	
 	// Setup the stack list
 	m_stackModel = new QStandardItemModel(this);
@@ -99,6 +102,8 @@ void MainWindow::slotOpen()
 	QString fileName = QFileDialog::getOpenFileName(this, "Open file", m_settings.value("filedir").toString(), "BeQunge source (*.beq)");
 	if (fileName.isNull())
 		return;
+	
+	slotStop();
 	
 	QFile file(fileName);
 	QDir dir(fileName);
@@ -155,24 +160,33 @@ void MainWindow::slotDebug()
 	connect(m_interpreter, SIGNAL(output(QChar)), SLOT(slotOutput(QChar)));
 	connect(m_interpreter, SIGNAL(output(QString)), SLOT(slotOutput(QString)));
 	connect(m_interpreter, SIGNAL(input(Interpreter::WaitingForInput)), m_ui.consoleBox, SLOT(getInput(Interpreter::WaitingForInput)));
-	connect(m_ui.consoleBox, SIGNAL(charEntered(QChar)), m_interpreter, SLOT(provideInput(QChar)));
-	connect(m_ui.consoleBox, SIGNAL(intEntered(int)), m_interpreter, SLOT(provideInput(int)));
+	connect(m_ui.consoleBox, SIGNAL(charEntered(QChar)), SLOT(provideInput(QChar)));
+	connect(m_ui.consoleBox, SIGNAL(intEntered(int)), SLOT(provideInput(int)));
 	
 	showExecutionSpace(true);
 	m_glView->followPC(0);
 	m_glView->setPC(0, m_interpreter->pcPosition(0), m_interpreter->pcDirection(0));
 	
-	speedSliderMoved(m_ui.speedSlider->value());
-	
 	m_ui.actionStep->setEnabled(true);
 	m_ui.actionStop->setEnabled(true);
 	m_ui.actionDebug->setEnabled(false);
+	
+	if (!m_ui.pauseButton->isChecked())
+	{
+		if (m_ui.fullSpeedButton->isChecked())
+		{
+			m_fullSpeedExecution = true;
+			doFullSpeedExecution();
+		}
+		else
+			speedSliderMoved(m_ui.speedSlider->value());
+	}
 }
 
 void MainWindow::slotStep()
 {
 	if (m_interpreter == NULL)
-		slotDebug();
+		return;
 	
 	switch (m_interpreter->step())
 	{
@@ -226,6 +240,9 @@ void MainWindow::slotDisplayFungeSpaceChanged(int index)
 
 void MainWindow::slotStop()
 {
+	if (m_fullSpeedExecution)
+		m_fullSpeedExecution = false;
+	
 	delete m_interpreter;
 	m_interpreter = NULL;
 	m_stackModel->clear();
@@ -250,15 +267,20 @@ void MainWindow::slotOutput(QString str)
 
 void MainWindow::speedSliderMoved(int value)
 {
-	if (value == 0)
-		m_autoStepTimer->stop();
-	else if (!m_autoStepTimer->isActive())
-		m_autoStepTimer->start(1000 / value);
-	else
-		m_autoStepTimer->setInterval(1000 / value);
+	if (m_interpreter != NULL)
+	{
+		m_fullSpeedExecution = false;
+		if (!m_autoStepTimer->isActive())
+			m_autoStepTimer->start(1000 / value);
+		else
+			m_autoStepTimer->setInterval(1000 / value);
+	}
+	
+	m_ui.pauseButton->setChecked(false);
+	m_ui.fullSpeedButton->setChecked(false);
 }
 
-void MainWindow::saveFile()
+void MainWindow::slotSave()
 {
 	QString filename = QFileDialog::getSaveFileName(this, "Save File...", m_settings.value("filedir").toString(), "BeQunge source (*.beq)");
 	
@@ -272,6 +294,75 @@ void MainWindow::slotCopyChangeToCodeFungeSpace(Coord c)
 {
 	m_fungeSpace->setChar(c, m_executionFungeSpace->changes()[c].second);
 	m_executionFungeSpace->removeChange(c);
+}
+
+void MainWindow::pauseButtonClicked(bool checked)
+{
+	if (checked)
+	{
+		m_autoStepTimer->stop();
+		m_fullSpeedExecution = false;
+		m_ui.fullSpeedButton->setChecked(false);
+	}
+	else
+		speedSliderMoved(m_ui.speedSlider->value());
+}
+
+void MainWindow::fullSpeedButtonClicked(bool checked)
+{
+	if (checked)
+	{
+		m_autoStepTimer->stop();
+		m_fullSpeedExecution = true;
+		m_ui.pauseButton->setChecked(false);
+		doFullSpeedExecution();
+	}
+	else
+		speedSliderMoved(m_ui.speedSlider->value());
+}
+
+void MainWindow::doFullSpeedExecution()
+{
+	if (m_interpreter == NULL)
+		return;
+	int i=0;
+	while (m_fullSpeedExecution)
+	{
+		switch (m_interpreter->step())
+		{
+		case Interpreter::End:
+		case Interpreter::Invalid:
+			slotStop();
+			m_fullSpeedExecution = false;
+			break;
+		case Interpreter::SuspendForInput:
+			return;
+		case Interpreter::Success:
+			break;
+		}
+		++i;
+		if (i == 100)
+		{
+			QCoreApplication::processEvents();
+			i = 0;
+		}
+	}
+}
+
+void MainWindow::provideInput(QChar c)
+{
+	if (m_interpreter == NULL)
+		return;
+	m_interpreter->provideInput(c);
+	QTimer::singleShot(0, this, SLOT(doFullSpeedExecution()));
+}
+
+void MainWindow::provideInput(int i)
+{
+	if (m_interpreter == NULL)
+		return;
+	m_interpreter->provideInput(i);
+	QTimer::singleShot(0, this, SLOT(doFullSpeedExecution()));
 }
 
 

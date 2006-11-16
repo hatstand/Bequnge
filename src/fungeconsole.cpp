@@ -74,16 +74,17 @@ void FungeConsole::send()
 	case Interpreter::WaitingForChar:
 		if (!m_buffer.isEmpty())
 		{
-			emit charEntered(m_buffer[0]);
+			QChar c = m_buffer[0];
 			m_buffer.remove(0, 1);
+			emit charEntered(c);
 			m_waitingForInput = Interpreter::NotWaiting;
 		}
 		break;
 	case Interpreter::WaitingForInteger:
 		if (m_numberParser.indexIn(m_buffer) != -1)
 		{
-			emit intEntered(m_numberParser.cap(1).toInt());
 			m_buffer.remove(0, m_numberParser.matchedLength());
+			emit intEntered(m_numberParser.cap(1).toInt());
 			m_waitingForInput = Interpreter::NotWaiting;
 		}
 		break;

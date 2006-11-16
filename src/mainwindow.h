@@ -33,6 +33,7 @@ private slots:
 	void slotDebug();
 	void slotStep();
 	void slotStop();
+	void slotSave();
 	
 	void slotPcChanged(Coord position, Coord direction);
 	void slotStackPushed(int value);
@@ -40,10 +41,14 @@ private slots:
 	void slotOutput(QChar c);
 	void slotOutput(QString str);
 	
-	void speedSliderMoved(int value);
-	void slotDisplayFungeSpaceChanged(int index);
+	void provideInput(QChar c);
+	void provideInput(int i);
+	void doFullSpeedExecution();
 	
-	void saveFile();
+	void speedSliderMoved(int value);
+	void pauseButtonClicked(bool checked);
+	void fullSpeedButtonClicked(bool checked);
+	void slotDisplayFungeSpaceChanged(int index);
 
 private:
 	Ui_MainWindow m_ui;
@@ -55,6 +60,7 @@ private:
 	FungeSpace* m_executionFungeSpace;
 	QTimer* m_autoStepTimer;
 	Interpreter* m_interpreter;
+	bool m_fullSpeedExecution;
 	
 	QStandardItemModel* m_stackModel;
 

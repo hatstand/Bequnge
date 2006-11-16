@@ -5,8 +5,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>1272</width>
-    <height>964</height>
+    <width>1680</width>
+    <height>1004</height>
    </rect>
   </property>
   <property name="windowTitle" >
@@ -18,8 +18,8 @@
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>1272</width>
-     <height>29</height>
+     <width>1680</width>
+     <height>27</height>
     </rect>
    </property>
    <widget class="QMenu" name="menuFile" >
@@ -38,8 +38,8 @@
     <property name="title" >
      <string>Edit</string>
     </property>
-	<addaction name="actionUndo" />
-	<addaction name="actionRedo" />
+    <addaction name="actionUndo" />
+    <addaction name="actionRedo" />
    </widget>
    <addaction name="menuFile" />
    <addaction name="menuEdit" />
@@ -184,6 +184,13 @@
        <property name="spacing" >
         <number>6</number>
        </property>
+       <item row="0" column="0" >
+        <widget class="QLabel" name="label" >
+         <property name="text" >
+          <string>Display</string>
+         </property>
+        </widget>
+       </item>
        <item row="1" column="0" >
         <widget class="QLabel" name="label_2" >
          <property name="text" >
@@ -192,20 +199,56 @@
         </widget>
        </item>
        <item row="1" column="1" >
-        <widget class="QSlider" name="speedSlider" >
-         <property name="maximum" >
-          <number>20</number>
+        <layout class="QHBoxLayout" >
+         <property name="margin" >
+          <number>0</number>
          </property>
-         <property name="pageStep" >
-          <number>5</number>
+         <property name="spacing" >
+          <number>6</number>
          </property>
-         <property name="value" >
-          <number>2</number>
-         </property>
-         <property name="orientation" >
-          <enum>Qt::Horizontal</enum>
-         </property>
-        </widget>
+         <item>
+          <widget class="QToolButton" name="pauseButton" >
+           <property name="text" >
+            <string>Pause</string>
+           </property>
+           <property name="icon" >
+            <iconset resource="resources.qrc" >:/icons/pause.png</iconset>
+           </property>
+           <property name="checkable" >
+            <bool>true</bool>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QSlider" name="speedSlider" >
+           <property name="maximum" >
+            <number>20</number>
+           </property>
+           <property name="pageStep" >
+            <number>5</number>
+           </property>
+           <property name="value" >
+            <number>2</number>
+           </property>
+           <property name="orientation" >
+            <enum>Qt::Horizontal</enum>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QToolButton" name="fullSpeedButton" >
+           <property name="text" >
+            <string>Full speed</string>
+           </property>
+           <property name="icon" >
+            <iconset resource="resources.qrc" >:/icons/fullspeed.png</iconset>
+           </property>
+           <property name="checkable" >
+            <bool>true</bool>
+           </property>
+          </widget>
+         </item>
+        </layout>
        </item>
        <item row="0" column="1" >
         <widget class="QComboBox" name="displayFungeSpace" >
@@ -224,13 +267,6 @@
            <string>Differences</string>
           </property>
          </item>
-        </widget>
-       </item>
-       <item row="0" column="0" >
-        <widget class="QLabel" name="label" >
-         <property name="text" >
-          <string>Display</string>
-         </property>
         </widget>
        </item>
       </layout>
