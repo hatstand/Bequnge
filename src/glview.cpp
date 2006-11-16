@@ -1044,7 +1044,7 @@ void GLView::selectionToClipboard(bool cut, QClipboard::Mode mode)
 	data->setText(frontPlaneText);
 	data->setData("application/x-bequnge", serialisedData);
 	
-	QApplication::clipboard()->setMimeData(data);
+	QApplication::clipboard()->setMimeData(data, mode);
 }
 
 void GLView::slotCopy()
