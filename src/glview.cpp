@@ -122,7 +122,7 @@ void GLView::initializeGL()
 	glBlendFunc( GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA );
 	
 	// Display lists
-	m_displayListsBase = glGenLists(2);
+	m_displayListsBase = glGenLists(3);
 	glNewList(m_displayListsBase + ARROW, GL_COMPILE);
 		glBegin(GL_LINES);
 			glVertex3f(0.0f, -0.05f, 0.0f);
@@ -140,6 +140,37 @@ void GLView::initializeGL()
 			glVertex3f(0.0f, m_fontSize, 0.0f);
 			glVertex3f(0.0f, 0.0f, 0.0f);
 			glVertex3f(m_fontSize - 5.0f, 0.0f, 0.0f);
+		glEnd();
+	glEndList();
+	
+	glNewList(m_displayListsBase + GRID, GL_COMPILE);
+		glBegin(GL_LINES);
+			for (int y=0 ; y<=40 ; y+=5)
+			{
+				for (int z=0 ; z<=40 ; z+=5)
+				{
+					glVertex3f(0.0f, - m_fontSize * y, m_fontSize * z);
+					glVertex3f(m_fontSize * 40, - m_fontSize * y, m_fontSize * z);
+				}
+			}
+			
+			for (int x=0 ; x<=40 ; x+=5)
+			{
+				for (int z=0 ; z<=40 ; z+=5)
+				{
+					glVertex3f(m_fontSize * x, 0.0f, m_fontSize * z);
+					glVertex3f(m_fontSize * x, - m_fontSize * 40, m_fontSize * z);
+				}
+			}
+			
+			for (int x=0 ; x<=40 ; x+=5)
+			{
+				for (int y=0 ; y<=40 ; y+=5)
+				{
+					glVertex3f(m_fontSize * x, - m_fontSize * y, 0.0f);
+					glVertex3f(m_fontSize * x, - m_fontSize * y, m_fontSize * 40);
+				}
+			}
 		glEnd();
 	glEndList();
 }
@@ -161,13 +192,13 @@ void GLView::updateCamera(int i)
 	if (fabs(diff) < 0.01)
 		m_actualCameraOffset[i] = m_destinationCameraOffset[i];
 	else
-		m_actualCameraOffset[i] += diff * 0.2f;
+		m_actualCameraOffset[i] += diff * m_cameraMoveSpeed;
 	
 	diff = m_destinationEyeOffset[i] - m_actualEyeOffset[i];
 	if (fabs(diff) < 0.01)
 		m_actualEyeOffset[i] = m_destinationEyeOffset[i];
 	else
-		m_actualEyeOffset[i] += diff * 0.2f;
+		m_actualEyeOffset[i] += diff * m_cameraMoveSpeed;
 	
 	QList<float> c;
 	if ((!m_execution) || (m_followingPC == -1))
@@ -178,7 +209,16 @@ void GLView::updateCamera(int i)
 	if (fabs(diff) < 0.01)
 		m_actualCursorPos[i] = c[i];
 	else
-		m_actualCursorPos[i] += diff * 0.2f;
+		m_actualCursorPos[i] += diff * m_cameraMoveSpeed;
+	
+	if (i == 0)
+	{
+		diff = m_destinationGridAlpha - m_actualGridAlpha;
+		if (fabs(diff) < 0.001)
+			m_actualGridAlpha = m_destinationGridAlpha;
+		else
+			m_actualGridAlpha += diff * 0.05;
+	}
 }
 
 /*void GLView::explode(Coord c)
@@ -235,6 +275,14 @@ void GLView::paintGL()
 			i.next();
 			Coord coords = i.key();
 			QChar data = i.value();
+			
+			if (m_ascensionLevel > 0)
+			{
+				if ((coords[0] > m_cursor[0] + 20) || (coords[0] <= m_cursor[0] - 20) ||
+				    (coords[1] > m_cursor[1] + 20) || (coords[1] <= m_cursor[1] - 20) ||
+				    (coords[2] > m_cursor[2] + 20) || (coords[2] <= m_cursor[2] - 20))
+				    continue;
+			}
 			
 			glPushMatrix();
 				int diff = abs(coords[m_activePlane] - m_cursor[m_activePlane]);
@@ -332,6 +380,25 @@ void GLView::paintGL()
 					drawCube(c, c);
 				glPopMatrix();
 			}
+		}
+		
+		if (m_actualGridAlpha != 0.0f)
+		{
+			glPushMatrix();
+				Coord gridStart = m_cursor;
+				gridStart[0] -= 20;
+				gridStart[1] -= 20;
+				gridStart[2] += 20;
+				
+				coord = fungeSpaceToGl(gridStart, true);
+				coord[0] -= 2.4f;
+				coord[1] += m_fontSize - 0.1f;
+				coord[2] -= m_fontSize/2 - 2.4f;
+				
+				glTranslatef(coord[0], coord[1] - 2.5f, coord[2]);
+				glColor4f(0.0f, 0.5f, 0.0f, m_actualGridAlpha);
+				glCallList(m_displayListsBase + GRID);
+			glPopMatrix();
 		}
 		
 		glClear(GL_DEPTH_BUFFER_BIT);
@@ -735,6 +802,20 @@ void GLView::keyPressEvent(QKeyEvent* event)
 	}
 	else if (event->key() == Qt::Key_Tab)
 		setActivePlane(otherPlane());
+	else if ((event->key() == Qt::Key_Up) && (event->modifiers() & Qt::ControlModifier))
+	{
+		m_cameraMoveSpeed = 0.01;
+		m_destinationGridAlpha = 0.5f;
+		m_ascensionLevel++;
+		setEye(40.0f, 30.0f, -30.0f);
+	}
+	/*else if ((event->key() == Qt::Key_Down) && (event->modifiers() & Qt::ControlModifier))
+	{
+		m_cameraMoveSpeed = 0.01;
+		m_destinationGridAlpha = 0.5f;
+		m_ascensionLevel++;
+		setEye(40.0f, 30.0f, -30.0f);
+	}*/
 	else if (!event->text().isEmpty())
 	{
 		QChar c = event->text()[0];
@@ -862,6 +943,12 @@ void GLView::resetView()
 	m_actualCursorPos[0] = 0.0f;
 	m_actualCursorPos[1] = 0.0f;
 	m_actualCursorPos[2] = 0.0f;
+	
+	m_destinationGridAlpha = 0.0f;
+	m_actualGridAlpha = m_destinationGridAlpha;
+	m_ascensionLevel = 0;
+	
+	m_cameraMoveSpeed = 0.2;
 	
 	m_activePlane = 2;
 	

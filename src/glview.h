@@ -147,8 +147,13 @@ private:
 	
 	// Camera rotation
 	bool m_rotateDragging;
-	
+	float m_cameraMoveSpeed;
 	QPoint m_preDragMousePosition;
+	
+	// > 3D viewing
+	float m_actualGridAlpha;
+	float m_destinationGridAlpha;
+	int m_ascensionLevel;
 	
 	// Fonts
 	FT_Face m_fontFace;
@@ -163,7 +168,8 @@ private:
 	enum DisplayListEntry
 	{
 		ARROW = 0,
-		CURSOR = 1
+		CURSOR = 1,
+		GRID = 2
 	};
 
 	//QList<Particle*> m_particles;
