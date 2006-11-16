@@ -6,6 +6,7 @@
 #include <QFont>
 #include <QTextCursor>
 #include <QUndoGroup>
+#include <QClipboard>
 
 #include <ft2build.h>
 #include FT_FREETYPE_H
@@ -42,6 +43,11 @@ public:
 public slots:
 	void setStringMode(bool enabled);
 	void updateFPSCounter();
+	
+	void slotCopy();
+	void slotCut();
+	void slotPaste();
+	void slotPasteTransparant();
 
 private slots:
 	void spaceDeleted(QObject* space);
@@ -80,6 +86,9 @@ private:
 	void setCursor(int x, int y, int z, QTextCursor::MoveMode mode = QTextCursor::MoveAnchor);
 	void setCursor(Coord c, QTextCursor::MoveMode mode = QTextCursor::MoveAnchor);
 	void drawCube(Coord startPos, Coord endPos);
+	void selectionToClipboard(bool cut, QClipboard::Mode mode = QClipboard::Clipboard);
+	void paste(bool transparant);
+	void clearRect(Coord topLeft, Coord bottomRight);
 
 	void setChar(Coord p, QChar newchar);
 

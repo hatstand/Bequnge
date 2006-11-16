@@ -34,23 +34,28 @@
     <addaction name="separator" />
     <addaction name="actionQuit" />
    </widget>
-   <widget class="QMenu" name="menuEdit" >
-    <property name="title" >
-     <string>Edit</string>
-    </property>
-    <addaction name="actionUndo" />
-    <addaction name="actionRedo" />
-   </widget>
-   <widget class="QMenu" name="menuHelo" >
+   <widget class="QMenu" name="menuHelp" >
     <property name="title" >
      <string>Help</string>
     </property>
     <addaction name="actionAbout" />
     <addaction name="actionAboutQt" />
    </widget>
+   <widget class="QMenu" name="menuEdit" >
+    <property name="title" >
+     <string>Edit</string>
+    </property>
+    <addaction name="actionUndo" />
+    <addaction name="actionRedo" />
+    <addaction name="separator" />
+    <addaction name="actionCut" />
+    <addaction name="actionCopy" />
+    <addaction name="actionPaste" />
+    <addaction name="actionPasteTransparant" />
+   </widget>
    <addaction name="menuFile" />
    <addaction name="menuEdit" />
-   <addaction name="menuHelo" />
+   <addaction name="menuHelp" />
   </widget>
   <widget class="QStatusBar" name="statusbar" />
   <widget class="QToolBar" name="toolBar" >
@@ -426,6 +431,50 @@
    </property>
    <property name="menuRole" >
     <enum>QAction::AboutQtRole</enum>
+   </property>
+  </action>
+  <action name="actionCut" >
+   <property name="icon" >
+    <iconset resource="resources.qrc" >:/icons/cut.png</iconset>
+   </property>
+   <property name="text" >
+    <string>Cut</string>
+   </property>
+   <property name="shortcut" >
+    <string>Ctrl+X</string>
+   </property>
+  </action>
+  <action name="actionCopy" >
+   <property name="icon" >
+    <iconset resource="resources.qrc" >:/icons/copy.png</iconset>
+   </property>
+   <property name="text" >
+    <string>Copy</string>
+   </property>
+   <property name="shortcut" >
+    <string>Ctrl+C</string>
+   </property>
+  </action>
+  <action name="actionPaste" >
+   <property name="icon" >
+    <iconset resource="resources.qrc" >:/icons/paste.png</iconset>
+   </property>
+   <property name="text" >
+    <string>Paste</string>
+   </property>
+   <property name="shortcut" >
+    <string>Ctrl+V</string>
+   </property>
+  </action>
+  <action name="actionPasteTransparant" >
+   <property name="icon" >
+    <iconset resource="resources.qrc" >:/icons/paste.png</iconset>
+   </property>
+   <property name="text" >
+    <string>Paste transparant</string>
+   </property>
+   <property name="shortcut" >
+    <string>Shift+Ctrl+V</string>
    </property>
   </action>
  </widget>

@@ -8,9 +8,10 @@
 #include <QKeyEvent>
 #include <QResource>
 #include <QMessageBox>
-#include <QCoreApplication>
+#include <QApplication>
 #include <QFocusEvent>
 #include <QUndoStack>
+#include <QBuffer>
 
 #include <QDebug>
 
@@ -242,7 +243,7 @@ void GLView::paintGL()
 				bool withinSelection = ((m_selectionAnchor != m_selectionEnd) &&
 				                        (coords[0] >= selTopLeft[0]) && (coords[0] <= selBottomRight[0]) &&
 				                        (coords[1] >= selTopLeft[1]) && (coords[1] <= selBottomRight[1]) &&
-				                        (coords[2] <= selTopLeft[2]) && (coords[2] >= selBottomRight[2]));
+				                        (coords[2] >= selTopLeft[2]) && (coords[2] <= selBottomRight[2]));
 				
 				if ((coords == m_cursor) && (m_cursorBlinkOn || !hasFocus()))
 					glColor4f(0.0f, 0.0f, 0.0f, 1.0f);
@@ -421,6 +422,10 @@ void GLView::drawCube(Coord startPos, Coord endPos)
 {
 	QList<float> cubeStart = fungeSpaceToGl(startPos, true);
 	QList<float> cubeEnd = fungeSpaceToGl(endPos, true);
+	
+	float temp = cubeStart[2];
+	cubeStart[2] = cubeEnd[2];
+	cubeEnd[2] = temp;
 	
 	cubeStart[0] -= 2.4f;
 	cubeStart[1] += m_fontSize - 0.1f;
@@ -909,7 +914,7 @@ Coord GLView::selectionTopLeft()
 	Coord ret;
 	ret.append(qMin(m_selectionEnd[0], m_selectionAnchor[0]));
 	ret.append(qMin(m_selectionEnd[1], m_selectionAnchor[1]));
-	ret.append(qMax(m_selectionEnd[2], m_selectionAnchor[2]));
+	ret.append(qMin(m_selectionEnd[2], m_selectionAnchor[2]));
 	return ret;
 }
 
@@ -918,7 +923,7 @@ Coord GLView::selectionBottomRight()
 	Coord ret;
 	ret.append(qMax(m_selectionEnd[0], m_selectionAnchor[0]));
 	ret.append(qMax(m_selectionEnd[1], m_selectionAnchor[1]));
-	ret.append(qMin(m_selectionEnd[2], m_selectionAnchor[2]));
+	ret.append(qMax(m_selectionEnd[2], m_selectionAnchor[2]));
 	return ret;
 }
 
@@ -979,5 +984,164 @@ void GLView::setChar(Coord p, QChar newchar)
 void GLView::spaceDeleted(QObject* space)
 {
 	m_undos.remove(dynamic_cast<FungeSpace*>(space));
+}
+
+void GLView::selectionToClipboard(bool cut, QClipboard::Mode mode)
+{
+	Coord selTopLeft = selectionTopLeft();
+	Coord selBottomRight = selectionBottomRight();
+	
+	int selWidth = selBottomRight[0] - selTopLeft[0] + 1;
+	int selHeight = selBottomRight[1] - selTopLeft[1] + 1;
+	int selDepth = selTopLeft[2] - selBottomRight[2] + 1;
+	
+	QHash<Coord, QChar> charsWithinSelection;
+	
+	QString frontPlaneText;
+	QString emptyLine;
+	emptyLine.fill(' ', selWidth);
+	emptyLine += "\n";
+	for (int y=0 ; y<selHeight ; ++y)
+		frontPlaneText += emptyLine;
+	
+	QHash<Coord, QChar> code = m_fungeSpace->getCode();
+	QHashIterator<Coord, QChar> i(code);
+	while (i.hasNext())
+	{
+		i.next();
+		Coord c = i.key();
+		QChar value = i.value();
+		if ((c[0] >= selTopLeft[0]) && (c[0] <= selBottomRight[0]) &&
+			(c[1] >= selTopLeft[1]) && (c[1] <= selBottomRight[1]) &&
+			(c[2] >= selTopLeft[2]) && (c[2] <= selBottomRight[2]))
+		{
+			int x = c[0] - selTopLeft[0];
+			int y = c[1] - selTopLeft[1];
+			int z = c[2] - selTopLeft[2];
+			if (z == 0)
+				frontPlaneText[y*emptyLine.length() + x] = value;
+			
+			Coord transformedCoord;
+			transformedCoord.append(x);
+			transformedCoord.append(y);
+			transformedCoord.append(z);
+			
+			charsWithinSelection.insert(transformedCoord, value);
+			
+			if (cut)
+				m_fungeSpace->setChar(c, ' ');
+		}
+	}
+	
+	QByteArray serialisedData;
+	QBuffer buffer(&serialisedData);
+	buffer.open(QBuffer::ReadWrite);
+	QDataStream stream(&buffer);
+	stream << selWidth << selHeight << selDepth;
+	stream << charsWithinSelection;
+	
+	QMimeData* data = new QMimeData();
+	data->setText(frontPlaneText);
+	data->setData("application/x-bequnge", serialisedData);
+	
+	QApplication::clipboard()->setMimeData(data);
+}
+
+void GLView::slotCopy()
+{
+	selectionToClipboard(false);
+}
+
+void GLView::slotCut()
+{
+	selectionToClipboard(true);
+}
+
+void GLView::slotPasteTransparant()
+{
+	paste(true);
+}
+
+void GLView::slotPaste()
+{
+	paste(false);
+}
+
+void GLView::paste(bool transparant)
+{
+	const QMimeData* data = QApplication::clipboard()->mimeData();
+	
+	if (data->hasFormat("application/x-bequnge"))
+	{
+		QByteArray serialisedData = data->data("application/x-bequnge");
+		QBuffer buffer(&serialisedData);
+		buffer.open(QBuffer::ReadOnly);
+		QDataStream stream(&buffer);
+		
+		int selWidth, selHeight, selDepth;
+		QHash<Coord, QChar> code;
+		stream >> selWidth >> selHeight >> selDepth;
+		stream >> code;
+		
+		if (!transparant)
+		{
+			Coord bottomRight = m_cursor;
+			bottomRight[0] += selWidth - 1;
+			bottomRight[1] += selHeight - 1;
+			bottomRight[2] += selDepth - 1;
+			clearRect(m_cursor, bottomRight);
+		}
+		
+		QHashIterator<Coord, QChar> i(code);
+		while (i.hasNext())
+		{
+			i.next();
+			Coord c = i.key();
+			c[0] += m_cursor[0];
+			c[1] += m_cursor[1];
+			c[2] += m_cursor[2];
+			QChar value = i.value();
+			
+			m_fungeSpace->setChar(c, value);
+		}
+	}
+	else if (data->hasText())
+	{
+		Coord c;
+		c.append(m_cursor[0]);
+		c.append(m_cursor[1]);
+		c.append(m_cursor[2]);
+		
+		QStringList lines = data->text().split('\n');
+		for (int y=0 ; y<lines.count() ; ++y)
+		{
+			c[0] = m_cursor[0];
+			QString line = lines[y];
+			for (int x=0 ; x<line.length() ; ++x)
+			{
+				if ((!transparant) || (line[x] != ' '))
+					m_fungeSpace->setChar(c, line[x]);
+				c[0]++;
+			}
+			
+			c[1]++;
+		}
+	}
+}
+
+void GLView::clearRect(Coord topLeft, Coord bottomRight)
+{
+	Coord c = topLeft;
+	
+	for ( ; c[0]<=bottomRight[0] ; ++c[0])
+	{
+		for (c[1]=topLeft[1] ; c[1]<=bottomRight[1] ; ++c[1])
+		{
+			for (c[2]=topLeft[2] ; c[2]<=bottomRight[2] ; ++c[2])
+			{
+				m_fungeSpace->setChar(c, ' ');
+			}
+		}
+	}
 }
 
