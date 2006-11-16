@@ -16,6 +16,7 @@ class QKeyEvent;
 
 #include "OGLFT.h"
 #include "fungespace.h"
+#include "fungecommand.h"
 
 class GLView : public QGLWidget
 {
@@ -88,7 +89,7 @@ private:
 	void drawCube(Coord startPos, Coord endPos);
 	void selectionToClipboard(bool cut, QClipboard::Mode mode = QClipboard::Clipboard);
 	void paste(bool transparant);
-	void clearRect(Coord topLeft, Coord bottomRight);
+	void clearRect(Coord topLeft, Coord bottomRight, ChangeList* changes);
 
 	void setChar(Coord p, QChar newchar);
 

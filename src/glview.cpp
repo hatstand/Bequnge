@@ -1,6 +1,5 @@
 #include "glview.h"
 #include "fungespace.h"
-#include "fungecommand.h"
 
 #include <QTimer>
 #include <QMouseEvent>
@@ -1006,6 +1005,7 @@ void GLView::selectionToClipboard(bool cut, QClipboard::Mode mode)
 	
 	QHash<Coord, QChar> code = m_fungeSpace->getCode();
 	QHashIterator<Coord, QChar> i(code);
+	ChangeList changes;
 	while (i.hasNext())
 	{
 		i.next();
@@ -1029,9 +1029,15 @@ void GLView::selectionToClipboard(bool cut, QClipboard::Mode mode)
 			charsWithinSelection.insert(transformedCoord, value);
 			
 			if (cut)
-				m_fungeSpace->setChar(c, ' ');
+			{
+				changes.insert(c, QPair<QChar, QChar>(m_fungeSpace->getChar(c), ' '));
+				//m_fungeSpace->setChar(c, ' ');
+			}
 		}
 	}
+
+	if(cut)
+		m_undoGroup.activeStack()->push(new FungeCommand(m_fungeSpace, changes));
 	
 	QByteArray serialisedData;
 	QBuffer buffer(&serialisedData);
@@ -1070,6 +1076,8 @@ void GLView::slotPaste()
 void GLView::paste(bool transparant)
 {
 	const QMimeData* data = QApplication::clipboard()->mimeData();
+
+	ChangeList changes;
 	
 	if (data->hasFormat("application/x-bequnge"))
 	{
@@ -1089,7 +1097,7 @@ void GLView::paste(bool transparant)
 			bottomRight[0] += selWidth - 1;
 			bottomRight[1] += selHeight - 1;
 			bottomRight[2] += selDepth - 1;
-			clearRect(m_cursor, bottomRight);
+			clearRect(m_cursor, bottomRight, &changes);
 		}
 		
 		QHashIterator<Coord, QChar> i(code);
@@ -1102,7 +1110,8 @@ void GLView::paste(bool transparant)
 			c[2] += m_cursor[2];
 			QChar value = i.value();
 			
-			m_fungeSpace->setChar(c, value);
+			changes.insert(c, QPair<QChar, QChar>(m_fungeSpace->getChar(c), value));
+			//m_fungeSpace->setChar(c, value);
 		}
 	}
 	else if (data->hasText())
@@ -1120,16 +1129,21 @@ void GLView::paste(bool transparant)
 			for (int x=0 ; x<line.length() ; ++x)
 			{
 				if ((!transparant) || (line[x] != ' '))
-					m_fungeSpace->setChar(c, line[x]);
+				{
+					changes.insert(c, QPair<QChar, QChar>(m_fungeSpace->getChar(c), line[x]));
+					//m_fungeSpace->setChar(c, line[x]);
+				}
 				c[0]++;
 			}
 			
 			c[1]++;
 		}
 	}
+
+	m_undoGroup.activeStack()->push(new FungeCommand(m_fungeSpace, changes));
 }
 
-void GLView::clearRect(Coord topLeft, Coord bottomRight)
+void GLView::clearRect(Coord topLeft, Coord bottomRight, ChangeList* changes)
 {
 	Coord c = topLeft;
 	
@@ -1139,7 +1153,8 @@ void GLView::clearRect(Coord topLeft, Coord bottomRight)
 		{
 			for (c[2]=topLeft[2] ; c[2]<=bottomRight[2] ; ++c[2])
 			{
-				m_fungeSpace->setChar(c, ' ');
+				changes->insert(c, QPair<QChar, QChar>(m_fungeSpace->getChar(c), ' '));
+				//m_fungeSpace->setChar(c, ' ');
 			}
 		}
 	}

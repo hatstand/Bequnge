@@ -2548,6 +2548,7 @@ namespace OGLFT {
     gluTessCallback( tess_obj_, GLU_TESS_END, (GLUTessCallback)endCallback );
     gluTessCallback( tess_obj_, GLU_TESS_COMBINE_DATA, (GLUTessCallback)combineCallback );
     gluTessCallback( tess_obj_, GLU_TESS_ERROR, (GLUTessCallback)errorCallback );
+	 
   }
 
   Filled::~Filled ( void )
