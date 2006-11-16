@@ -65,7 +65,7 @@ MainWindow::MainWindow(QWidget* parent)
 	connect(m_ui.actionCut, SIGNAL(triggered(bool)), m_glView, SLOT(slotCut()));
 	connect(m_ui.actionCopy, SIGNAL(triggered(bool)), m_glView, SLOT(slotCopy()));
 	connect(m_ui.actionPaste, SIGNAL(triggered(bool)), m_glView, SLOT(slotPaste()));
-	connect(m_ui.actionPasteTransparant, SIGNAL(triggered(bool)), m_glView, SLOT(slotPasteTransparant()));
+	connect(m_ui.actionPasteTransparent, SIGNAL(triggered(bool)), m_glView, SLOT(slotPasteTransparent()));
 	
 	connect(m_ui.speedSlider, SIGNAL(sliderMoved(int)), SLOT(speedSliderMoved(int)));
 	connect(m_ui.displayFungeSpace, SIGNAL(activated(int)), SLOT(slotDisplayFungeSpaceChanged(int)));

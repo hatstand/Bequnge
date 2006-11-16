@@ -1150,7 +1150,7 @@ void GLView::slotCut()
 	selectionToClipboard(true);
 }
 
-void GLView::slotPasteTransparant()
+void GLView::slotPasteTransparent()
 {
 	paste(true);
 }

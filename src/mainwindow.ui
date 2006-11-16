@@ -51,7 +51,7 @@
     <addaction name="actionCut" />
     <addaction name="actionCopy" />
     <addaction name="actionPaste" />
-    <addaction name="actionPasteTransparant" />
+    <addaction name="actionPasteTransparent" />
    </widget>
    <addaction name="menuFile" />
    <addaction name="menuEdit" />
@@ -466,7 +466,7 @@
     <string>Ctrl+V</string>
    </property>
   </action>
-  <action name="actionPasteTransparant" >
+  <action name="actionPasteTransparent" >
    <property name="icon" >
     <iconset resource="resources.qrc" >:/icons/paste.png</iconset>
    </property>

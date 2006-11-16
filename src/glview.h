@@ -48,7 +48,7 @@ public slots:
 	void slotCopy();
 	void slotCut();
 	void slotPaste();
-	void slotPasteTransparant();
+	void slotPasteTransparent();
 
 private slots:
 	void spaceDeleted(QObject* space);
