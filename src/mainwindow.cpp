@@ -71,6 +71,11 @@ MainWindow::MainWindow(QWidget* parent)
 	connect(m_ui.displayFungeSpace, SIGNAL(activated(int)), SLOT(slotDisplayFungeSpaceChanged(int)));
 	connect(m_ui.pauseButton, SIGNAL(clicked(bool)), SLOT(pauseButtonClicked(bool)));
 	connect(m_ui.fullSpeedButton, SIGNAL(clicked(bool)), SLOT(fullSpeedButtonClicked(bool)));
+
+	m_ui.actionUndo->setEnabled(false);
+	m_ui.actionRedo->setEnabled(false);
+	connect(m_glView->getUndo(), SIGNAL(canUndoChanged(bool)), m_ui.actionUndo, SLOT(setEnabled(bool)));
+	connect(m_glView->getUndo(), SIGNAL(canRedoChanged(bool)), m_ui.actionRedo, SLOT(setEnabled(bool)));
 	
 	// Setup the stack list
 	m_stackModel = new QStandardItemModel(this);
