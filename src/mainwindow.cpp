@@ -20,6 +20,8 @@ MainWindow::MainWindow(QWidget* parent)
 {
 	m_ui.setupUi(this);
 	
+	setWindowIcon(QIcon(":/icons/beq.png"));
+	
 	// Create empty funge space
 	m_fungeSpace = new FungeSpace(3);
 	
@@ -380,7 +382,8 @@ void MainWindow::slotAbout()
 		"specification.<p>"
 		"<p><b>Authors</b></p>"
 		"<p>David Sansome &lt;ds505@ecs.soton.ac.uk&gt;<br>"
-		"John Maguire &lt;jbm305@ecs.soton.ac.uk&gt;</p>";
+		"John Maguire &lt;jbm305@ecs.soton.ac.uk&gt;<br>"
+		"Alexandra Jones &lt;aj705@soton.ac.uk&gt;</p>";
 	QMessageBox::about(this, "About BeQunge", aboutString);
 }
 

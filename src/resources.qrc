@@ -15,6 +15,7 @@
         <file>icons/step.png</file>
         <file>icons/stop.png</file>
         <file>icons/undo.png</file>
+        <file>icons/beq.png</file>
         <file>luximr.ttf</file>
     </qresource>
 </RCC>
