@@ -9,6 +9,7 @@
 #include <QDir>
 #include <QFile>
 #include <QKeyEvent>
+#include <QMessageBox>
 
 MainWindow::MainWindow(QWidget* parent)
 	: QMainWindow(parent),
@@ -57,6 +58,8 @@ MainWindow::MainWindow(QWidget* parent)
 	connect(m_ui.actionUndo, SIGNAL(triggered(bool)), m_glView->getUndo(), SLOT(undo()));
 	connect(m_ui.actionRedo, SIGNAL(triggered(bool)), m_glView->getUndo(), SLOT(redo()));
 	connect(m_ui.actionSave, SIGNAL(triggered(bool)), SLOT(slotSave()));
+	connect(m_ui.actionAbout, SIGNAL(triggered(bool)), SLOT(slotAbout()));
+	connect(m_ui.actionAboutQt, SIGNAL(triggered(bool)), SLOT(slotAboutQt()));
 	
 	connect(m_ui.speedSlider, SIGNAL(sliderMoved(int)), SLOT(speedSliderMoved(int)));
 	connect(m_ui.displayFungeSpace, SIGNAL(activated(int)), SLOT(slotDisplayFungeSpaceChanged(int)));
@@ -363,6 +366,23 @@ void MainWindow::provideInput(int i)
 		return;
 	m_interpreter->provideInput(i);
 	QTimer::singleShot(0, this, SLOT(doFullSpeedExecution()));
+}
+
+void MainWindow::slotAbout()
+{
+	QString aboutString = "<p><b>About BeQunge</b></p>"
+		"<p>BeQunge is an n-dimensional code editor, interpreter and debugger for the Funge "
+		"programming language.  BeQunge adheres as closely as possible to the Funge-98 "
+		"specification.<p>"
+		"<p><b>Authors</b></p>"
+		"<p>David Sansome &lt;ds505@ecs.soton.ac.uk&gt;<br>"
+		"John Maguire &lt;jbm305@ecs.soton.ac.uk&gt;</p>";
+	QMessageBox::about(this, "About BeQunge", aboutString);
+}
+
+void MainWindow::slotAboutQt()
+{
+	QMessageBox::aboutQt(this);
 }
 
 

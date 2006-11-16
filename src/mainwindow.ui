@@ -41,8 +41,16 @@
     <addaction name="actionUndo" />
     <addaction name="actionRedo" />
    </widget>
+   <widget class="QMenu" name="menuHelo" >
+    <property name="title" >
+     <string>Help</string>
+    </property>
+    <addaction name="actionAbout" />
+    <addaction name="actionAboutQt" />
+   </widget>
    <addaction name="menuFile" />
    <addaction name="menuEdit" />
+   <addaction name="menuHelo" />
   </widget>
   <widget class="QStatusBar" name="statusbar" />
   <widget class="QToolBar" name="toolBar" >
@@ -344,6 +352,9 @@
    <property name="shortcut" >
     <string>Ctrl+Q</string>
    </property>
+   <property name="menuRole" >
+    <enum>QAction::QuitRole</enum>
+   </property>
   </action>
   <action name="actionRun" >
    <property name="text" >
@@ -399,6 +410,22 @@
    </property>
    <property name="shortcut" >
     <string>Ctrl+Shift+Z</string>
+   </property>
+  </action>
+  <action name="actionAbout" >
+   <property name="text" >
+    <string>About...</string>
+   </property>
+   <property name="menuRole" >
+    <enum>QAction::AboutRole</enum>
+   </property>
+  </action>
+  <action name="actionAboutQt" >
+   <property name="text" >
+    <string>About Qt...</string>
+   </property>
+   <property name="menuRole" >
+    <enum>QAction::AboutQtRole</enum>
    </property>
   </action>
  </widget>

@@ -34,6 +34,8 @@ private slots:
 	void slotStep();
 	void slotStop();
 	void slotSave();
+	void slotAbout();
+	void slotAboutQt();
 	
 	void slotPcChanged(Coord position, Coord direction);
 	void slotStackPushed(int value);
