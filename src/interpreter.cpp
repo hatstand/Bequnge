@@ -21,7 +21,7 @@ Interpreter::InstructionPointer::InstructionPointer(const Interpreter::Instructi
 	m_waitingForInput(ip.m_waitingForInput), m_stringMode(ip.m_stringMode)
 {
 	// Reverse direction on split
-	foreach(int t, m_pos)
+	foreach(int t, m_direction)
 	{
 		t *= -1;
 	}
@@ -67,10 +67,6 @@ Interpreter::~Interpreter()
 {
 	foreach(InstructionPointer* ip, m_ips)
 	{
-		foreach(QStack<int>* i, ip->m_stackStack)
-		{
-			delete(i);
-		}
 		delete ip;
 	}
 }
