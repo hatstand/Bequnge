@@ -1,12 +1,12 @@
 #include "fungecommand.h"
 
 FungeCommand::FungeCommand(FungeSpace* space, Coord p, QChar newChar, QUndoCommand* parent)
-	:m_space(space), m_p(p), m_newChar(newChar), m_type(Single), QUndoCommand(parent)
+	:QUndoCommand(parent), m_space(space), m_p(p), m_newChar(newChar), m_type(Single)
 {
 }
 
 FungeCommand::FungeCommand(FungeSpace* space, ChangeList changes, QUndoCommand* parent)
-	:m_space(space), m_changes(changes), m_type(Multi), QUndoCommand(parent)
+	:QUndoCommand(parent), m_space(space), m_changes(changes), m_type(Multi)
 {
 }
 

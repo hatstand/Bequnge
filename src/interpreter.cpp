@@ -9,7 +9,7 @@
 
 Interpreter::InstructionPointer::InstructionPointer(Coord pos, Coord dir, Coord store)
 	:m_pos(pos), m_direction(dir), m_storageOffset(store), 
-	m_waitingForInput(NotWaiting), m_stringMode(false)
+	m_stringMode(false), m_waitingForInput(NotWaiting) 
 {
 	QStack<int>* t = new QStack<int>();
 	m_stack = t;
@@ -18,7 +18,7 @@ Interpreter::InstructionPointer::InstructionPointer(Coord pos, Coord dir, Coord 
 
 Interpreter::InstructionPointer::InstructionPointer(const Interpreter::InstructionPointer& ip)
 	:m_pos(ip.m_pos), m_direction(ip.m_direction), m_storageOffset(ip.m_storageOffset),
-	m_waitingForInput(ip.m_waitingForInput), m_stringMode(ip.m_stringMode)
+	m_stringMode(ip.m_stringMode), m_waitingForInput(ip.m_waitingForInput) 
 {
 	// Deep copy the stack stack
 	/*foreach(QStack<int>* i, ip.m_stackStack)

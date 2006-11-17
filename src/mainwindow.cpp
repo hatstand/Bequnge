@@ -13,10 +13,10 @@
 
 MainWindow::MainWindow(QWidget* parent)
 	: QMainWindow(parent),
-	  m_interpreter(NULL),
 	  m_executionFungeSpace(NULL),
-	  m_settings("BeQunge", "BeQunge", this),
-	  m_fullSpeedExecution(false)
+	  m_interpreter(NULL),
+	  m_fullSpeedExecution(false),
+	  m_settings("BeQunge", "BeQunge", this)
 {
 	m_ui.setupUi(this);
 	

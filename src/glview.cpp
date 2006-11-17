@@ -20,6 +20,8 @@
 GLView::GLView(FungeSpace* fungeSpace, QWidget* parent)
 	: QGLWidget(parent),
 	  m_fungeSpace(fungeSpace),
+	  m_execution(false),
+	  m_displayChanges(false),
 	  m_cursorBlinkOn(true),
 	  m_cursorDirection(1),
 	  m_selectDragging(false),
@@ -28,9 +30,7 @@ GLView::GLView(FungeSpace* fungeSpace, QWidget* parent)
 	  m_stringMode(false),
 	  m_zoomLevel(6.0f),
 	  m_moveDragging(false),
-	  m_rotateDragging(false),
-	  m_execution(false),
-	  m_displayChanges(false)
+	  m_rotateDragging(false)
 {
 	setFocusPolicy(Qt::WheelFocus);
 	
@@ -979,6 +979,7 @@ void GLView::followPC(int pc)
 
 bool GLView::focusNextPrevChild(bool next)
 {
+	(void)next;
 	return false;
 }
 

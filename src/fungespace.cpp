@@ -48,7 +48,7 @@ FungeSpace::FungeSpace(FungeSpace* space)
 	
 	setDimensions(space->dimensions());
 	m_space = space->getCode();
-	for (int i=0 ; i<m_dimensions ; ++i)
+	for (uint i=0 ; i<m_dimensions ; ++i)
 	{
 		m_positiveEdges[i] = space->getPositiveEdge(i);
 		m_negativeEdges[i] = space->getNegativeEdge(i);
@@ -255,9 +255,9 @@ void FungeSpace::setDimensions(uint dimensions)
 	
 	m_dimensions = dimensions;
 	
-	while (m_positiveEdges.count() < m_dimensions)
+	while ((uint)m_positiveEdges.count() < m_dimensions)
 		m_positiveEdges.append(0);
-	while (m_negativeEdges.count() < m_dimensions)
+	while ((uint)m_negativeEdges.count() < m_dimensions)
 		m_negativeEdges.append(0);
 }
 
@@ -278,7 +278,7 @@ void FungeSpace::save(QString filename)
 	QHash<Coord, Plane*> planes;
 	foreach(Coord p, m_space.keys())
 	{
-		Q_ASSERT(p.size() == m_dimensions);
+		Q_ASSERT((uint)p.size() == m_dimensions);
 
 		// Convert Coord to PlaneCoord and Coord
 		PlaneCoord pc = coordToPlaneCoord(p);
