@@ -20,12 +20,6 @@ Interpreter::InstructionPointer::InstructionPointer(const Interpreter::Instructi
 	:m_pos(ip.m_pos), m_direction(ip.m_direction), m_storageOffset(ip.m_storageOffset),
 	m_waitingForInput(ip.m_waitingForInput), m_stringMode(ip.m_stringMode)
 {
-	// Reverse direction on split
-	foreach(int t, m_direction)
-	{
-		t *= -1;
-	}
-
 	// Deep copy the stack stack
 	foreach(QStack<int>* i, ip.m_stackStack)
 	{
@@ -728,6 +722,11 @@ void Interpreter::split()
 {
 	InstructionPointer* t = new InstructionPointer(*m_ip);
 	m_ips.prepend(t);
+
+	qSwap(m_ip, t);
+	reverse();
+	move();
+	qSwap(m_ip, t);
 }
 
 void Interpreter::end()

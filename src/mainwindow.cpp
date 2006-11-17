@@ -202,7 +202,7 @@ void MainWindow::slotStep()
 	if (m_interpreter == NULL)
 		return;
 	
-	switch (m_interpreter->step())
+	switch (m_interpreter->stepAll())
 	{
 	case Interpreter::End:
 	case Interpreter::Invalid:
