@@ -306,6 +306,71 @@
    <addaction name="actionUndo" />
    <addaction name="actionRedo" />
   </widget>
+  <widget class="QDockWidget" name="dockWidget" >
+   <property name="windowTitle" >
+    <string>Documentation</string>
+   </property>
+   <attribute name="dockWidgetArea" >
+    <number>1</number>
+   </attribute>
+   <widget class="QWidget" name="dockWidgetContents_2" >
+    <layout class="QVBoxLayout" >
+     <property name="margin" >
+      <number>9</number>
+     </property>
+     <property name="spacing" >
+      <number>6</number>
+     </property>
+     <item>
+      <layout class="QHBoxLayout" >
+       <property name="margin" >
+        <number>0</number>
+       </property>
+       <property name="spacing" >
+        <number>6</number>
+       </property>
+       <item>
+        <widget class="QLabel" name="label_3" >
+         <property name="text" >
+          <string>Search</string>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QLineEdit" name="docSearchBox" />
+       </item>
+      </layout>
+     </item>
+     <item>
+      <widget class="QSplitter" name="splitter" >
+       <property name="orientation" >
+        <enum>Qt::Vertical</enum>
+       </property>
+       <widget class="QListWidget" name="docSearchResultsList" >
+        <property name="sizePolicy" >
+         <sizepolicy>
+          <hsizetype>7</hsizetype>
+          <vsizetype>7</vsizetype>
+          <horstretch>0</horstretch>
+          <verstretch>1</verstretch>
+         </sizepolicy>
+        </property>
+       </widget>
+       <widget class="QTextBrowser" name="docBrowser" >
+        <property name="sizePolicy" >
+         <sizepolicy>
+          <hsizetype>7</hsizetype>
+          <vsizetype>7</vsizetype>
+          <horstretch>0</horstretch>
+          <verstretch>2</verstretch>
+         </sizepolicy>
+        </property>
+       </widget>
+      </widget>
+     </item>
+    </layout>
+   </widget>
+  </widget>
   <action name="actionNew" >
    <property name="icon" >
     <iconset resource="resources.qrc" >:/icons/new.png</iconset>
@@ -474,7 +539,7 @@
     <string>Paste transparant</string>
    </property>
    <property name="shortcut" >
-    <string>Shift+Ctrl+V</string>
+    <string>Ctrl+Shift+V</string>
    </property>
   </action>
  </widget>

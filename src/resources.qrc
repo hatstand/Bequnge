@@ -17,5 +17,8 @@
         <file>icons/undo.png</file>
         <file>icons/beq.png</file>
         <file>luximr.ttf</file>
+        
+        <file>docs/index.html</file>
+        <file>docs/keyboardshortcuts.html</file>
     </qresource>
 </RCC>

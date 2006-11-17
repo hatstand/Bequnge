@@ -22,6 +22,8 @@ MainWindow::MainWindow(QWidget* parent)
 	
 	setWindowIcon(QIcon(":/icons/beq.png"));
 	
+	m_ui.docBrowser->setSource(QUrl("qrc:/docs/index.html"));
+	
 	// Create empty funge space
 	m_fungeSpace = new FungeSpace(3);
 	
