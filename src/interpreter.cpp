@@ -20,6 +20,13 @@ Interpreter::InstructionPointer::InstructionPointer(const Interpreter::Instructi
 	:m_pos(ip.m_pos), m_direction(ip.m_direction), m_storageOffset(ip.m_storageOffset),
 	m_waitingForInput(ip.m_waitingForInput), m_stringMode(ip.m_stringMode)
 {
+	// Reverse direction on split
+	foreach(int t, m_pos)
+	{
+		t *= -1;
+	}
+
+	// Deep copy the stack stack
 	foreach(QStack<int>* i, ip.m_stackStack)
 	{
 		QStack<int>* t = new QStack<int>();
@@ -28,6 +35,14 @@ Interpreter::InstructionPointer::InstructionPointer(const Interpreter::Instructi
 	}
 
 	m_stack = m_stackStack.top();
+}
+
+Interpreter::InstructionPointer::~InstructionPointer()
+{
+	foreach(QStack<int>* i, m_stackStack)
+	{
+		delete i;
+	}
 }
 
 Interpreter::Interpreter(FungeSpace* space, QObject* parent)
@@ -214,10 +229,15 @@ Interpreter::Status Interpreter::compute(QChar command)
 		putFunge();
 	else if(command == 'g')
 		getFunge();
+	else if(command == 't')
+		split();
 	else if(command.isNumber())
 		pushNumber(command);
 	else if(command == '@')
+	{
+		end();
 		return End;
+	}
 	else
 		return Invalid;
 		//panic("Don't understand character: " + QString(command));
@@ -706,6 +726,18 @@ int Interpreter::popItem()
 	emit stackPopped();
 	
 	return n;
+}
+
+void Interpreter::split()
+{
+	InstructionPointer* t = new InstructionPointer(*m_ip);
+	m_ips.prepend(t);
+}
+
+void Interpreter::end()
+{
+	m_ips.removeAll(m_ip);
+	delete m_ip;
 }
 
 void Interpreter::panic(QString message)

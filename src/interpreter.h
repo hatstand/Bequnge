@@ -30,6 +30,7 @@ public:
 	{
 		InstructionPointer(Coord, Coord, Coord);
 		InstructionPointer(const InstructionPointer&);
+		~InstructionPointer();
 
 		Coord m_pos;
 		Coord m_direction;
@@ -127,6 +128,9 @@ private:
 
 	void getFunge();
 	void putFunge();
+
+	void split();
+	void end();
 
 	void pushNumber(QChar n);
 	void pushVector(Coord c);
