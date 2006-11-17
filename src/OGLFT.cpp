@@ -2543,10 +2543,10 @@ namespace OGLFT {
 
     tess_obj_ = gluNewTess();
 
-    gluTessCallback( tess_obj_, GLU_TESS_VERTEX, (GLUTessCallback)vertexCallback );
-    gluTessCallback( tess_obj_, GLU_TESS_BEGIN, (GLUTessCallback)beginCallback );
-    gluTessCallback( tess_obj_, GLU_TESS_END, (GLUTessCallback)endCallback );
-    gluTessCallback( tess_obj_, GLU_TESS_COMBINE_DATA, (GLUTessCallback)combineCallback );
+    gluTessCallback( tess_obj_, GLU_TESS_VERTEX, reinterpret_cast<GLUTessCallback>(vertexCallback) );
+    gluTessCallback( tess_obj_, GLU_TESS_BEGIN, reinterpret_cast<GLUTessCallback>(beginCallback) );
+    gluTessCallback( tess_obj_, GLU_TESS_END, reinterpret_cast<GLUTessCallback>(endCallback) );
+    gluTessCallback( tess_obj_, GLU_TESS_COMBINE_DATA, reinterpret_cast<GLUTessCallback>(combineCallback) );
     gluTessCallback( tess_obj_, GLU_TESS_ERROR, (GLUTessCallback)errorCallback );
 	 
   }

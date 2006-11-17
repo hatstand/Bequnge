@@ -26,20 +26,36 @@ public:
 		WaitingForInteger
 	};
 
+	struct InstructionPointer
+	{
+		InstructionPointer(Coord, Coord, Coord);
+		InstructionPointer(const InstructionPointer&);
+
+		Coord m_pos;
+		Coord m_direction;
+		Coord m_storageOffset;
+		QStack<QStack<int>* > m_stackStack;
+		QStack<int>* m_stack;
+
+		bool m_stringMode;
+		WaitingForInput m_waitingForInput;
+	};
+
 
 	Interpreter(FungeSpace* space, QObject* parent = 0);
 	virtual ~Interpreter();
 
 	void run();
 	Status step();
+	Status stepAll();
 	
 	void pushItem(int c);
 	int popItem();
 	
-	Coord pcPosition(int pc) { return m_pos; }
-	Coord pcDirection(int pc) { return m_direction; }
+	Coord pcPosition(int pc) { return m_ips[pc]->m_pos; }
+	Coord pcDirection(int pc) { return m_ips[pc]->m_direction; }
 	
-	WaitingForInput waitingFor() { return m_waitingForInput; }
+	WaitingForInput waitingFor() { return m_ip->m_waitingForInput; }
 	
 public slots:
 	void provideInput(QChar c);
@@ -55,21 +71,15 @@ signals:
 	void stackPopped();
 
 private:
+	QList<InstructionPointer*> m_ips;
+	InstructionPointer* m_ip;
+
 	QIODevice* m_input;
-	QStack<int>* m_stack;
-	QStack<QStack<int>* > m_stackStack;
 	QString m_version;
 
 	FungeSpace* m_space;
-	Coord m_pos;
-	Coord m_direction;
-	Coord m_storageOffset;
-
-	bool m_stringMode;
 	bool m_jumpedSpace;
 	
-	WaitingForInput m_waitingForInput;
-
 	Status compute(QChar);
 	void move();
 	void jumpSpaces();
