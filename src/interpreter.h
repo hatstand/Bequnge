@@ -2,6 +2,7 @@
 #define INTERPRETER_H
 
 #include "fungespace.h"
+#include "stackstack.h"
 
 #include <QIODevice>
 #include <QStack>
@@ -35,7 +36,8 @@ public:
 		Coord m_pos;
 		Coord m_direction;
 		Coord m_storageOffset;
-		QStack<QStack<int>* > m_stackStack;
+		//QStack<QStack<int>* > m_stackStack;
+		StackStack m_stackStack;
 		QStack<int>* m_stack;
 
 		bool m_stringMode;

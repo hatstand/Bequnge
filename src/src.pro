@@ -21,6 +21,7 @@ SOURCES += OGLFT.cpp
 SOURCES += stringmodewidget.cpp
 SOURCES += fungeconsole.cpp
 SOURCES += fungecommand.cpp
+SOURCES += stackstack.cpp
 
 HEADERS += mainwindow.h
 HEADERS += interpreter.h
@@ -30,6 +31,7 @@ HEADERS += OGLFT.h
 HEADERS += stringmodewidget.h
 HEADERS += fungeconsole.h
 HEADERS += fungecommand.h
+HEADERS += stackstack.h
 
 FORMS += mainwindow.ui
 

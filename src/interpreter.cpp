@@ -21,10 +21,17 @@ Interpreter::InstructionPointer::InstructionPointer(const Interpreter::Instructi
 	m_waitingForInput(ip.m_waitingForInput), m_stringMode(ip.m_stringMode)
 {
 	// Deep copy the stack stack
-	foreach(QStack<int>* i, ip.m_stackStack)
+	/*foreach(QStack<int>* i, ip.m_stackStack)
 	{
 		QStack<int>* t = new QStack<int>();
 		qCopy(i->begin(), i->end(), t->begin());
+		m_stackStack.push(t);
+	}*/
+
+	for(StackStack::const_iterator it = ip.m_stackStack.constBegin(); it != ip.m_stackStack.constEnd(); ++it)
+	{
+		QStack<int>* t = new QStack<int>();
+		qCopy((*it)->begin(), (*it)->end(), t->begin());
 		m_stackStack.push(t);
 	}
 
@@ -33,10 +40,8 @@ Interpreter::InstructionPointer::InstructionPointer(const Interpreter::Instructi
 
 Interpreter::InstructionPointer::~InstructionPointer()
 {
-	foreach(QStack<int>* i, m_stackStack)
-	{
-		delete i;
-	}
+	for(StackStack::iterator it = m_stackStack.begin(); it != m_stackStack.end(); ++it)
+		delete(*it);
 }
 
 Interpreter::Interpreter(FungeSpace* space, QObject* parent)
