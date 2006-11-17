@@ -278,9 +278,9 @@ void GLView::paintGL()
 			
 			if (m_ascensionLevel > 0)
 			{
-				if ((coords[0] > m_cursor[0] + 20) || (coords[0] <= m_cursor[0] - 20) ||
-				    (coords[1] > m_cursor[1] + 20) || (coords[1] <= m_cursor[1] - 20) ||
-				    (coords[2] > m_cursor[2] + 20) || (coords[2] <= m_cursor[2] - 20))
+				if ((coords[0] >= m_cursor[0] + 20) || (coords[0] < m_cursor[0] - 20) ||
+				    (coords[1] >= m_cursor[1] + 20) || (coords[1] < m_cursor[1] - 20) ||
+				    (coords[2] >= m_cursor[2] + 20) || (coords[2] < m_cursor[2] - 20))
 				    continue;
 			}
 			
