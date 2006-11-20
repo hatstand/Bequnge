@@ -809,13 +809,23 @@ void GLView::keyPressEvent(QKeyEvent* event)
 		m_ascensionLevel++;
 		setEye(40.0f, 30.0f, -30.0f);
 	}
-	/*else if ((event->key() == Qt::Key_Down) && (event->modifiers() & Qt::ControlModifier))
+	else if ((event->key() == Qt::Key_Down) && (event->modifiers() & Qt::ControlModifier))
 	{
-		m_cameraMoveSpeed = 0.01;
-		m_destinationGridAlpha = 0.5f;
-		m_ascensionLevel++;
-		setEye(40.0f, 30.0f, -30.0f);
-	}*/
+		m_ascensionLevel--;
+		
+		if (m_ascensionLevel == 0)
+		{
+			m_cameraMoveSpeed = 0.2;
+			m_destinationGridAlpha = 0.0f;
+			setEye(m_zoomLevel, 30.0f, 0.0f);
+		}
+		else
+		{
+			m_cameraMoveSpeed = 0.01;
+			m_destinationGridAlpha = 0.5f;
+			setEye(40.0f, 30.0f, -30.0f);
+		}
+	}
 	else if (!event->text().isEmpty())
 	{
 		QChar c = event->text()[0];
