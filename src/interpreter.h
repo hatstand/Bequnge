@@ -6,6 +6,7 @@
 
 #include <QIODevice>
 #include <QStack>
+#include <QColor>
 
 class Interpreter: public QObject
 {
@@ -39,6 +40,8 @@ public:
 		//QStack<QStack<int>* > m_stackStack;
 		StackStack m_stackStack;
 		QStack<int>* m_stack;
+		
+		QColor m_color;
 
 		bool m_stringMode;
 		WaitingForInput m_waitingForInput;
@@ -55,8 +58,7 @@ public:
 	void pushItem(int c);
 	int popItem();
 	
-	Coord pcPosition(int pc) { return m_ips[pc]->m_pos; }
-	Coord pcDirection(int pc) { return m_ips[pc]->m_direction; }
+	InstructionPointer* ip() { return m_ip; }
 	
 	WaitingForInput waitingFor() { return m_ip->m_waitingForInput; }
 	
@@ -68,7 +70,9 @@ signals:
 	void output(QChar);
 	void output(QString);
 	void input(Interpreter::WaitingForInput type);
-	void pcChanged(Coord position, Coord direction);
+	void ipCreated(int index, Interpreter::InstructionPointer* ip);
+	void ipChanged(Interpreter::InstructionPointer* ip);
+	void ipDestroyed(Interpreter::InstructionPointer* ip);
 	
 	void stackPushed(int value);
 	void stackPopped();
@@ -132,7 +136,7 @@ private:
 	void putFunge();
 
 	void split();
-	void end();
+	bool end();
 
 	void pushNumber(QChar n);
 	void pushVector(Coord c);

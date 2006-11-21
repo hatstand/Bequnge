@@ -96,6 +96,11 @@ MainWindow::MainWindow(QWidget* parent)
 	// Disable the stop and step actions
 	m_ui.actionStep->setEnabled(false);
 	m_ui.actionStop->setEnabled(false);
+	
+	m_ipColorList.append(Qt::red);
+	m_ipColorList.append(Qt::cyan);
+	m_ipColorList.append(Qt::yellow);
+	m_ipColorList.append(Qt::magenta);
 }
 
 void MainWindow::cursorDirectionChanged(int direction)
@@ -170,7 +175,9 @@ void MainWindow::slotDebug()
 	// Make an interpreter
 	delete m_interpreter;
 	m_interpreter = new Interpreter(m_executionFungeSpace, this);
-	connect(m_interpreter, SIGNAL(pcChanged(Coord, Coord)), SLOT(slotPcChanged(Coord, Coord)));
+	connect(m_interpreter, SIGNAL(ipCreated(int, Interpreter::InstructionPointer*)), SLOT(slotIpCreated(int, Interpreter::InstructionPointer*)));
+	connect(m_interpreter, SIGNAL(ipChanged(Interpreter::InstructionPointer*)), SLOT(slotIpChanged(Interpreter::InstructionPointer*)));
+	connect(m_interpreter, SIGNAL(ipDestroyed(Interpreter::InstructionPointer*)), SLOT(slotIpDestroyed(Interpreter::InstructionPointer*)));
 	connect(m_interpreter, SIGNAL(stackPushed(int)), SLOT(slotStackPushed(int)), Qt::DirectConnection);
 	connect(m_interpreter, SIGNAL(stackPopped()), SLOT(slotStackPopped()), Qt::DirectConnection);
 	connect(m_interpreter, SIGNAL(output(QChar)), SLOT(slotOutput(QChar)));
@@ -179,9 +186,11 @@ void MainWindow::slotDebug()
 	connect(m_ui.consoleBox, SIGNAL(charEntered(QChar)), SLOT(provideInput(QChar)));
 	connect(m_ui.consoleBox, SIGNAL(intEntered(int)), SLOT(provideInput(int)));
 	
+	m_lastColor = -1;
+	m_glView->clearIps();
+	slotIpCreated(0, m_interpreter->ip());
+	
 	showExecutionSpace(true);
-	m_glView->followPC(0);
-	m_glView->setPC(0, m_interpreter->pcPosition(0), m_interpreter->pcDirection(0));
 	
 	m_ui.actionStep->setEnabled(true);
 	m_ui.actionStop->setEnabled(true);
@@ -217,9 +226,19 @@ void MainWindow::slotStep()
 	}
 }
 
-void MainWindow::slotPcChanged(Coord position, Coord direction)
+void MainWindow::slotIpCreated(int index, Interpreter::InstructionPointer* ip)
 {
-	m_glView->setPC(0, position, direction);
+	ip->m_color = m_ipColorList[++m_lastColor % m_ipColorList.count()];
+	m_glView->ipCreated(index, ip);
+}
+
+void MainWindow::slotIpChanged(Interpreter::InstructionPointer* ip)
+{
+}
+
+void MainWindow::slotIpDestroyed(Interpreter::InstructionPointer* ip)
+{
+	m_glView->ipDestroyed(ip);
 }
 
 void MainWindow::slotStackPushed(int value)

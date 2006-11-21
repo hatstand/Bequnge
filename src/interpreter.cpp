@@ -81,6 +81,9 @@ void Interpreter::jumpSpaces()
 
 void Interpreter::move()
 {
+	if (m_ip == NULL)
+		return;
+	
 	for(uint i = 0; i < m_space->dimensions(); ++i)
 	{
 		m_ip->m_pos[i] += m_ip->m_direction[i];
@@ -93,7 +96,7 @@ void Interpreter::move()
 	jumpSpaces();
 
 	//qDebug() << "Moved to:" << m_pos;
-	emit pcChanged(m_ip->m_pos, m_ip->m_direction);
+	emit ipChanged(m_ip);
 }
 
 Interpreter::Status Interpreter::step()
@@ -122,7 +125,9 @@ Interpreter::Status Interpreter::stepAll()
 	foreach(InstructionPointer* ip, m_ips)
 	{
 		m_ip = ip;
-		step();
+		Interpreter::Status ret = step();
+		if (ret != Success)
+			return ret;
 	}
 
 	return Success;
@@ -230,8 +235,8 @@ Interpreter::Status Interpreter::compute(QChar command)
 		pushNumber(command);
 	else if(command == '@')
 	{
-		end();
-		return End;
+		if (end())
+			return End;
 	}
 	else
 		return Invalid;
@@ -732,12 +737,26 @@ void Interpreter::split()
 	reverse();
 	move();
 	qSwap(m_ip, t);
+	
+	emit ipCreated(m_ips.indexOf(t), t);
 }
 
-void Interpreter::end()
+bool Interpreter::end()
 {
-	m_ips.removeAll(m_ip);
+	int index = m_ips.indexOf(m_ip);
+	m_ips.removeAt(index);
+	emit ipDestroyed(m_ip);
 	delete m_ip;
+	m_ip = NULL;
+	if (m_ips.count() == 0)
+		return true;
+	
+	/*if (index >= m_ips.count())
+		m_ip = m_ips.first();
+	else
+		m_ip = m_ips[index];*/
+	
+	return false;
 }
 
 void Interpreter::panic(QString message)

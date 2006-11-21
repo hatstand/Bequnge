@@ -37,7 +37,10 @@ private slots:
 	void slotAbout();
 	void slotAboutQt();
 	
-	void slotPcChanged(Coord position, Coord direction);
+	void slotIpCreated(int index, Interpreter::InstructionPointer* ip);
+	void slotIpChanged(Interpreter::InstructionPointer* ip);
+	void slotIpDestroyed(Interpreter::InstructionPointer* ip);
+	
 	void slotStackPushed(int value);
 	void slotStackPopped();
 	void slotOutput(QChar c);
@@ -67,6 +70,9 @@ private:
 	QStandardItemModel* m_stackModel;
 
 	QSettings m_settings;
+	
+	QList<QColor> m_ipColorList;
+	int m_lastColor;
 };
 
 

@@ -201,10 +201,10 @@ void GLView::updateCamera(int i)
 		m_actualEyeOffset[i] += diff * m_cameraMoveSpeed;
 	
 	QList<float> c;
-	if ((!m_execution) || (m_followingPC == -1))
+	if ((!m_execution) || (m_followingIP == NULL))
 		c = fungeSpaceToGl(m_cursor, false);
 	else
-		c = fungeSpaceToGl(m_pcs[m_followingPC].first, false);
+		c = fungeSpaceToGl(m_followingIP->m_pos, false);
 	diff = c[i] - m_actualCursorPos[i];
 	if (fabs(diff) < 0.01)
 		m_actualCursorPos[i] = c[i];
@@ -266,8 +266,9 @@ void GLView::paintGL()
 	
 	glScalef(0.004f, 0.004f, 0.004f);
 	glPushMatrix();
-		//glEnable(GL_TEXTURE_2D);
 		QList<float> coord;
+		
+		// Draw the fungespace
 		QHash<Coord, QChar> entries = m_fungeSpace->getCode();
 		QHashIterator<Coord, QChar> i(entries);
 		while (i.hasNext())
@@ -322,8 +323,8 @@ void GLView::paintGL()
 				m_font->draw(data);
 			glPopMatrix();
 		}
-		//glDisable(GL_TEXTURE_2D);
 		
+		// Draw the cursor
 		if (m_cursorBlinkOn || !hasFocus())
 		{
 			glPushMatrix();
@@ -340,14 +341,13 @@ void GLView::paintGL()
 			glPopMatrix();
 		}
 		
+		// Draw the instruction pointer(s)
 		if (m_execution)
 		{
-			QMapIterator<int, QPair<Coord, Coord > > i(m_pcs);
-			while (i.hasNext())
+			foreach (Interpreter::InstructionPointer* ip, m_ips)
 			{
-				i.next();
 				glPushMatrix();
-					coord = fungeSpaceToGl(i.value().first, true);
+					coord = fungeSpaceToGl(ip->m_pos, true);
 					glTranslatef(coord[0] - 0.01f, coord[1] - 2.5f, coord[2] - 0.01f);
 					if (m_activePlane == 0)
 					{
@@ -355,12 +355,13 @@ void GLView::paintGL()
 						glRotatef(90.0f, 0.0f, 1.0f, 0.0f);
 						glTranslatef(-m_fontSize/2, 0.0f, 0.0f);
 					}
-					glColor4f(1.0f, 0.0f, 0.0f, 1.0f);
+					qglColor(ip->m_color);
 					glCallList(m_displayListsBase + CURSOR);
 				glPopMatrix();
 			}
 		}
 		
+		// Draw the selection cube
 		if (m_selectionAnchor != m_selectionEnd)
 		{
 			glPushMatrix();
@@ -369,6 +370,7 @@ void GLView::paintGL()
 			glPopMatrix();
 		}
 		
+		// Draw changes
 		if (m_displayChanges)
 		{
 			glColor4f(1.0f, 0.5f, 0.5f, 0.3f);
@@ -382,6 +384,7 @@ void GLView::paintGL()
 			}
 		}
 		
+		// Draw the ascension grid
 		if (m_actualGridAlpha != 0.0f)
 		{
 			glPushMatrix();
@@ -401,8 +404,18 @@ void GLView::paintGL()
 			glPopMatrix();
 		}
 		
+		// Draw the particles
+		/*foreach(Particle* p, m_particles)
+		{
+			glPushMatrix();
+				p->paintGL(1000/30, 1.0);
+			glPopMatrix();
+		}*/
+		
+		// Clear the depth buffer
 		glClear(GL_DEPTH_BUFFER_BIT);
 		
+		// Draw bounding boxes in the depth buffer
 		i.toFront();
 		glColorMask(false, false, false, false);
 		while (i.hasNext())
@@ -424,13 +437,6 @@ void GLView::paintGL()
 			glPopMatrix();
 		}
 		glColorMask(true, true, true, true);
-
-		/*foreach(Particle* p, m_particles)
-		{
-			glPushMatrix();
-				p->paintGL(1000/30, 1.0);
-			glPopMatrix();
-		}*/
 	glPopMatrix();
 	
 	glColor3f(1.0f, 1.0f, 1.0f);
@@ -439,14 +445,6 @@ void GLView::paintGL()
 	
 	if (m_execution)
 	{
-		QString followingStr;
-		if (m_followingPC == -1)
-			followingStr = "Following editor cursor";
-		else
-			followingStr = "Following PC " + QString::number(m_followingPC);
-		QRect boundingRect = m_metricsSmall->boundingRect(followingStr);
-		
-		renderText(width() - boundingRect.width(), m_executionRect.height() + m_execution2Rect.height() + boundingRect.height(), followingStr, m_fontSmall);
 		renderText(width() - m_execution2Rect.width(), m_executionRect.height() + m_execution2Rect.height(), m_execution2Str, m_fontSmall);
 		glColor3f(0.0f, 1.0f, 0.0f);
 		renderText(width() - m_executionRect.width(), m_executionRect.height(), m_executionStr, m_fontLarge);
@@ -977,14 +975,27 @@ void GLView::setExecution(bool execution)
 	m_execution = execution;
 }
 
-void GLView::setPC(int pc, Coord position, Coord direction)
+void GLView::ipCreated(int index, Interpreter::InstructionPointer* ip)
 {
-	m_pcs[pc] = QPair<Coord, Coord>(position, direction);
+	m_ips.insert(index, ip);
+	followIp(ip);
 }
 
-void GLView::followPC(int pc)
+void GLView::ipDestroyed(Interpreter::InstructionPointer* ip)
 {
-	m_followingPC = pc;
+	int index = m_ips.indexOf(ip);
+	m_ips.removeAt(index);
+	if ((index > m_ips.count()) || (m_ips.isEmpty()))
+		followIp(NULL);
+	else if (index == m_ips.count())
+		followIp(m_ips.first());
+	else
+		followIp(m_ips[index]);
+}
+
+void GLView::followIp(Interpreter::InstructionPointer* ip)
+{
+	m_followingIP = ip;
 }
 
 bool GLView::focusNextPrevChild(bool next)

@@ -17,6 +17,7 @@ class QKeyEvent;
 #include "OGLFT.h"
 #include "fungespace.h"
 #include "fungecommand.h"
+#include "interpreter.h"
 
 class GLView : public QGLWidget
 {
@@ -32,8 +33,7 @@ public:
 	FungeSpace* getFungeSpace() { return m_fungeSpace; }
 	
 	void setExecution(bool execution);
-	void setPC(int pc, Coord position, Coord direction);
-	void followPC(int pc);
+	void followIp(Interpreter::InstructionPointer* ip);
 	void resetView();
 	void displayChanges(bool displayChanges) { m_displayChanges = displayChanges; }
 
@@ -44,6 +44,10 @@ public:
 public slots:
 	void setStringMode(bool enabled);
 	void updateFPSCounter();
+	
+	void ipCreated(int index, Interpreter::InstructionPointer* ip);
+	void ipDestroyed(Interpreter::InstructionPointer* ip);
+	void clearIps() {m_ips.clear();}
 	
 	void slotCopy();
 	void slotCut();
@@ -103,8 +107,8 @@ private:
 	
 	// Debugger
 	bool m_execution;
-	QMap<int, QPair<Coord, Coord > > m_pcs;
-	int m_followingPC;
+	QList<Interpreter::InstructionPointer*> m_ips;
+	Interpreter::InstructionPointer* m_followingIP;
 	QString m_executionStr;
 	QString m_execution2Str;
 	QRect m_executionRect;
