@@ -313,7 +313,11 @@ void GLView::paintGL()
 			foreach (Interpreter::InstructionPointer* ip, m_ips)
 			{
 				glPushMatrix();
-					QList<float> coord = fungeSpaceToGl(ip->m_pos, true);
+					Coord coords = ip->m_pos;
+					coords[0] += coords[3] * 70;
+					coords[1] += coords[4] * 70;
+					coords[2] += coords[5] * 70;
+					QList<float> coord = fungeSpaceToGl(coords, true);
 					glTranslatef(coord[0] - 0.01f, coord[1] - 2.5f, coord[2] - 0.01f);
 					if (m_activePlane == 0)
 					{

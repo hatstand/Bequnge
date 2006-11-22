@@ -536,7 +536,7 @@
     <iconset resource="resources.qrc" >:/icons/paste.png</iconset>
    </property>
    <property name="text" >
-    <string>Paste transparant</string>
+    <string>Paste transparent</string>
    </property>
    <property name="shortcut" >
     <string>Ctrl+Shift+V</string>
