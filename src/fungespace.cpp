@@ -14,8 +14,91 @@ uint qHash(Coord c)
 	{
 		hash ^= i;
 	}
-
+	
 	return hash;
+}
+
+
+Coord::Coord()
+	: QVector<int>(),
+	  zero(0)
+{
+}
+
+Coord::Coord(const QVector<int>& other)
+	: QVector<int>(other),
+	  zero(0)
+{
+}
+
+Coord Coord::operator =(const QVector<int>& other)
+{
+	return Coord(other);
+}
+
+const int& Coord::at(int i) const
+{
+	if (i >= count())
+		return zero;
+	return QVector<int>::at(i);
+}
+
+int& Coord::operator [](int i)
+{
+	while (i >= count())
+		append(0);
+	return QVector<int>::operator[](i);
+}
+
+const int& Coord::operator [](int i) const
+{
+	return at(i);
+}
+
+bool Coord::operator ==(const QVector<int>& other) const
+{
+	if (count() == other.count())
+		return QVector<int>::operator ==(other);
+	
+	if (count() > other.count())
+	{
+		if (mid(0, other.count()) != other)
+			return false;
+		for (int i=other.count() ; i<count() ; ++i)
+			if (at(i) != 0)
+				return false;
+	}
+	else
+	{
+		if (QVector<int>::operator !=(other.mid(0, count())))
+			return false;
+		for (int i=count() ; i<other.count() ; ++i)
+			if (other.at(i) != 0)
+				return false;
+	}
+	return true;
+}
+
+bool Coord::operator ==(const Coord& other) const
+{
+	return operator ==((const QVector<int>&) other);
+}
+
+bool Coord::operator !=(const QVector<int>& other) const
+{
+	return !(operator ==((const QVector<int>&) other));
+}
+
+bool Coord::operator !=(const Coord& other) const
+{
+	return !(operator ==((const QVector<int>&) other));
+}
+
+QVector<int> Coord::mid(int pos, int length) const
+{
+	if (pos < count())
+		return QVector<int>::mid(pos, length);
+	return Coord();
 }
 
 
@@ -167,7 +250,7 @@ void FungeSpace::readPlane(QIODevice* dev)
 		line = dev->readLine();
 		for(int j = 0; j < line.length() -1; ++j)
 		{
-			Coord p(m_dimensions);
+			Coord p;
 			// Insert x and y
 			p[0] = j + origin[0];
 			p[1] = i + origin[1];
@@ -192,8 +275,6 @@ QHash<Coord, QChar> FungeSpace::getCode()
 
 void FungeSpace::setChar(Coord pos, QChar c)
 {
-	Q_ASSERT((uint)pos.size() == m_dimensions);
-
 	QChar oldValue;
 	if (m_trackChanges)
 		oldValue = getChar(pos);
@@ -222,8 +303,6 @@ void FungeSpace::setChar(Coord pos, QChar c)
 
 QChar FungeSpace::getChar(Coord pos)
 {
-	Q_ASSERT((uint)pos.size() == m_dimensions);
-
 	if(m_space.contains(pos))
 		return m_space[pos];
 	else
@@ -278,8 +357,6 @@ void FungeSpace::save(QString filename)
 	QHash<Coord, Plane*> planes;
 	foreach(Coord p, m_space.keys())
 	{
-		Q_ASSERT((uint)p.size() == m_dimensions);
-
 		// Convert Coord to PlaneCoord and Coord
 		PlaneCoord pc = coordToPlaneCoord(p);
 		Coord pp = p.mid(2);

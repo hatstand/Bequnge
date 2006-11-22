@@ -213,11 +213,22 @@ void GLView::updateCamera(int i)
 	
 	if (i == 0)
 	{
-		diff = m_destinationGridAlpha - m_actualGridAlpha;
-		if (fabs(diff) < 0.001)
-			m_actualGridAlpha = m_destinationGridAlpha;
-		else
-			m_actualGridAlpha += diff * 0.05;
+		QList<int> keys = m_destinationGridAlpha.keys();
+		foreach (int index, keys)
+		{
+			diff = m_destinationGridAlpha[index] - m_actualGridAlpha[index];
+			if (fabs(diff) < 0.001)
+			{
+				m_actualGridAlpha[index] = m_destinationGridAlpha[index];
+				if (m_actualGridAlpha[index] == 0.0f)
+				{
+					m_actualGridAlpha.remove(index);
+					m_destinationGridAlpha.remove(index);
+				}
+			}
+			else
+				m_actualGridAlpha[index] += diff * 0.05;
+		}
 	}
 }
 
@@ -261,74 +272,16 @@ void GLView::paintGL()
 	          1.0f,
 	          0.0f);
 	
-	Coord selTopLeft = selectionTopLeft();
-	Coord selBottomRight = selectionBottomRight();
-	
 	glScalef(0.004f, 0.004f, 0.004f);
 	glPushMatrix();
-		QList<float> coord;
-		
 		// Draw the fungespace
-		QHash<Coord, QChar> entries = m_fungeSpace->getCode();
-		QHashIterator<Coord, QChar> i(entries);
-		while (i.hasNext())
-		{
-			i.next();
-			Coord coords = i.key();
-			QChar data = i.value();
-			
-			if (m_ascensionLevel > 0)
-			{
-				if ((coords[0] >= m_cursor[0] + 20) || (coords[0] < m_cursor[0] - 20) ||
-				    (coords[1] >= m_cursor[1] + 20) || (coords[1] < m_cursor[1] - 20) ||
-				    (coords[2] >= m_cursor[2] + 20) || (coords[2] < m_cursor[2] - 20))
-				    continue;
-			}
-			
-			glPushMatrix();
-				int diff = abs(coords[m_activePlane] - m_cursor[m_activePlane]);
-				
-				bool withinSelection = ((m_selectionAnchor != m_selectionEnd) &&
-				                        (coords[0] >= selTopLeft[0]) && (coords[0] <= selBottomRight[0]) &&
-				                        (coords[1] >= selTopLeft[1]) && (coords[1] <= selBottomRight[1]) &&
-				                        (coords[2] >= selTopLeft[2]) && (coords[2] <= selBottomRight[2]));
-				
-				if ((coords == m_cursor) && (m_cursorBlinkOn || !hasFocus()))
-					glColor4f(0.0f, 0.0f, 0.0f, 1.0f);
-				else if (m_mouseHoveringOverChar && (m_mouseHover == coords))
-					glColor4f(1.0f, 0.2f, 0.2f, 1.0f);
-				else if (withinSelection)
-				{
-					if (diff == 0)
-						glColor4f(0.5f, 1.0f, 1.0f, 1.0f);
-					else
-						glColor4f(0.5f, 0.5f, 1.0f, 1.0f);
-				}
-				else if (diff == 0)
-					glColor4f(0.0f, 1.0f, 0.0f, 1.0f);
-				else if (diff <= 8)
-					glColor4f(1.0f, 1.0f, 1.0f, 1.0f - diff * 0.1f);
-				else
-					glColor4f(1.0f, 1.0f, 1.0f, 0.2f);
-				
-				coord = fungeSpaceToGl(coords, true);
-				glTranslatef(coord[0], coord[1], coord[2]);
-				
-				if (m_activePlane == 0)
-				{
-					glTranslatef(m_fontSize/2, 0.0f, 0.0f);
-					glRotatef(90.0f, 0.0f, 1.0f, 0.0f);
-					glTranslatef(-m_fontSize/2, 0.0f, 0.0f);
-				}
-				m_font->draw(data);
-			glPopMatrix();
-		}
+		drawFunge(m_fungeSpace->getCode());
 		
 		// Draw the cursor
 		if (m_cursorBlinkOn || !hasFocus())
 		{
 			glPushMatrix();
-				coord = fungeSpaceToGl(m_cursor, true);
+				QList<float> coord = fungeSpaceToGl(m_cursor, true);
 				glTranslatef(coord[0] - 0.01f, coord[1] - 2.5f, coord[2] - 0.01f);
 				if (m_activePlane == 0)
 				{
@@ -347,7 +300,7 @@ void GLView::paintGL()
 			foreach (Interpreter::InstructionPointer* ip, m_ips)
 			{
 				glPushMatrix();
-					coord = fungeSpaceToGl(ip->m_pos, true);
+					QList<float> coord = fungeSpaceToGl(ip->m_pos, true);
 					glTranslatef(coord[0] - 0.01f, coord[1] - 2.5f, coord[2] - 0.01f);
 					if (m_activePlane == 0)
 					{
@@ -364,6 +317,8 @@ void GLView::paintGL()
 		// Draw the selection cube
 		if (m_selectionAnchor != m_selectionEnd)
 		{
+			Coord selTopLeft = selectionTopLeft();
+			Coord selBottomRight = selectionBottomRight();
 			glPushMatrix();
 				glColor4f(0.5f, 0.5f, 1.0f, 0.3f);
 				drawCube(selTopLeft, selBottomRight);
@@ -384,24 +339,34 @@ void GLView::paintGL()
 			}
 		}
 		
-		// Draw the ascension grid
-		if (m_actualGridAlpha != 0.0f)
+		// Draw the ascension grid(s)
+		foreach (int i, m_actualGridAlpha.keys())
 		{
-			glPushMatrix();
-				Coord gridStart = m_cursor;
-				gridStart[0] -= 20;
-				gridStart[1] -= 20;
-				gridStart[2] += 20;
-				
-				coord = fungeSpaceToGl(gridStart, true);
-				coord[0] -= 2.4f;
-				coord[1] += m_fontSize - 0.1f;
-				coord[2] -= m_fontSize/2 - 2.4f;
-				
-				glTranslatef(coord[0], coord[1] - 2.5f, coord[2]);
-				glColor4f(0.0f, 0.5f, 0.0f, m_actualGridAlpha);
-				glCallList(m_displayListsBase + GRID);
-			glPopMatrix();
+			for (int x=-2 ; x<=2 ; ++x)
+			{
+				for (int y=-2 ; y<=2 ; ++y)
+				{
+					float alphaMultiplier = 1.0f - (fabs(x) + fabs(y)) / 5;
+					glPushMatrix();
+						Coord gridStart = m_cursor;
+						gridStart[0] += (x * 70) - 20;
+						gridStart[1] += (y * 70) - 20;
+						gridStart[2] += 20;
+						
+						QList<float> coord = fungeSpaceToGl(gridStart, true);
+						coord[0] -= 2.4f;
+						coord[1] += m_fontSize - 0.1f;
+						coord[2] -= m_fontSize/2 - 2.4f;
+						
+						glTranslatef(coord[0], coord[1] - 2.5f, coord[2]);
+						if ((x == 0) && (y == 0))
+							glColor4f(0.0f, 0.5f, 0.0f, m_actualGridAlpha[i] * alphaMultiplier);
+						else
+							glColor4f(0.5f, 0.5f, 0.5f, m_actualGridAlpha[i] * alphaMultiplier);
+						glCallList(m_displayListsBase + GRID);
+					glPopMatrix();
+				}
+			}
 		}
 		
 		// Draw the particles
@@ -416,27 +381,30 @@ void GLView::paintGL()
 		glClear(GL_DEPTH_BUFFER_BIT);
 		
 		// Draw bounding boxes in the depth buffer
-		i.toFront();
-		glColorMask(false, false, false, false);
-		while (i.hasNext())
+		if (m_ascensionLevel > 0)
 		{
-			i.next();
-			Coord coords = i.key();
-			QChar data = i.value();
-			
-			glPushMatrix();
-				coord = fungeSpaceToGl(coords, true);
-				glTranslatef(coord[0], coord[1], coord[2]);
-				if (m_activePlane == 0)
-				{
-					glTranslatef(m_fontSize/2, 0.0f, 0.0f);
-					glRotatef(90.0f, 0.0f, 1.0f, 0.0f);
-					glTranslatef(-m_fontSize/2, 0.0f, 0.0f);
-				}
-				glCallList(m_displayListsBase + CURSOR);
-			glPopMatrix();
+			QHashIterator<Coord, QChar> i(m_fungeSpace->getCode());
+			glColorMask(false, false, false, false);
+			while (i.hasNext())
+			{
+				i.next();
+				Coord coords = i.key();
+				QChar data = i.value();
+				
+				glPushMatrix();
+					QList<float> coord = fungeSpaceToGl(coords, true);
+					glTranslatef(coord[0], coord[1], coord[2]);
+					if (m_activePlane == 0)
+					{
+						glTranslatef(m_fontSize/2, 0.0f, 0.0f);
+						glRotatef(90.0f, 0.0f, 1.0f, 0.0f);
+						glTranslatef(-m_fontSize/2, 0.0f, 0.0f);
+					}
+					glCallList(m_displayListsBase + CURSOR);
+				glPopMatrix();
+			}
+			glColorMask(true, true, true, true);
 		}
-		glColorMask(true, true, true, true);
 	glPopMatrix();
 	
 	glColor3f(1.0f, 1.0f, 1.0f);
@@ -480,6 +448,89 @@ void GLView::paintGL()
 	
 	m_redrawTimer->start(qAbs(m_delayMs - frameTime.elapsed()));
 	m_frameCount++;
+}
+
+void GLView::drawFunge(QHash<Coord, QChar> fungeCode)
+{
+	Coord selTopLeft = selectionTopLeft();
+	Coord selBottomRight = selectionBottomRight();
+	
+	Coord cursorExtraDimensions = m_cursor.mid(3);
+	
+	QHashIterator<Coord, QChar> i(fungeCode);
+	while (i.hasNext())
+	{
+		i.next();
+		Coord coords = i.key();
+		QChar data = i.value();
+		
+		if (m_ascensionLevel > 0)
+		{
+			if ((coords[0] >= m_cursor[0] + 20) || (coords[0] < m_cursor[0] - 20) ||
+				(coords[1] >= m_cursor[1] + 20) || (coords[1] < m_cursor[1] - 20) ||
+				(coords[2] >= m_cursor[2] + 20) || (coords[2] < m_cursor[2] - 20))
+				continue;
+		}
+		
+		if (cursorExtraDimensions != coords.mid(3))
+		{
+			if (m_ascensionLevel != 1)
+				continue;
+			
+			int diff = coords[3] - m_cursor[3];
+			if (abs(diff) > 2)
+				continue;
+			coords[0] += diff * 70;
+			
+			diff = coords[4] - m_cursor[4];
+			if (abs(diff) > 2)
+				continue;
+			coords[1] += diff * 70;
+			
+			diff = coords[5] - m_cursor[5];
+			if (abs(diff) > 2)
+				continue;
+			coords[2] += diff * 70;
+		}
+		
+		glPushMatrix();
+			int diff = abs(coords[m_activePlane] - m_cursor[m_activePlane]);
+			
+			bool withinSelection = ((m_selectionAnchor != m_selectionEnd) &&
+						(coords[0] >= selTopLeft[0]) && (coords[0] <= selBottomRight[0]) &&
+						(coords[1] >= selTopLeft[1]) && (coords[1] <= selBottomRight[1]) &&
+						(coords[2] >= selTopLeft[2]) && (coords[2] <= selBottomRight[2]));
+			
+			if ((coords == m_cursor) && (m_cursorBlinkOn || !hasFocus()))
+				glColor4f(0.0f, 0.0f, 0.0f, 1.0f);
+			else if (m_mouseHoveringOverChar && (m_mouseHover == coords))
+				glColor4f(1.0f, 0.2f, 0.2f, 1.0f);
+			else if (withinSelection)
+			{
+				if (diff == 0)
+					glColor4f(0.5f, 1.0f, 1.0f, 1.0f);
+				else
+					glColor4f(0.5f, 0.5f, 1.0f, 1.0f);
+			}
+			else if (diff == 0)
+				glColor4f(0.0f, 1.0f, 0.0f, 1.0f);
+			else if (diff <= 8)
+				glColor4f(1.0f, 1.0f, 1.0f, 1.0f - diff * 0.1f);
+			else
+				glColor4f(1.0f, 1.0f, 1.0f, 0.2f);
+			
+			QList<float> coord = fungeSpaceToGl(coords, true);
+			glTranslatef(coord[0], coord[1], coord[2]);
+			
+			if (m_activePlane == 0)
+			{
+				glTranslatef(m_fontSize/2, 0.0f, 0.0f);
+				glRotatef(90.0f, 0.0f, 1.0f, 0.0f);
+				glTranslatef(-m_fontSize/2, 0.0f, 0.0f);
+			}
+			m_font->draw(data);
+		glPopMatrix();
+	}
 }
 
 void GLView::drawCube(Coord startPos, Coord endPos)
@@ -803,25 +854,28 @@ void GLView::keyPressEvent(QKeyEvent* event)
 	else if ((event->key() == Qt::Key_Up) && (event->modifiers() & Qt::ControlModifier))
 	{
 		m_cameraMoveSpeed = 0.01;
-		m_destinationGridAlpha = 0.5f;
 		m_ascensionLevel++;
+		m_destinationGridAlpha[m_ascensionLevel] = 0.5f;
 		setEye(40.0f, 30.0f, -30.0f);
 	}
 	else if ((event->key() == Qt::Key_Down) && (event->modifiers() & Qt::ControlModifier))
 	{
-		m_ascensionLevel--;
-		
-		if (m_ascensionLevel == 0)
+		if (m_ascensionLevel > 0)
 		{
-			m_cameraMoveSpeed = 0.2;
-			m_destinationGridAlpha = 0.0f;
-			setEye(m_zoomLevel, 30.0f, 0.0f);
-		}
-		else
-		{
-			m_cameraMoveSpeed = 0.01;
-			m_destinationGridAlpha = 0.5f;
-			setEye(40.0f, 30.0f, -30.0f);
+			m_destinationGridAlpha[m_ascensionLevel] = 0.0f;
+			
+			m_ascensionLevel--;
+			
+			if (m_ascensionLevel == 0)
+			{
+				m_cameraMoveSpeed = 0.2;
+				setEye(m_zoomLevel, 30.0f, 0.0f);
+			}
+			else
+			{
+				m_cameraMoveSpeed = 0.01;
+				setEye(40.0f, 30.0f, -30.0f);
+			}
 		}
 	}
 	else if (!event->text().isEmpty())
@@ -952,8 +1006,8 @@ void GLView::resetView()
 	m_actualCursorPos[1] = 0.0f;
 	m_actualCursorPos[2] = 0.0f;
 	
-	m_destinationGridAlpha = 0.0f;
-	m_actualGridAlpha = m_destinationGridAlpha;
+	m_destinationGridAlpha.clear();
+	m_actualGridAlpha.clear();
 	m_ascensionLevel = 0;
 	
 	m_cameraMoveSpeed = 0.2;
@@ -1037,9 +1091,9 @@ Coord GLView::selectionBottomRight()
 
 void GLView::moveCursor(int x, int y, int z, QTextCursor::MoveMode mode)
 {
-	m_cursor[0] += x;
-	m_cursor[1] += y;
-	m_cursor[2] += z;
+	m_cursor[m_ascensionLevel*3 + 0] += x;
+	m_cursor[m_ascensionLevel*3 + 1] += y;
+	m_cursor[m_ascensionLevel*3 + 2] += z;
 	
 	m_selectionEnd = m_cursor;
 	

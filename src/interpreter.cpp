@@ -49,11 +49,9 @@ Interpreter::Interpreter(FungeSpace* space, QObject* parent)
 {
 	m_version = "1";
 
-	Coord pos(m_space->dimensions(), 0);
-	Coord direction(m_space->dimensions(), 0);
+	Coord direction;
 	direction[0] = 1;
-	Coord storageOffset(m_space->dimensions(), 0);
-	m_ip = new InstructionPointer(pos, direction, storageOffset);
+	m_ip = new InstructionPointer(Coord(), direction, Coord());
 
 	m_ip->m_stringMode = false;
 
@@ -323,8 +321,6 @@ void Interpreter::greaterThan()
 
 void Interpreter::up()
 {
-	Q_ASSERT(m_ip->m_direction.count() >= 2);
-
 	m_ip->m_direction[0] = 0;
 	m_ip->m_direction[1] = -1;
 
@@ -350,8 +346,6 @@ void Interpreter::left()
 
 void Interpreter::down()
 {
-	Q_ASSERT(m_ip->m_direction.count() >= 2);
-
 	m_ip->m_direction[0] = 0;
 	m_ip->m_direction[1] = 1;
 
@@ -361,8 +355,6 @@ void Interpreter::down()
 
 void Interpreter::higher()
 {
-	Q_ASSERT(m_ip->m_direction.count() >= 3);
-
 	m_ip->m_direction[0] = 0;
 	m_ip->m_direction[1] = 0;
 	m_ip->m_direction[2] = 1;
@@ -373,8 +365,6 @@ void Interpreter::higher()
 
 void Interpreter::lower()
 {
-	Q_ASSERT(m_ip->m_direction.count() >= 3);
-
 	m_ip->m_direction[0] = 0;
 	m_ip->m_direction[1] = 0;
 	m_ip->m_direction[2] = -1;

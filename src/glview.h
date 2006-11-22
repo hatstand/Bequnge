@@ -94,6 +94,7 @@ private:
 	void selectionToClipboard(bool cut, QClipboard::Mode mode = QClipboard::Clipboard);
 	void paste(bool transparant);
 	void clearRect(Coord topLeft, Coord bottomRight, ChangeList* changes);
+	void drawFunge(QHash<Coord, QChar> fungeCode);
 
 	void setChar(Coord p, QChar newchar);
 
@@ -155,8 +156,8 @@ private:
 	QPoint m_preDragMousePosition;
 	
 	// > 3D viewing
-	float m_actualGridAlpha;
-	float m_destinationGridAlpha;
+	QMap<int, float> m_actualGridAlpha;
+	QMap<int, float> m_destinationGridAlpha;
 	int m_ascensionLevel;
 	
 	// Fonts
