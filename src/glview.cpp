@@ -284,10 +284,14 @@ void GLView::paintGL()
 		drawFunge(m_fungeSpace->getCode());
 		
 		// Draw the cursor
-		if (m_cursorBlinkOn || !hasFocus())
+		if ((m_ascensionLevel == 0) && (m_cursorBlinkOn || !hasFocus()))
 		{
 			glPushMatrix();
-				QList<float> coord = fungeSpaceToGl(m_cursor, true);
+				Coord coords = m_cursor;
+				coords[0] += coords[3] * 70;
+				coords[1] += coords[4] * 70;
+				coords[2] += coords[5] * 70;
+				QList<float> coord = fungeSpaceToGl(coords, true);
 				glTranslatef(coord[0] - 0.01f, coord[1] - 2.5f, coord[2] - 0.01f);
 				if (m_activePlane == 0)
 				{
