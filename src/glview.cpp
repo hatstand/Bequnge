@@ -355,8 +355,8 @@ void GLView::paintGL()
 		// Draw the ascension grid(s)
 		foreach (int i, m_actualGridAlpha.keys())
 		{
-			float xDiff = fabs(m_destinationExtraDimensionsOffset[0] - m_actualExtraDimensionsOffset[0]);
-			float yDiff = fabs(m_actualExtraDimensionsOffset[1] - m_destinationExtraDimensionsOffset[1]);
+			float xDiff = m_destinationExtraDimensionsOffset[0] - m_actualExtraDimensionsOffset[0];
+			float yDiff = m_actualExtraDimensionsOffset[1] - m_destinationExtraDimensionsOffset[1];
 			
 			if (xDiff > 6.496f)
 				xDiff = 6.496f;
@@ -897,7 +897,7 @@ void GLView::keyPressEvent(QKeyEvent* event)
 	{
 		m_cameraMoveSpeed = 0.01;
 		m_ascensionLevel++;
-		m_destinationGridAlpha[m_ascensionLevel] = 0.5f;
+		m_destinationGridAlpha[m_ascensionLevel] = 0.75f;
 		setEye(40.0f, 30.0f, -30.0f);
 	}
 	else if ((event->key() == Qt::Key_Down) && (event->modifiers() & Qt::ControlModifier))
