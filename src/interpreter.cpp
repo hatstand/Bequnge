@@ -181,6 +181,10 @@ Interpreter::Status Interpreter::compute(QChar command)
 		turnLeft();
 	else if(command == ']')
 		turnRight();
+	else if(command == 'z')
+		upDimension();
+	else if(command == 'y')
+		downDimension();
 	else if(command == 'r')
 		reverse();
 	else if(command == 'x')
@@ -397,6 +401,28 @@ void Interpreter::turnRight()
 	// TODO
 	m_ip->m_direction[0] = m_ip->m_direction[1];
 	m_ip->m_direction[1] = -m_ip->m_direction[0];
+}
+
+void Interpreter::upDimension()
+{
+	int dim = popItem();
+	Q_ASSERT(dim < m_space->dimensions());
+
+	for(uint i = 0; i < m_space->dimensions(); ++i)
+		m_ip->m_direction[i] = 0;
+	
+	m_ip->m_direction[dim] = -1;
+}
+
+void Interpreter::downDimension()
+{
+	int dim = popItem();
+	Q_ASSERT(dim < m_space->dimensions());
+
+	for(uint i = 0; i < m_space->dimensions(); ++i)
+		m_ip->m_direction[i] = 0;
+
+	m_ip->m_direction[dim] = 1;
 }
 
 void Interpreter::reverse()

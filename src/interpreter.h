@@ -109,6 +109,8 @@ private:
 	void random();
 	void turnLeft();
 	void turnRight();
+	void upDimension();
+	void downDimension();
 	void reverse();
 	void absolute();
 	void string();
