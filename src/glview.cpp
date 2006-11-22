@@ -107,6 +107,7 @@ void GLView::initializeGL()
 	glDepthFunc(GL_LESS);			        // The Type Of Depth Test To Do
 	glEnable(GL_DEPTH_TEST);		        // Enables Depth Testing
 	glShadeModel(GL_SMOOTH);			// Enables Smooth Color Shading
+	glShadeModel(GL_LINE_SMOOTH);
 	
 	glMatrixMode(GL_PROJECTION);
 	glLoadIdentity();				// Reset The Projection Matrix
@@ -352,11 +353,39 @@ void GLView::paintGL()
 		// Draw the ascension grid(s)
 		foreach (int i, m_actualGridAlpha.keys())
 		{
-			for (int x=m_cursor[i*3 + 0] - 2 ; x<=m_cursor[i*3 + 0] + 2 ; ++x)
+			float xDiff = fabs(m_destinationExtraDimensionsOffset[0] - m_actualExtraDimensionsOffset[0]);
+			float yDiff = fabs(m_actualExtraDimensionsOffset[1] - m_destinationExtraDimensionsOffset[1]);
+			
+			if (xDiff > 6.496f)
+				xDiff = 6.496f;
+			if (yDiff > 6.496f)
+				yDiff = 6.496f;
+			
+			int oldX;
+			if (xDiff < 0)
+				oldX = 1;
+			else if (xDiff == 0)
+				oldX = 0;
+			else
+				oldX = -1;
+			
+			int oldY;
+			if (yDiff < 0)
+				oldY = 1;
+			else if (yDiff == 0)
+				oldY = 0;
+			else
+				oldY = -1;
+			
+			for (int x=m_cursor[i*3 + 0] - 3 ; x<=m_cursor[i*3 + 0] + 3 ; ++x)
 			{
-				for (int y=m_cursor[i*3 + 1] - 2 ; y<=m_cursor[i*3 + 1] + 2 ; ++y)
+				for (int y=m_cursor[i*3 + 1] - 3 ; y<=m_cursor[i*3 + 1] + 3 ; ++y)
 				{
-					float alphaMultiplier = 1.0f - (fabs(x - m_cursor[i*3 + 0]) + fabs(y - m_cursor[i*3 + 1])) / 5;
+					float alphaMultiplier = 1.0f - sqrtf(powf(x - m_cursor[i*3 + 0], 2) + powf(y - m_cursor[i*3 + 1], 2)) / 5;
+					float oldAlphaMultiplier = 1.0f - sqrtf(powf(x - m_cursor[i*3 + 0] + oldX, 2) + powf(y - m_cursor[i*3 + 1] + oldY, 2)) / 5;
+					
+					alphaMultiplier += (alphaMultiplier - oldAlphaMultiplier) * (sqrtf(powf(xDiff, 2) + powf(yDiff, 2))) / 9.1867313f;
+					
 					glPushMatrix();
 						Coord gridStart = m_cursor;
 						gridStart[0] += (x * 70) - 20;
@@ -370,9 +399,9 @@ void GLView::paintGL()
 						
 						glTranslatef(coord[0], coord[1] - 2.5f, coord[2]);
 						if ((x == m_cursor[i*3 + 0]) && (y == m_cursor[i*3 + 1]))
-							glColor4f(0.0f, 0.5f, 0.0f, m_actualGridAlpha[i] * alphaMultiplier);
+							glColor4f(0.0f, 0.5f * alphaMultiplier, 0.0f, m_actualGridAlpha[i] * alphaMultiplier);
 						else
-							glColor4f(0.5f, 0.5f, 0.5f, m_actualGridAlpha[i] * alphaMultiplier);
+							glColor4f(0.5f * alphaMultiplier, 0.5f * alphaMultiplier, 0.5f * alphaMultiplier, m_actualGridAlpha[i] * alphaMultiplier);
 						glCallList(m_displayListsBase + GRID);
 					glPopMatrix();
 				}
