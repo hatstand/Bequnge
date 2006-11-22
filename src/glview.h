@@ -159,6 +159,8 @@ private:
 	QMap<int, float> m_actualGridAlpha;
 	QMap<int, float> m_destinationGridAlpha;
 	int m_ascensionLevel;
+	float m_actualExtraDimensionsOffset[3];
+	float m_destinationExtraDimensionsOffset[3];
 	
 	// Fonts
 	FT_Face m_fontFace;
