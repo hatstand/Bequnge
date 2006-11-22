@@ -411,7 +411,7 @@ void Interpreter::upDimension()
 	for(uint i = 0; i < m_space->dimensions(); ++i)
 		m_ip->m_direction[i] = 0;
 	
-	m_ip->m_direction[dim] = -1;
+	m_ip->m_direction[dim] = 1;
 }
 
 void Interpreter::downDimension()
@@ -422,7 +422,7 @@ void Interpreter::downDimension()
 	for(uint i = 0; i < m_space->dimensions(); ++i)
 		m_ip->m_direction[i] = 0;
 
-	m_ip->m_direction[dim] = 1;
+	m_ip->m_direction[dim] = -1;
 }
 
 void Interpreter::reverse()
