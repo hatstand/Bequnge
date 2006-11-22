@@ -22,6 +22,7 @@ SOURCES += stringmodewidget.cpp
 SOURCES += fungeconsole.cpp
 SOURCES += fungecommand.cpp
 SOURCES += stackstack.cpp
+SOURCES += coord.cpp
 
 HEADERS += mainwindow.h
 HEADERS += interpreter.h
@@ -32,6 +33,7 @@ HEADERS += stringmodewidget.h
 HEADERS += fungeconsole.h
 HEADERS += fungecommand.h
 HEADERS += stackstack.h
+HEADERS += coord.h
 
 FORMS += mainwindow.ui
 
