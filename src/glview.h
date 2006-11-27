@@ -46,6 +46,7 @@ public slots:
 	void updateFPSCounter();
 	
 	void ipCreated(int index, Interpreter::InstructionPointer* ip);
+	void ipChanged(Interpreter::InstructionPointer* ip);
 	void ipDestroyed(Interpreter::InstructionPointer* ip);
 	void clearIps() {m_ips.clear();}
 	
@@ -95,6 +96,8 @@ private:
 	void paste(bool transparant);
 	void clearRect(Coord topLeft, Coord bottomRight, ChangeList* changes);
 	void drawFunge(QHash<Coord, QChar> fungeCode);
+	void setAscensionLevel(int level);
+	Coord cursor();
 
 	void setChar(Coord p, QChar newchar);
 

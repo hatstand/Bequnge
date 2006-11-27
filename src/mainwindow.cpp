@@ -230,10 +230,12 @@ void MainWindow::slotIpCreated(int index, Interpreter::InstructionPointer* ip)
 {
 	ip->m_color = m_ipColorList[++m_lastColor % m_ipColorList.count()];
 	m_glView->ipCreated(index, ip);
+	m_glView->ipChanged(ip);
 }
 
 void MainWindow::slotIpChanged(Interpreter::InstructionPointer* ip)
 {
+	m_glView->ipChanged(ip);
 }
 
 void MainWindow::slotIpDestroyed(Interpreter::InstructionPointer* ip)

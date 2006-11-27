@@ -148,27 +148,27 @@ void GLView::initializeGL()
 	
 	glNewList(m_displayListsBase + GRID, GL_COMPILE);
 		glBegin(GL_LINES);
-			for (int y=0 ; y<=40 ; y+=5)
+			for (int y=0 ; y<=40 ; y+=10)
 			{
-				for (int z=0 ; z<=40 ; z+=5)
+				for (int z=0 ; z<=40 ; z+=10)
 				{
 					glVertex3f(0.0f, - m_fontSize * y, m_fontSize * z);
 					glVertex3f(m_fontSize * 40, - m_fontSize * y, m_fontSize * z);
 				}
 			}
 			
-			for (int x=0 ; x<=40 ; x+=5)
+			for (int x=0 ; x<=40 ; x+=10)
 			{
-				for (int z=0 ; z<=40 ; z+=5)
+				for (int z=0 ; z<=40 ; z+=10)
 				{
 					glVertex3f(m_fontSize * x, 0.0f, m_fontSize * z);
 					glVertex3f(m_fontSize * x, - m_fontSize * 40, m_fontSize * z);
 				}
 			}
 			
-			for (int x=0 ; x<=40 ; x+=5)
+			for (int x=0 ; x<=40 ; x+=10)
 			{
-				for (int y=0 ; y<=40 ; y+=5)
+				for (int y=0 ; y<=40 ; y+=10)
 				{
 					glVertex3f(m_fontSize * x, - m_fontSize * y, 0.0f);
 					glVertex3f(m_fontSize * x, - m_fontSize * y, m_fontSize * 40);
@@ -203,17 +203,17 @@ void GLView::updateCamera(int i)
 	else
 		m_actualEyeOffset[i] += diff * m_cameraMoveSpeed;
 	
+	m_destinationExtraDimensionsOffset[0] = cursor()[3] * (m_fontSize * 0.28f);
+	m_destinationExtraDimensionsOffset[1] = - cursor()[4] * (m_fontSize * 0.28f);
+	m_destinationExtraDimensionsOffset[2] = - cursor()[5] * (m_fontSize * 0.28f);
+	
 	diff = m_destinationExtraDimensionsOffset[i] - m_actualExtraDimensionsOffset[i];
 	if (fabs(diff) < 0.01)
 		m_actualExtraDimensionsOffset[i] = m_destinationExtraDimensionsOffset[i];
 	else
 		m_actualExtraDimensionsOffset[i] += diff * 0.2;
 	
-	QList<float> c;
-	if ((!m_execution) || (m_followingIP == NULL))
-		c = fungeSpaceToGl(m_cursor, false);
-	else
-		c = fungeSpaceToGl(m_followingIP->m_pos, false);
+	QList<float> c = fungeSpaceToGl(cursor(), false);
 	diff = c[i] - m_actualCursorPos[i];
 	if (fabs(diff) < 0.01)
 		m_actualCursorPos[i] = c[i];
@@ -236,7 +236,7 @@ void GLView::updateCamera(int i)
 				}
 			}
 			else
-				m_actualGridAlpha[index] += diff * 0.05;
+				m_actualGridAlpha[index] += diff * (m_execution ? 0.2 : 0.05);
 		}
 	}
 }
@@ -396,7 +396,7 @@ void GLView::paintGL()
 						Coord gridStart = m_cursor;
 						gridStart[0] += (x * 70) - 20;
 						gridStart[1] += (y * 70) - 20;
-						gridStart[2] += 20;
+						gridStart[2] += (m_cursor[i*3 + 2] * 70) + 20;
 						
 						QList<float> coord = fungeSpaceToGl(gridStart, true);
 						coord[0] -= 2.4f;
@@ -500,7 +500,8 @@ void GLView::drawFunge(QHash<Coord, QChar> fungeCode)
 	Coord selTopLeft = selectionTopLeft();
 	Coord selBottomRight = selectionBottomRight();
 	
-	Coord cursorExtraDimensions = m_cursor.mid(3);
+	Coord c = cursor();
+	Coord cursorExtraDimensions = c.mid(3);
 	
 	QHashIterator<Coord, QChar> i(fungeCode);
 	while (i.hasNext())
@@ -511,9 +512,9 @@ void GLView::drawFunge(QHash<Coord, QChar> fungeCode)
 		
 		if (m_ascensionLevel > 0)
 		{
-			if ((coords[0] >= m_cursor[0] + 20) || (coords[0] < m_cursor[0] - 20) ||
-				(coords[1] >= m_cursor[1] + 20) || (coords[1] < m_cursor[1] - 20) ||
-				(coords[2] >= m_cursor[2] + 20) || (coords[2] < m_cursor[2] - 20))
+			if ((coords[0] >= c[0] + 20) || (coords[0] < c[0] - 20) ||
+				(coords[1] >= c[1] + 20) || (coords[1] < c[1] - 20) ||
+				(coords[2] >= c[2] + 20) || (coords[2] < c[2] - 20))
 				continue;
 		}
 		
@@ -522,15 +523,15 @@ void GLView::drawFunge(QHash<Coord, QChar> fungeCode)
 			if (m_ascensionLevel != 1)
 				continue;
 			
-			int diff = m_cursor[3] - coords[3];
+			int diff = c[3] - coords[3];
 			if (abs(diff) > 2)
 				continue;
 			
-			diff = coords[4] - m_cursor[4];
+			diff = coords[4] - c[4];
 			if (abs(diff) > 2)
 				continue;
 			
-			diff = coords[5] - m_cursor[5];
+			diff = coords[5] - c[5];
 			if (abs(diff) > 2)
 				continue;
 		}
@@ -547,7 +548,7 @@ void GLView::drawFunge(QHash<Coord, QChar> fungeCode)
 		coords[2] += coords[5] * 70;
 		
 		glPushMatrix();
-			if ((coords == m_cursor) && (m_cursorBlinkOn || !hasFocus()))
+			if ((coords == m_cursor) && (m_cursorBlinkOn || !hasFocus()) && (m_ascensionLevel == 0))
 				glColor4f(0.0f, 0.0f, 0.0f, 1.0f);
 			else if (m_mouseHoveringOverChar && (m_mouseHover == coords))
 				glColor4f(1.0f, 0.2f, 0.2f, 1.0f);
@@ -898,31 +899,11 @@ void GLView::keyPressEvent(QKeyEvent* event)
 	else if (event->key() == Qt::Key_Tab)
 		setActivePlane(otherPlane());
 	else if ((event->key() == Qt::Key_Up) && (event->modifiers() & Qt::ControlModifier))
-	{
-		m_cameraMoveSpeed = 0.01;
-		m_ascensionLevel++;
-		m_destinationGridAlpha[m_ascensionLevel] = 0.75f;
-		setEye(40.0f, 30.0f, -30.0f);
-	}
+		setAscensionLevel(m_ascensionLevel+1);
 	else if ((event->key() == Qt::Key_Down) && (event->modifiers() & Qt::ControlModifier))
 	{
 		if (m_ascensionLevel > 0)
-		{
-			m_destinationGridAlpha[m_ascensionLevel] = 0.0f;
-			
-			m_ascensionLevel--;
-			
-			if (m_ascensionLevel == 0)
-			{
-				m_cameraMoveSpeed = 0.2;
-				setEye(m_zoomLevel, 30.0f, 0.0f);
-			}
-			else
-			{
-				m_cameraMoveSpeed = 0.01;
-				setEye(40.0f, 30.0f, -30.0f);
-			}
-		}
+			setAscensionLevel(m_ascensionLevel-1);
 	}
 	else if (!event->text().isEmpty())
 	{
@@ -1149,13 +1130,6 @@ void GLView::moveCursor(int x, int y, int z, QTextCursor::MoveMode mode)
 	m_cursor[m_ascensionLevel*3 + 1] += y;
 	m_cursor[m_ascensionLevel*3 + 2] += z;
 	
-	if (m_ascensionLevel > 0)
-	{
-		m_destinationExtraDimensionsOffset[0] += x * (m_fontSize * 0.28f);
-		m_destinationExtraDimensionsOffset[1] -= y * (m_fontSize * 0.28f);
-		m_destinationExtraDimensionsOffset[2] -= z * (m_fontSize * 0.28f);
-	}
-	
 	m_selectionEnd = m_cursor;
 	
 	if (mode == QTextCursor::MoveAnchor)
@@ -1262,7 +1236,6 @@ void GLView::selectionToClipboard(bool cut, QClipboard::Mode mode)
 
 	if(cut)
 		m_undoGroup.activeStack()->push(new FungeCommand(m_fungeSpace, changes));
-	
 	QByteArray serialisedData;
 	QBuffer buffer(&serialisedData);
 	buffer.open(QBuffer::ReadWrite);
@@ -1382,5 +1355,47 @@ void GLView::clearRect(Coord topLeft, Coord bottomRight, ChangeList* changes)
 			}
 		}
 	}
+}
+
+void GLView::setAscensionLevel(int level)
+{
+	if (level == m_ascensionLevel)
+		return;
+	
+	for (int i=m_ascensionLevel ; i>level ; --i)
+		m_destinationGridAlpha[i] = 0.0f;
+	for (int i=m_ascensionLevel+1 ; i<=level ; ++i)
+		m_destinationGridAlpha[i] = 0.75f;
+	
+	m_ascensionLevel = level;
+	if (level == 0)
+	{
+		m_cameraMoveSpeed = 0.2;
+		setEye(m_zoomLevel, 30.0f, 0.0f);
+	}
+	else
+	{
+		m_cameraMoveSpeed = 0.01;
+		setEye(40.0f, 30.0f, -30.0f);
+	}
+}
+
+void GLView::ipChanged(Interpreter::InstructionPointer* ip)
+{
+	if (ip == m_followingIP)
+	{
+		if (Coord() != ip->m_direction.mid(3))
+			setAscensionLevel(1);
+		else
+			setAscensionLevel(0);
+	}
+}
+
+Coord GLView::cursor()
+{
+	if ((!m_execution) || (m_followingIP == NULL))
+		return m_cursor;
+	else
+		return m_followingIP->m_pos;
 }
 
