@@ -103,6 +103,10 @@ MainWindow::MainWindow(QWidget* parent)
 	m_ipColorList.append(Qt::magenta);
 }
 
+MainWindow::~MainWindow()
+{
+}
+
 void MainWindow::cursorDirectionChanged(int direction)
 {
 	QString text("Cursor direction: ");

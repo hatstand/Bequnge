@@ -97,3 +97,4 @@ QVector<int> Coord::mid(int pos, int length) const
 		return QVector<int>::mid(pos, length);
 	return Coord();
 }
+

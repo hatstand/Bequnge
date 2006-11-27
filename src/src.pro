@@ -7,7 +7,9 @@ TARGET = ../bin/bequnge
 DEPENDPATH += .
 QT += opengl
 INCLUDEPATH += /usr/include/freetype2 /opt/local/include /opt/local/include/freetype2
+INCLUDEPATH += /usr/include/gstreamer-0.10 /usr/include/glib-2.0 /usr/lib/glib-2.0/include /usr/include/libxml2
 
+LIBS += -lgstreamer-0.10 -lgobject-2.0 -lgmodule-2.0 -ldl -lgthread-2.0 -lxml2 -lz -lm -lglib-2.0
 
 # Input
 SOURCES += main.cpp
@@ -21,6 +23,7 @@ SOURCES += fungeconsole.cpp
 SOURCES += fungecommand.cpp
 SOURCES += stackstack.cpp
 SOURCES += coord.cpp
+SOURCES += gstreamer.cpp
 
 HEADERS += mainwindow.h
 HEADERS += interpreter.h
@@ -32,6 +35,7 @@ HEADERS += fungeconsole.h
 HEADERS += fungecommand.h
 HEADERS += stackstack.h
 HEADERS += coord.h
+HEADERS += gstreamer.h
 
 FORMS += mainwindow.ui
 

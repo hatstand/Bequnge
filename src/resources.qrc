@@ -20,5 +20,7 @@
         
         <file>docs/index.html</file>
         <file>docs/keyboardshortcuts.html</file>
+
+		  <file>sounds/demonic_whoosh.mp3</file>
     </qresource>
 </RCC>

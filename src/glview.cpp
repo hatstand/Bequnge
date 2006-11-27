@@ -91,6 +91,9 @@ GLView::GLView(FungeSpace* fungeSpace, QWidget* parent)
 	connect(currentUndo, SIGNAL(destroyed(QObject*)), SLOT(spaceDeleted(QObject*)));
 	m_undos.insert(m_fungeSpace, currentUndo);
 	m_undoGroup.setActiveStack(currentUndo);
+
+	// Sound
+	m_gst = new Gstreamer();
 }
 
 
@@ -98,6 +101,7 @@ GLView::~GLView()
 {
 	delete m_font;
 	delete m_metricsSmall;
+	delete m_gst;
 }
 
 void GLView::initializeGL()
@@ -1361,6 +1365,8 @@ void GLView::setAscensionLevel(int level)
 {
 	if (level == m_ascensionLevel)
 		return;
+
+	m_gst->play();
 	
 	for (int i=m_ascensionLevel ; i>level ; --i)
 		m_destinationGridAlpha[i] = 0.0f;

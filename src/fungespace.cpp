@@ -177,7 +177,7 @@ QHash<Coord, QChar> FungeSpace::getCode()
 
 void FungeSpace::setChar(Coord pos, QChar c)
 {
-	if(pos.count() > m_dimensions)
+	if((uint)pos.count() > m_dimensions)
 		setDimensions(pos.count());
 
 	QChar oldValue;

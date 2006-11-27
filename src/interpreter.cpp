@@ -406,7 +406,7 @@ void Interpreter::turnRight()
 void Interpreter::upDimension()
 {
 	int dim = popItem();
-	Q_ASSERT(dim < m_space->dimensions());
+	Q_ASSERT((uint)dim < m_space->dimensions());
 
 	for(uint i = 0; i < m_space->dimensions(); ++i)
 		m_ip->m_direction[i] = 0;
@@ -417,7 +417,7 @@ void Interpreter::upDimension()
 void Interpreter::downDimension()
 {
 	int dim = popItem();
-	Q_ASSERT(dim < m_space->dimensions());
+	Q_ASSERT((uint)dim < m_space->dimensions());
 
 	for(uint i = 0; i < m_space->dimensions(); ++i)
 		m_ip->m_direction[i] = 0;
