@@ -5,7 +5,7 @@
 OggStream::OggStream(QObject* parent)
 	: QObject(parent)
 {
-
+	connect(this, SIGNAL(test()), SLOT(update()), Qt::QueuedConnection);
 }
 
 size_t OggStream::readCb(void* ptr, size_t size, size_t nmemb, void* datasource)
@@ -183,6 +183,8 @@ bool OggStream::update()
 		check();
 	}
 
+	emit test();
+
 	return active;
 }
 
@@ -242,31 +244,26 @@ void OggStream::check()
 
 OpenAL::OpenAL()
 {
-	OggStream ogg;
+	ogg = new OggStream();
 
 	alutInit(NULL, NULL);
 
-	if(!ogg.open("test.ogg"))
+	if(!ogg->open("test.ogg"))
 		return;
-	ogg.display();
+	ogg->display();
 
-	if(!ogg.playback())
+	if(!ogg->playback())
 	{
 		qWarning("Ogg refused to play");
 		return;
 	}
 
-
-	while(ogg.update())
-	{
-		
-	}
-
-	ogg.release();
-	alutExit();
+	ogg->update();
 }
 
 OpenAL::~OpenAL()
 {
-
+	ogg->release();
+	delete ogg;
+	alutExit();
 }

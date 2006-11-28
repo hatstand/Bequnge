@@ -62,8 +62,7 @@ public:
 	~OpenAL();
 
 private:
-	ALCcontext* m_context;
-	ALCdevice* m_device;
+	OggStream* ogg;
 };
 
 #endif
