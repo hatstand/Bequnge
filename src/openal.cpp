@@ -207,7 +207,7 @@ bool OggStream::update()
 		return false;
 	}
 
-	//emit test();
+	emit test();
 	return active;
 }
 
@@ -251,6 +251,8 @@ void OggStream::empty()
 
 	alSourceUnqueueBuffers(source, queued, buffer);
 	check();
+
+	disconnect();
 }
 
 void OggStream::check()
@@ -277,7 +279,7 @@ OpenAL::OpenAL()
 
 	alutInit(NULL, NULL);
 
-	if(!ogg->open(":/sounds/whoosh.ogg"))
+	if(!ogg->open(":/sounds/shortwhoosh.ogg"))
 		return;
 	ogg->display();
 }

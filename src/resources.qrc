@@ -22,5 +22,7 @@
         <file>docs/keyboardshortcuts.html</file>
 
 		  <file>sounds/whoosh.ogg</file>
+		  <file>sounds/longwhoosh.ogg</file>
+		  <file>sounds/shortwhoosh.ogg</file>
     </qresource>
 </RCC>
