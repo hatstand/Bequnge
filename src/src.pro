@@ -25,7 +25,7 @@ SOURCES += fungeconsole.cpp
 SOURCES += fungecommand.cpp
 SOURCES += stackstack.cpp
 SOURCES += coord.cpp
-SOURCES += gstreamer.cpp
+#SOURCES += gstreamer.cpp
 SOURCES += openal.cpp
 
 HEADERS += mainwindow.h
@@ -38,7 +38,7 @@ HEADERS += fungeconsole.h
 HEADERS += fungecommand.h
 HEADERS += stackstack.h
 HEADERS += coord.h
-HEADERS += gstreamer.h
+#HEADERS += gstreamer.h
 HEADERS += openal.h
 
 FORMS += mainwindow.ui

@@ -244,3 +244,8 @@ OpenAL::OpenAL()
 	ogg.release();
 	alutExit();
 }
+
+OpenAL::~OpenAL()
+{
+
+}

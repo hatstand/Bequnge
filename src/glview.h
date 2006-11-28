@@ -18,7 +18,7 @@ class QKeyEvent;
 #include "fungespace.h"
 #include "fungecommand.h"
 #include "interpreter.h"
-#include "gstreamer.h"
+#include "openal.h"
 
 class GLView : public QGLWidget
 {
@@ -184,7 +184,7 @@ private:
 	};
 
 	//QList<Particle*> m_particles;
-	Gstreamer* m_gst;
+	OpenAL* m_al;
 };
 
 #endif

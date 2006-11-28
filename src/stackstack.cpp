@@ -10,7 +10,7 @@ StackStack::StackStack(QObject* parent)
 
 Qt::ItemFlags StackStack::flags(const QModelIndex& index) const
 {
-	(void)index;
+	Q_UNUSED(index);
 	return (Qt::ItemIsSelectable | Qt::ItemIsEnabled | Qt::ItemIsEditable);
 }
 
@@ -24,7 +24,7 @@ QModelIndex StackStack::index(int row, int column, const QModelIndex& parent) co
 
 QModelIndex StackStack::parent(const QModelIndex& index) const
 {
-	(void)index;
+	Q_UNUSED(index);
 	return QModelIndex();
 }
 
@@ -70,9 +70,9 @@ QVariant StackStack::data(const QModelIndex& index, int role) const
 
 QVariant StackStack::headerData(int section, Qt::Orientation orientation, int role) const
 {
-	(void)section;
-	(void)orientation;
-	(void)role;
+	Q_UNUSED(section);
+	Q_UNUSED(orientation);
+	Q_UNUSED(role);
 	return QVariant();
 }
 

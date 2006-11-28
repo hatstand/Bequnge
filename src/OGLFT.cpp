@@ -2838,8 +2838,8 @@ namespace OGLFT {
 				 GLfloat weight[4], void** out_data,
 				 Filled* filled )
   {
-    (void)vertex_data;
-    (void)weight;
+    Q_UNUSED(vertex_data);
+    Q_UNUSED(weight);
     //    std::cerr << "called combine" << std::endl;
     VertexInfo* vertex = new VertexInfo( coords );
     *out_data = vertex;
