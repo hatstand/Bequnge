@@ -11,6 +11,8 @@ INCLUDEPATH += /usr/include/gstreamer-0.10 /usr/include/glib-2.0 /usr/lib/glib-2
 
 LIBS += -lgstreamer-0.10 -lgobject-2.0 -lgmodule-2.0 -ldl -lgthread-2.0 -lxml2 -lz -lm -lglib-2.0
 
+LIBS += -lalut -lvorbisfile 
+
 # Input
 SOURCES += main.cpp
 SOURCES += mainwindow.cpp
@@ -24,6 +26,7 @@ SOURCES += fungecommand.cpp
 SOURCES += stackstack.cpp
 SOURCES += coord.cpp
 SOURCES += gstreamer.cpp
+SOURCES += openal.cpp
 
 HEADERS += mainwindow.h
 HEADERS += interpreter.h
@@ -36,6 +39,7 @@ HEADERS += fungecommand.h
 HEADERS += stackstack.h
 HEADERS += coord.h
 HEADERS += gstreamer.h
+HEADERS += openal.h
 
 FORMS += mainwindow.ui
 
