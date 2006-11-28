@@ -1366,6 +1366,8 @@ void GLView::setAscensionLevel(int level)
 	if (level == m_ascensionLevel)
 		return;
 
+	m_al->play();
+
 	for (int i=m_ascensionLevel ; i>level ; --i)
 		m_destinationGridAlpha[i] = 0.0f;
 	for (int i=m_ascensionLevel+1 ; i<=level ; ++i)

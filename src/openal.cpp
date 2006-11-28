@@ -5,12 +5,15 @@
 OggStream::OggStream(QObject* parent)
 	: QObject(parent)
 {
-	connect(this, SIGNAL(test()), SLOT(update()), Qt::QueuedConnection);
+	cbs.read_func = readCb;
+	cbs.seek_func = seekCb;
+	cbs.close_func = closeCb;
+	cbs.tell_func = tellCb;
 }
 
 size_t OggStream::readCb(void* ptr, size_t size, size_t nmemb, void* datasource)
 {
-	qDebug() << __func__;
+	//qDebug() << __func__;
 
 	QFile* file = static_cast<QFile*>(datasource);
 	if(file->atEnd())
@@ -26,7 +29,7 @@ size_t OggStream::readCb(void* ptr, size_t size, size_t nmemb, void* datasource)
 
 int OggStream::seekCb(void* datasource, ogg_int64_t offset, int whence)
 {
-	qDebug() << __func__;
+	//qDebug() << __func__;
 	QFile* file = static_cast<QFile*>(datasource);
 	if(file->isSequential())
 		return -1;
@@ -56,7 +59,7 @@ int OggStream::seekCb(void* datasource, ogg_int64_t offset, int whence)
 
 int OggStream::closeCb(void* datasource)
 {
-	qDebug() << __func__;
+	//qDebug() << __func__;
 	QFile* file = static_cast<QFile*>(datasource);
 
 	file->close();
@@ -68,7 +71,7 @@ int OggStream::closeCb(void* datasource)
 
 long OggStream::tellCb(void* datasource)
 {
-	qDebug() << __func__;
+	//qDebug() << __func__;
 	QFile* file = static_cast<QFile*>(datasource);
 
 	return file->pos();
@@ -79,11 +82,6 @@ bool OggStream::open(QString path)
 	oggFile = new QFile(path);
 	if(!oggFile->open(QIODevice::ReadOnly))
 		return false;
-
-	cbs.read_func = readCb;
-	cbs.seek_func = seekCb;
-	cbs.close_func = closeCb;
-	cbs.tell_func = tellCb;
 
 	if(ov_open_callbacks((void*)oggFile, &oggStream, NULL, 0, cbs) < 0)
 		qFatal("Failed to open OGG stream");
@@ -102,15 +100,20 @@ bool OggStream::open(QString path)
 	check();
 
 	alSource3f(source, AL_POSITION, 0.0, 0.0, 0.0);
+	check();
 	alSource3f(source, AL_VELOCITY, 0.0, 0.0, 0.0);
+	check();
 	alSource3f(source, AL_DIRECTION, 0.0, 0.0, 0.0);
+	check();
 	alSourcef(source, AL_ROLLOFF_FACTOR, 0.0);
+	check();
 	alSourcei(source, AL_SOURCE_RELATIVE, AL_TRUE);
+	check();
 
 	return true;
 }
 
-void OggStream::release()
+OggStream::~OggStream()
 {
 	alSourceStop(source);
 	empty();
@@ -140,7 +143,12 @@ bool OggStream::playback()
 	if(playing())
 		return true;
 
-	qDebug() << "Filling buffers";
+	//qDebug() << "Rewinding";
+	empty();
+	alSourceRewind(source);
+	ov_time_seek(&oggStream, 0);
+
+	//qDebug() << "Filling buffers";
 
 	if(!stream(buffers[0]))
 		return false;
@@ -150,6 +158,8 @@ bool OggStream::playback()
 
 	alSourceQueueBuffers(source, 2, buffers);
 	alSourcePlay(source);
+
+	connect(this, SIGNAL(test()), this, SLOT(update()), Qt::QueuedConnection);
 
 	return true;
 }
@@ -168,6 +178,10 @@ bool OggStream::update()
 	int processed;
 	bool active = true;
 
+	alGetSourcei(source, AL_SOURCE_STATE, &processed);
+	if(processed != AL_PLAYING)
+		return false;
+
 	alGetSourcei(source, AL_BUFFERS_PROCESSED, &processed);
 
 	while(processed--)
@@ -179,12 +193,21 @@ bool OggStream::update()
 
 		active = stream(buffer);
 
-		alSourceQueueBuffers(source, 1, &buffer);
-		check();
+		if(active)
+		{
+			alSourceQueueBuffers(source, 1, &buffer);
+			check();
+		}
 	}
 
-	emit test();
 
+	if(!active)
+	{
+		empty();
+		return false;
+	}
+
+	//emit test();
 	return active;
 }
 
@@ -201,16 +224,13 @@ bool OggStream::stream(ALuint buffer)
 
 		if(result > 0)
 			size += result;
+		else if(result < 0)
+			qFatal("Failed to stream");
 		else
-		{
-			if(result < 0)
-				qFatal("Failed to stream");
-			else
-				break;
-		}
+			break;
 	}
 
-	if(!size)
+	if(size == 0)
 		return false;
 
 	alBufferData(buffer, format, data, size, vorbisInfo->rate);
@@ -221,25 +241,34 @@ bool OggStream::stream(ALuint buffer)
 
 void OggStream::empty()
 {
+	//qDebug() << __func__;
 	int queued;
 
+	alSourceStop(source);
 	alGetSourcei(source, AL_BUFFERS_QUEUED, &queued);
 
-	while(queued--)
-	{
-		ALuint buffer;
+	ALuint buffer[queued];
 
-		alSourceUnqueueBuffers(source, 1, &buffer);
-		check();
-	}
+	alSourceUnqueueBuffers(source, queued, buffer);
+	check();
 }
 
 void OggStream::check()
 {
 	int error = alGetError();
 
-	if(error != AL_NO_ERROR)
-		qFatal("OpenAL error");
+	if(error == AL_NO_ERROR)
+		return;
+
+	switch(error)
+	{
+		case AL_INVALID_VALUE:
+			qFatal("Invalid value");
+		case AL_INVALID_NAME:
+			qFatal("Invalid name");
+		case AL_INVALID_OPERATION:
+			qFatal("Invalid operation");
+	}
 }
 
 OpenAL::OpenAL()
@@ -248,22 +277,24 @@ OpenAL::OpenAL()
 
 	alutInit(NULL, NULL);
 
-	if(!ogg->open("test.ogg"))
+	if(!ogg->open(":/sounds/whoosh.ogg"))
 		return;
 	ogg->display();
+}
 
+bool OpenAL::play()
+{
 	if(!ogg->playback())
 	{
 		qWarning("Ogg refused to play");
-		return;
+		return false;
 	}
 
-	ogg->update();
+	return ogg->update();
 }
 
 OpenAL::~OpenAL()
 {
-	ogg->release();
 	delete ogg;
 	alutExit();
 }

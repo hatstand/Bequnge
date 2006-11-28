@@ -21,11 +21,13 @@ class OggStream : public QObject
 
 public:
 	OggStream(QObject* parent = 0);
+	virtual ~OggStream();
 	bool open(QString path);
-	void release();
 	void display();
 	bool playback();
 	bool playing();
+
+	QFile* oggFile;
 
 public slots:
 	bool update();
@@ -43,7 +45,6 @@ private:
 	static int closeCb(void* datasource);
 	static long tellCb(void* datasource);
 
-	QFile* oggFile;
 	OggVorbis_File oggStream;
 	vorbis_info* vorbisInfo;
 	vorbis_comment* vorbisComment;
@@ -60,6 +61,8 @@ class OpenAL
 public:
 	OpenAL();
 	~OpenAL();
+
+	bool play();
 
 private:
 	OggStream* ogg;
