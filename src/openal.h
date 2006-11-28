@@ -18,7 +18,7 @@
 class OggStream
 {
 public:
-	void open(QString path);
+	bool open(QString path);
 	void release();
 	void display();
 	bool playback();

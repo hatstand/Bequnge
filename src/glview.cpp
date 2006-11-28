@@ -93,7 +93,7 @@ GLView::GLView(FungeSpace* fungeSpace, QWidget* parent)
 	m_undoGroup.setActiveStack(currentUndo);
 
 	// Sound
-	//m_al = new OpenAL();
+	m_al = new OpenAL();
 }
 
 
@@ -101,7 +101,7 @@ GLView::~GLView()
 {
 	delete m_font;
 	delete m_metricsSmall;
-	//delete m_al;
+	delete m_al;
 }
 
 void GLView::initializeGL()

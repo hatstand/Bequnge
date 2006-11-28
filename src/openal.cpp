@@ -63,10 +63,11 @@ long OggStream::tellCb(void* datasource)
 	return file->pos();
 }
 
-void OggStream::open(QString path)
+bool OggStream::open(QString path)
 {
 	oggFile = new QFile(path);
-	oggFile->open(QIODevice::ReadOnly);
+	if(!oggFile->open(QIODevice::ReadOnly))
+		return false;
 
 	cbs.read_func = readCb;
 	cbs.seek_func = seekCb;
@@ -94,6 +95,8 @@ void OggStream::open(QString path)
 	alSource3f(source, AL_DIRECTION, 0.0, 0.0, 0.0);
 	alSourcef(source, AL_ROLLOFF_FACTOR, 0.0);
 	alSourcei(source, AL_SOURCE_RELATIVE, AL_TRUE);
+
+	return true;
 }
 
 void OggStream::release()
@@ -230,11 +233,16 @@ OpenAL::OpenAL()
 
 	alutInit(NULL, NULL);
 
-	ogg.open("test.ogg");
+	if(!ogg.open("test.ogg"))
+		return;
 	ogg.display();
 
 	if(!ogg.playback())
-		qFatal("Ogg refused to play");
+	{
+		qWarning("Ogg refused to play");
+		return;
+	}
+
 
 	while(ogg.update())
 	{
