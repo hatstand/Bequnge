@@ -15,15 +15,23 @@
 
 #define BUFFER_SIZE (4096 * 8)
 
-class OggStream
+class OggStream : public QObject
 {
+	Q_OBJECT
+
 public:
+	OggStream(QObject* parent = 0);
 	bool open(QString path);
 	void release();
 	void display();
 	bool playback();
 	bool playing();
+
+public slots:
 	bool update();
+	
+signals:
+	void test();
 
 private:
 	bool stream(ALuint buffer);

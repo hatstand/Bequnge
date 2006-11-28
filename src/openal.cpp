@@ -2,8 +2,16 @@
 
 #include <QDebug>
 
+OggStream::OggStream(QObject* parent)
+	: QObject(parent)
+{
+
+}
+
 size_t OggStream::readCb(void* ptr, size_t size, size_t nmemb, void* datasource)
 {
+	qDebug() << __func__;
+
 	QFile* file = static_cast<QFile*>(datasource);
 	if(file->atEnd())
 		return 0;
@@ -18,6 +26,7 @@ size_t OggStream::readCb(void* ptr, size_t size, size_t nmemb, void* datasource)
 
 int OggStream::seekCb(void* datasource, ogg_int64_t offset, int whence)
 {
+	qDebug() << __func__;
 	QFile* file = static_cast<QFile*>(datasource);
 	if(file->isSequential())
 		return -1;
@@ -47,6 +56,7 @@ int OggStream::seekCb(void* datasource, ogg_int64_t offset, int whence)
 
 int OggStream::closeCb(void* datasource)
 {
+	qDebug() << __func__;
 	QFile* file = static_cast<QFile*>(datasource);
 
 	file->close();
@@ -58,6 +68,7 @@ int OggStream::closeCb(void* datasource)
 
 long OggStream::tellCb(void* datasource)
 {
+	qDebug() << __func__;
 	QFile* file = static_cast<QFile*>(datasource);
 
 	return file->pos();
@@ -128,6 +139,8 @@ bool OggStream::playback()
 {
 	if(playing())
 		return true;
+
+	qDebug() << "Filling buffers";
 
 	if(!stream(buffers[0]))
 		return false;
@@ -201,7 +214,7 @@ bool OggStream::stream(ALuint buffer)
 	alBufferData(buffer, format, data, size, vorbisInfo->rate);
 	check();
 
-	return false;
+	return true;
 }
 
 void OggStream::empty()
