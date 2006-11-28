@@ -31,7 +31,12 @@ Interpreter::InstructionPointer::InstructionPointer(const Interpreter::Instructi
 	for(StackStack::const_iterator it = ip.m_stackStack.constBegin(); it != ip.m_stackStack.constEnd(); ++it)
 	{
 		QStack<int>* t = new QStack<int>();
-		qCopy((*it)->begin(), (*it)->end(), t->begin());
+
+		foreach(int x, **it)
+		{
+			t->push(x);
+		}
+
 		m_stackStack.push(t);
 	}
 

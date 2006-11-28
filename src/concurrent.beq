@@ -1,0 +1,41 @@
+Version 1,Dimensions 3
+Lines 13,Origin 0:-6,Coord 0:
+          @
+          ^
+          ^
+          ^
+          ^
+          ^
+>  n  1::#yt#zt1+::#zt#yt>>>>>
+             v
+             v
+             v
+             v
+             v
+             @
+Lines 1,Origin 23:0,Coord -1:
+l
+Lines 1,Origin 20:0,Coord 1:
+h
+Lines 1,Origin 20:0,Coord 2:
+h
+Lines 1,Origin 20:0,Coord 3:
+h
+Lines 1,Origin 20:0,Coord 4:
+h
+Lines 1,Origin 20:0,Coord 5:
+h
+Lines 1,Origin 20:0,Coord 6:
+h
+Lines 1,Origin 20:0,Coord 7:
+@
+Lines 1,Origin 23:0,Coord -6:
+@
+Lines 1,Origin 23:0,Coord -5:
+l
+Lines 1,Origin 23:0,Coord -4:
+l
+Lines 1,Origin 23:0,Coord -3:
+l
+Lines 1,Origin 23:0,Coord -2:
+l
