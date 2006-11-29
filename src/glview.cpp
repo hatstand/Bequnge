@@ -30,7 +30,9 @@ GLView::GLView(FungeSpace* fungeSpace, QWidget* parent)
 	  m_stringMode(false),
 	  m_zoomLevel(6.0f),
 	  m_moveDragging(false),
-	  m_rotateDragging(false)
+	  m_rotateDragging(false),
+	  m_enableWhoosh(false),
+	  m_offsetWhoosh(5)
 {
 	setFocusPolicy(Qt::WheelFocus);
 	
@@ -76,6 +78,10 @@ GLView::GLView(FungeSpace* fungeSpace, QWidget* parent)
 	m_fontLarge.setBold(true);
 	m_fontSmall.setPointSize(10);
 	m_metricsSmall = new QFontMetrics(m_fontSmall);
+
+	m_fontWhoosh.setPointSize(36);
+	m_fontWhoosh.setItalic(true);
+	m_fontWhoosh.setBold(true);
 	
 	m_executionStr = "Execution fungespace";
 	m_execution2Str = "Changes made here will not affect your original source";
@@ -488,6 +494,9 @@ void GLView::paintGL()
 		}
 		glCallList(m_displayListsBase + ARROW);
 	glPopMatrix();
+
+	if(m_enableWhoosh)
+		drawWhoosh();
 	
 	if (m_cursorBlinkTime.elapsed() > 500)
 	{
@@ -1367,6 +1376,7 @@ void GLView::setAscensionLevel(int level)
 		return;
 
 	m_al->play();
+	m_enableWhoosh = true;
 
 	for (int i=m_ascensionLevel ; i>level ; --i)
 		m_destinationGridAlpha[i] = 0.0f;
@@ -1403,5 +1413,16 @@ Coord GLView::cursor()
 		return m_cursor;
 	else
 		return m_followingIP->m_pos;
+}
+
+void GLView::drawWhoosh()
+{
+	renderText(width() - m_offsetWhoosh*(width()/20), 4*height()/5, "Whoooossshhh!", m_fontWhoosh);
+
+	if(++m_offsetWhoosh > 24)
+	{
+		m_offsetWhoosh = 5;
+		m_enableWhoosh = false;
+	}
 }
 

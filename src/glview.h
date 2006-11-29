@@ -102,6 +102,8 @@ private:
 
 	void setChar(Coord p, QChar newchar);
 
+	void drawWhoosh();
+
 private:
 	Coord m_origin;
 	
@@ -185,6 +187,10 @@ private:
 
 	//QList<Particle*> m_particles;
 	OpenAL* m_al;
+
+	bool m_enableWhoosh;
+	QFont m_fontWhoosh;
+	int m_offsetWhoosh;
 };
 
 #endif
