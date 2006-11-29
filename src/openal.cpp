@@ -141,7 +141,10 @@ void OggStream::display()
 bool OggStream::playback()
 {
 	if(playing())
+	{
+		ov_time_seek_lap(&oggStream, 0.0);
 		return true;
+	}
 
 	//qDebug() << "Rewinding";
 	empty();
