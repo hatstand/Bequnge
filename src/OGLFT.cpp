@@ -27,7 +27,7 @@
 #ifndef OGLFT_NO_QT
 #include <QRegExp>
 #endif
-#include <OGLFT.h>
+#include "OGLFT.h"
 
 namespace OGLFT {
 
