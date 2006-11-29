@@ -186,7 +186,9 @@ private:
 	};
 
 	//QList<Particle*> m_particles;
+#ifndef SOUND_DISABLED
 	OpenAL* m_al;
+#endif
 
 	bool m_enableWhoosh;
 	QFont m_fontWhoosh;

@@ -1,3 +1,4 @@
+#ifndef SOUND_DISABLED
 #ifndef OPENALBEQ_H
 #define OPENALBEQ_H
 
@@ -68,4 +69,5 @@ private:
 	OggStream* ogg;
 };
 
+#endif
 #endif

@@ -99,7 +99,9 @@ GLView::GLView(FungeSpace* fungeSpace, QWidget* parent)
 	m_undoGroup.setActiveStack(currentUndo);
 
 	// Sound
+#ifndef SOUND_DISABLED
 	m_al = new OpenAL();
+#endif
 }
 
 
@@ -107,7 +109,9 @@ GLView::~GLView()
 {
 	delete m_font;
 	delete m_metricsSmall;
+#ifndef SOUND_DISABLED
 	delete m_al;
+#endif
 }
 
 void GLView::initializeGL()
@@ -1375,7 +1379,9 @@ void GLView::setAscensionLevel(int level)
 	if (level == m_ascensionLevel)
 		return;
 
+#ifndef SOUND_DISABLED
 	m_al->play();
+#endif
 	m_enableWhoosh = true;
 
 	for (int i=m_ascensionLevel ; i>level ; --i)
