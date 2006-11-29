@@ -1,0 +1,133 @@
+[Meta]
+RootName: @purplehatstands.com/bequnge:0.1
+DisplayName: BeQunge
+ShortName: bequnge
+Maintainer: David Sansome <me@davidsansome.com>
+Packager: David Sansome <me@davidsansome.com>
+Summary: BeQunge is an OpenGL n-dimensional funge interpreter
+URL: http://purplehatstands.com/bequnge
+License: GNU General Public License, Version 2
+SoftwareVersion: 0.1
+Repository: http://purplehatstands.com/autopackage/bequnge.xml
+
+# If you change the autopackage but not the software itself,
+# increment this number.
+
+# PackageVersion: 2
+
+# This is the version of the autopackage runtime this package is
+# written for. Increasing this number implies you have read the
+# "Migrating to 1.X" document and understand the impact it will have
+# on your package. Some APIs may change their behaviour and new
+# features will be enabled depending on what this is set to.
+AutopackageTarget: 1.2
+
+# Only uncomment InterfaceVersion if your package exposes interfaces
+# to other software, for instance if it includes DSOs or python/perl
+# modules. See the developer guide for more info, or ask on
+# autopackage-dev if you aren't sure about interface versioning.
+#
+# InterfaceVersion: 0.0
+
+[BuildPrepare]
+
+arg4="CMAKE_INSTALL_PREFIX:PATH=$build_root"
+
+export APBUILD_STATIC="Xrender"
+export CC=`which apgcc`
+export CXX=`which apg++`
+
+if [[ "$APKG_BUILD_SKIP_CONFIGURE" != "1" ]]; then
+	out "$intl_CONFIGURING"
+	
+	rm CMakeCache.txt
+	cd bin
+	rm CMakeCache.txt
+	cmake -D "CMAKE_INSTALL_PREFIX:PATH=$build_root" ..
+	
+	if [[ "$?" == "0" ]]; then
+		outn "$intl_CONFIGURING"; green; out "$intl_DONE"; normal;
+	else
+		outn "$intl_CONFIGURING"; red; echo "$intl_FAILED"; normal;
+		exit 1;
+	fi
+fi
+
+if [[ "$APKG_BUILD_SKIP_MAKE" != "1" ]]; then
+	out "$intl_MAKING";
+	
+	make clean
+	make
+	
+	if [[ "$?" == "0" ]]; then
+		outn "$intl_MAKING"; green; out "$intl_DONE"; normal;
+	else
+		outn "$intl_MAKING"; red; echo "$intl_FAILED"; normal;
+		exit 1;
+	fi
+fi
+
+
+out "$intl_INSTALLING" "$build_root";
+make install
+if [[ "$?" == "0" ]]; then
+	outn "$intl_INSTALLING"; green; out "$intl_DONE"; normal;
+else
+	outn "$intl_INSTALLING"; red; echo "$intl_FAILED"; normal;
+	exit 1;
+fi
+
+
+export _virtual_build_root="$build_root"
+
+[BuildUnprepare]
+unprepareBuild
+
+[Globals]
+# Anything put here will be run during makeinstall and at
+# install/uninstall time. Define useful variables here:
+
+# export MY_VAR=1
+
+[Imports]
+# You may wish to delete some things first, eg libtool .la files or
+# development files (headers)
+
+# rm -r include
+# rm libs/*.la
+
+# This imports every file in 
+# (ie, that is installed by "make install")
+echo '*' | import
+find
+
+
+[Prepare]
+# Dependency checking
+
+# You can use "require" and "recommend". They both try to find the
+# given dependency, and install it if missing. But require will return
+# 1 (causing failure) if it can't do that whereas recommend will
+# simply show a notice at the end of the install.
+
+# The second argument here identifies a skeleton file, which is
+# a file that encapsulates a dependency check. The second number
+# identifies the interface version you need. Use as many of these
+# as you need.
+
+require @trolltech.com/qt4 4.2
+
+# The user may have already installed the program from an RPM.
+# Let's try and uninstall it first. We only need one call if 3rd party
+# packages have split the program up into multiple packages.
+
+removeOwningPackage $PREFIX/bin/bequnge
+
+[Install]
+# Put your installation script here. See the quickstart guide on
+# the website for an API cheat-sheet
+installExe bin/bequnge
+
+[Uninstall]
+# Usually just the following line is enough to uninstall everything
+uninstallFromLog
