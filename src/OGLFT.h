@@ -1413,13 +1413,13 @@ namespace OGLFT {
     static int conicToCallback ( FT_Vector* control, FT_Vector* to, Filled* filled);
     static int cubicToCallback ( FT_Vector* control1, FT_Vector* control2,
 				 FT_Vector* to, Filled* filled );
-    static void vertexCallback ( VertexInfo* vertex );
-    static void beginCallback ( GLenum which );
-    static void endCallback ( void );
-    static void combineCallback ( GLdouble coords[3], void* vertex_data[4],
+    static void APIENTRY vertexCallback ( VertexInfo* vertex );
+    static void APIENTRY beginCallback ( GLenum which );
+    static void APIENTRY endCallback ( void );
+    static void APIENTRY combineCallback ( GLdouble coords[3], void* vertex_data[4],
 				  GLfloat weight[4], void** out_data,
 				  Filled* filled );
-    static void errorCallback ( GLenum error_code );
+    static void APIENTRY errorCallback ( GLenum error_code );
   };
 
 #ifndef OGLFT_NO_SOLID
