@@ -294,6 +294,9 @@ void MainWindow::slotStop()
 	m_ui.actionDebug->setEnabled(true);
 	
 	m_autoStepTimer->stop();
+	
+	m_glView->clearIps();
+	m_glView->followIp(NULL);
 }
 
 void MainWindow::slotOutput(QChar c)
