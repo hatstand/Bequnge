@@ -760,6 +760,14 @@ Coord GLView::pointToFungeSpace(const QPoint& pos)
 	double modelview[16], projection[16];
 	GLint viewport[4];
 	float z;
+
+	// Trying to read a pixel that's outside the viewport crashes
+	// some systems (such as Thinkpads with Intel graphics chips).
+	if (x<0) x=0;
+	else if (x>=width()) x=width()-1;
+	if (y<0) y=0;
+	else if (y>=height()) y=height()-1;
+
 		//get the projection matrix             
 	glGetDoublev( GL_PROJECTION_MATRIX, projection );
 		//get the modelview matrix              
