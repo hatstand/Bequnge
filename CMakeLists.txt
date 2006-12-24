@@ -47,6 +47,7 @@ IF (NOT "${SOUND_DISABLED}" STREQUAL "1")
 ENDIF (NOT "${SOUND_DISABLED}" STREQUAL "1")
 
 # Subdirectories
+ADD_SUBDIRECTORY(ParticleLib)
 ADD_SUBDIRECTORY(src)
 
 # Uninstall support

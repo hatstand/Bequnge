@@ -102,6 +102,10 @@ GLView::GLView(FungeSpace* fungeSpace, QWidget* parent)
 #ifndef SOUND_DISABLED
 	m_al = new OpenAL();
 #endif
+	
+	// Particle groups
+	m_cursorPG = m_P.GenParticleGroups(1, 200);
+	m_explosionsPG = m_P.GenParticleGroups(1, 5000);
 }
 
 
@@ -255,24 +259,6 @@ void GLView::updateCamera(int i)
 	}
 }
 
-/*void GLView::explode(Coord c)
-{
-	// GOTCHA
-	QList<float> f = fungeSpaceToGl(c, true); 
-
-	for(int i = 0; i < 100; ++i)
-	{
-		float radians = ((float)rand())/RAND_MAX * M_PI * 2;
-		float x = sin(radians);
-		float y = cos(radians);
-		float z = 0;
-
-		float p[3] = {f[0], f[1], f[2]};
-
-		m_particles << new Particle(p,x,y,z);
-	}
-}*/
-
 void GLView::paintGL()
 {
 	QTime frameTime;
@@ -321,6 +307,11 @@ void GLView::paintGL()
 			glPopMatrix();
 		}
 		
+		// Draw the particles for cursor
+		m_P.CurrentGroup(m_cursorPG);
+		computeParticles(m_cursor, m_cursorDirection, Qt::green);
+		drawParticles();
+		
 		// Draw the instruction pointer(s)
 		if (m_execution)
 		{
@@ -342,6 +333,19 @@ void GLView::paintGL()
 					qglColor(ip->m_color);
 					glCallList(m_displayListsBase + CURSOR);
 				glPopMatrix();
+				
+				// Particles
+				/*int direction = 0;
+				if (ip->m_direction[0] > 0) direction = 1;
+				else if (ip->m_direction[0] < 0) direction = -1;
+				else if (ip->m_direction[1] > 0) direction = 2;
+				else if (ip->m_direction[1] < 0) direction = -2;
+				else if (ip->m_direction[2] > 0) direction = 3;
+				else if (ip->m_direction[2] < 0) direction = -3;
+				
+				m_P.CurrentGroup(ip->m_particleGroup);
+				computeParticles(ip->m_pos, direction, ip->m_color);
+				drawParticles();*/
 			}
 		}
 		
@@ -428,13 +432,12 @@ void GLView::paintGL()
 			}
 		}
 		
-		// Draw the particles
-		/*foreach(Particle* p, m_particles)
-		{
-			glPushMatrix();
-				p->paintGL(1000/30, 1.0);
-			glPopMatrix();
-		}*/
+		// Draw explosion particles
+		m_P.CurrentGroup(m_explosionsPG);
+		m_P.TargetAlpha(0.0f, 0.01f);
+		m_P.KillOld(200.0f);
+		m_P.Move();
+		drawParticles();
 		
 		// Clear the depth buffer
 		glClear(GL_DEPTH_BUFFER_BIT);
@@ -1093,10 +1096,23 @@ void GLView::ipCreated(int index, Interpreter::InstructionPointer* ip)
 {
 	m_ips.insert(index, ip);
 	followIp(ip);
+	
+	ip->m_particleGroup = m_P.GenParticleGroups(1, 200);
 }
 
 void GLView::ipDestroyed(Interpreter::InstructionPointer* ip)
 {
+	pVec ipVec(ip->m_pos[0] * m_fontSize + m_fontSize/2,
+	               - ip->m_pos[1] * m_fontSize + m_fontSize/2,
+	               - ip->m_pos[2] * m_fontSize);
+	
+	m_P.CurrentGroup(m_explosionsPG);
+	m_P.Color(colorToVector(ip->m_color));
+	m_P.Velocity(PDSphere(pVec(0), 10.0f, 5.0f));
+	m_P.Source(300, PDSphere(ipVec, m_fontSize/2));
+	
+	m_P.DeleteParticleGroups(ip->m_particleGroup);
+	
 	int index = m_ips.indexOf(ip);
 	m_ips.removeAt(index);
 	if ((index > m_ips.count()) || (m_ips.isEmpty()))
@@ -1438,5 +1454,58 @@ void GLView::drawWhoosh()
 		m_offsetWhoosh = 5;
 		m_enableWhoosh = false;
 	}
+}
+
+pVec GLView::colorToVector(const QColor& color)
+{
+	return pVec(((float)color.red()) / 255.0,
+	            ((float)color.green()) / 255.0,
+	            ((float)color.blue()) / 255.0);
+}
+
+
+void GLView::computeParticles(const Coord& point, int direction, const QColor& color)
+{
+	pVec cursorVec(point[0] * m_fontSize + m_fontSize/2,
+	               - point[1] * m_fontSize + m_fontSize/2,
+	               - point[2] * m_fontSize);
+	
+	int absDir = abs(direction);
+	pVec directionVec(absDir == 1 ? 0.1f : 0.0f,
+	                     absDir == 2 ? -0.1f : 0.0f,
+	                     absDir == 3 ? -0.1f : 0.0f);
+	if (direction > 0)
+		directionVec *= -1;
+	
+	m_P.Velocity(pVec(0));
+	m_P.Color(colorToVector(color));
+	m_P.Source(1, PDSphere(cursorVec, m_fontSize/2));
+	m_P.RandomAccel(PDCone(pVec(0.0f, 0.0f, 0.0f), directionVec, 0.5f));
+	m_P.TargetAlpha(0.0f, 0.02f);
+	m_P.KillOld(100.0f);
+	m_P.Move(true, false);
+}
+
+void GLView::drawParticles()
+{
+	size_t cnt = m_P.GetGroupCount();
+	if(cnt < 1) return;
+	
+	float *ptr;
+	size_t flstride, pos3Ofs, posB3Ofs, size3Ofs, vel3Ofs, velB3Ofs, color3Ofs, alpha1Ofs, age1Ofs;
+	
+	cnt = m_P.GetParticlePointer(ptr, flstride, pos3Ofs, posB3Ofs,
+		size3Ofs, vel3Ofs, velB3Ofs, color3Ofs, alpha1Ofs, age1Ofs);
+	if(cnt < 1) return;
+	
+	glEnableClientState(GL_COLOR_ARRAY);
+	glColorPointer(4, GL_FLOAT, int(flstride) * sizeof(float), ptr + color3Ofs);
+	
+	glEnableClientState(GL_VERTEX_ARRAY);
+	glVertexPointer(3, GL_FLOAT, int(flstride) * sizeof(float), ptr + pos3Ofs);
+	
+	glDrawArrays(GL_POINTS, 0, (GLsizei)cnt);
+	glDisableClientState(GL_VERTEX_ARRAY);
+	glDisableClientState(GL_COLOR_ARRAY);
 }
 

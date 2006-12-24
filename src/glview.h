@@ -11,6 +11,11 @@
 #include <ft2build.h>
 #include FT_FREETYPE_H
 
+#include <pAPI.h>
+#include <Actions.h>
+
+using namespace PAPI;
+
 class QMouseEvent;
 class QKeyEvent;
 
@@ -37,8 +42,6 @@ public:
 	void followIp(Interpreter::InstructionPointer* ip);
 	void resetView();
 	void displayChanges(bool displayChanges) { m_displayChanges = displayChanges; }
-
-	void explode(Coord c);
 
 	QUndoGroup* getUndo() { return &m_undoGroup; }
 
@@ -99,6 +102,10 @@ private:
 	void drawFunge(QHash<Coord, QChar> fungeCode);
 	void setAscensionLevel(int level);
 	Coord cursor();
+	
+	void computeParticles(const Coord& point, int direction, const QColor& color);
+	void drawParticles();
+	pVec colorToVector(const QColor& color);
 
 	void setChar(Coord p, QChar newchar);
 
@@ -184,8 +191,12 @@ private:
 		CURSOR = 1,
 		GRID = 2
 	};
+	
+	// Particle system
+	ParticleContext_t m_P;
+	int m_cursorPG;
+	int m_explosionsPG;
 
-	//QList<Particle*> m_particles;
 #ifndef SOUND_DISABLED
 	OpenAL* m_al;
 #endif

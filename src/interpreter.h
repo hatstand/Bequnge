@@ -42,6 +42,7 @@ public:
 		QStack<int>* m_stack;
 		
 		QColor m_color;
+		int m_particleGroup;
 
 		bool m_stringMode;
 		WaitingForInput m_waitingForInput;
