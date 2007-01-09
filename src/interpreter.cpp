@@ -328,7 +328,9 @@ void Interpreter::modulo()
 	int x = popItem();
 	int y = popItem();
 
-	int z = y % x;
+	int z = 0;
+	if (x != 0)
+		z = y % x;
 
 	qDebug() << y << "%" << x << "=" << z;
 	pushItem(z);
