@@ -68,6 +68,10 @@ MainWindow::MainWindow(QWidget* parent)
 	connect(m_ui.actionCopy, SIGNAL(triggered(bool)), m_glView, SLOT(slotCopy()));
 	connect(m_ui.actionPaste, SIGNAL(triggered(bool)), m_glView, SLOT(slotPaste()));
 	connect(m_ui.actionPasteTransparent, SIGNAL(triggered(bool)), m_glView, SLOT(slotPasteTransparent()));
+	connect(m_ui.actionToggleBreakpoint, SIGNAL(triggered(bool)), SLOT(slotToggleBreakpoint()));
+	connect(m_ui.actionToggleWatchpoint, SIGNAL(triggered(bool)), SLOT(slotToggleWatchpoint()));
+	connect(m_ui.actionClearAllBreakpoints, SIGNAL(triggered(bool)), SLOT(slotClearAllBreakpoints()));
+	connect(m_ui.actionClearAllWatchpoints, SIGNAL(triggered(bool)), SLOT(slotClearAllWatchpoints()));
 	
 	connect(m_ui.speedSlider, SIGNAL(sliderMoved(int)), SLOT(speedSliderMoved(int)));
 	connect(m_ui.displayFungeSpace, SIGNAL(activated(int)), SLOT(slotDisplayFungeSpaceChanged(int)));
@@ -184,6 +188,7 @@ void MainWindow::slotDebug()
 	connect(m_interpreter, SIGNAL(ipDestroyed(Interpreter::InstructionPointer*)), SLOT(slotIpDestroyed(Interpreter::InstructionPointer*)));
 	connect(m_interpreter, SIGNAL(stackPushed(int)), SLOT(slotStackPushed(int)), Qt::DirectConnection);
 	connect(m_interpreter, SIGNAL(stackPopped()), SLOT(slotStackPopped()), Qt::DirectConnection);
+	connect(m_executionFungeSpace, SIGNAL(watchpointTriggered(Coord, QChar)), SLOT(slotWatchpointTriggered(Coord, QChar)), Qt::DirectConnection);
 	connect(m_interpreter, SIGNAL(output(QChar)), SLOT(slotOutput(QChar)));
 	connect(m_interpreter, SIGNAL(output(QString)), SLOT(slotOutput(QString)));
 	connect(m_interpreter, SIGNAL(input(Interpreter::WaitingForInput)), m_ui.consoleBox, SLOT(getInput(Interpreter::WaitingForInput)));
@@ -240,6 +245,13 @@ void MainWindow::slotIpCreated(int index, Interpreter::InstructionPointer* ip)
 void MainWindow::slotIpChanged(Interpreter::InstructionPointer* ip)
 {
 	m_glView->ipChanged(ip);
+	
+	if (m_fungeSpace->isBreakpoint(ip->m_pos))
+	{
+		if (!m_ui.pauseButton->isChecked())
+			m_ui.pauseButton->click();
+		m_glView->followIp(ip);
+	}
 }
 
 void MainWindow::slotIpDestroyed(Interpreter::InstructionPointer* ip)
@@ -425,6 +437,45 @@ void MainWindow::slotAbout()
 void MainWindow::slotAboutQt()
 {
 	QMessageBox::aboutQt(this);
+}
+
+void MainWindow::slotToggleBreakpoint()
+{
+	Coord c = m_glView->textCursorPos();
+	
+	m_fungeSpace->toggleBreakpoint(c);
+	if (m_executionFungeSpace != NULL)
+		m_executionFungeSpace->toggleBreakpoint(c);
+}
+
+void MainWindow::slotToggleWatchpoint()
+{
+	Coord c = m_glView->textCursorPos();
+	
+	m_fungeSpace->toggleWatchpoint(c);
+	if (m_executionFungeSpace != NULL)
+		m_executionFungeSpace->toggleWatchpoint(c);
+}
+
+void MainWindow::slotClearAllBreakpoints()
+{
+	m_fungeSpace->clearAllBreakpoints();
+	if (m_executionFungeSpace != NULL)
+		m_executionFungeSpace->clearAllBreakpoints();
+}
+
+void MainWindow::slotClearAllWatchpoints()
+{
+	m_fungeSpace->clearAllWatchpoints();
+	if (m_executionFungeSpace != NULL)
+		m_executionFungeSpace->clearAllWatchpoints();
+}
+
+void MainWindow::slotWatchpointTriggered(Coord, QChar)
+{
+	if (!m_ui.pauseButton->isChecked())
+		m_ui.pauseButton->click();
+	m_glView->followIp(m_interpreter->ip());
 }
 
 

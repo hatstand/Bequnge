@@ -6,7 +6,7 @@
     <x>0</x>
     <y>0</y>
     <width>1680</width>
-    <height>1004</height>
+    <height>1005</height>
    </rect>
   </property>
   <property name="windowTitle" >
@@ -22,24 +22,25 @@
      <height>27</height>
     </rect>
    </property>
-   <widget class="QMenu" name="menuFile" >
-    <property name="title" >
-     <string>File</string>
-    </property>
-    <addaction name="actionNew" />
-    <addaction name="actionOpen" />
-    <addaction name="separator" />
-    <addaction name="actionSave" />
-    <addaction name="actionSave_as" />
-    <addaction name="separator" />
-    <addaction name="actionQuit" />
-   </widget>
    <widget class="QMenu" name="menuHelp" >
     <property name="title" >
      <string>Help</string>
     </property>
     <addaction name="actionAbout" />
     <addaction name="actionAboutQt" />
+   </widget>
+   <widget class="QMenu" name="menuDebug" >
+    <property name="title" >
+     <string>Debug</string>
+    </property>
+    <addaction name="actionDebug" />
+    <addaction name="actionStop" />
+    <addaction name="actionStep" />
+    <addaction name="separator" />
+    <addaction name="actionToggleBreakpoint" />
+    <addaction name="actionToggleWatchpoint" />
+    <addaction name="actionClearAllWatchpoints" />
+    <addaction name="actionClearAllBreakpoints" />
    </widget>
    <widget class="QMenu" name="menuEdit" >
     <property name="title" >
@@ -53,8 +54,21 @@
     <addaction name="actionPaste" />
     <addaction name="actionPasteTransparent" />
    </widget>
+   <widget class="QMenu" name="menuFile" >
+    <property name="title" >
+     <string>File</string>
+    </property>
+    <addaction name="actionNew" />
+    <addaction name="actionOpen" />
+    <addaction name="separator" />
+    <addaction name="actionSave" />
+    <addaction name="actionSave_as" />
+    <addaction name="separator" />
+    <addaction name="actionQuit" />
+   </widget>
    <addaction name="menuFile" />
    <addaction name="menuEdit" />
+   <addaction name="menuDebug" />
    <addaction name="menuHelp" />
   </widget>
   <widget class="QStatusBar" name="statusbar" />
@@ -540,6 +554,26 @@
    </property>
    <property name="shortcut" >
     <string>Ctrl+Shift+V</string>
+   </property>
+  </action>
+  <action name="actionToggleWatchpoint" >
+   <property name="text" >
+    <string>Toggle Watchpoint</string>
+   </property>
+  </action>
+  <action name="actionToggleBreakpoint" >
+   <property name="text" >
+    <string>Toggle Breakpoint</string>
+   </property>
+  </action>
+  <action name="actionClearAllBreakpoints" >
+   <property name="text" >
+    <string>Clear All Breakpoints</string>
+   </property>
+  </action>
+  <action name="actionClearAllWatchpoints" >
+   <property name="text" >
+    <string>Clear All Watchpoints</string>
    </property>
   </action>
  </widget>

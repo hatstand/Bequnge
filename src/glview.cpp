@@ -322,6 +322,23 @@ void GLView::paintGL()
 			}
 		}
 		
+		// Draw watchpoints and breakpoints
+		glColor4f(0.0f, 1.0f, 0.0f, 0.3f);
+		foreach (Coord c, m_fungeSpace->watchpoints())
+		{
+			glPushMatrix();
+				drawCube(c, c);
+			glPopMatrix();
+		}
+		
+		glColor4f(1.0f, 0.5f, 0.0f, 0.3f);
+		foreach (Coord c, m_fungeSpace->breakpoints())
+		{
+			glPushMatrix();
+				drawCube(c, c);
+			glPopMatrix();
+		}
+		
 		// Draw ascension grids
 		m_extraDimensions->drawGridLines();
 		

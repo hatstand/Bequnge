@@ -38,6 +38,11 @@ private slots:
 	void slotAbout();
 	void slotAboutQt();
 	
+	void slotToggleBreakpoint();
+	void slotToggleWatchpoint();
+	void slotClearAllBreakpoints();
+	void slotClearAllWatchpoints();
+	
 	void slotIpCreated(int index, Interpreter::InstructionPointer* ip);
 	void slotIpChanged(Interpreter::InstructionPointer* ip);
 	void slotIpDestroyed(Interpreter::InstructionPointer* ip);
@@ -50,6 +55,7 @@ private slots:
 	void provideInput(QChar c);
 	void provideInput(int i);
 	void doFullSpeedExecution();
+	void slotWatchpointTriggered(Coord, QChar);
 	
 	void speedSliderMoved(int value);
 	void pauseButtonClicked(bool checked);

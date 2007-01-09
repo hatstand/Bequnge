@@ -43,6 +43,7 @@ public:
 	void followIp(Interpreter::InstructionPointer* ip);
 	void resetView();
 	void displayChanges(bool displayChanges) { m_displayChanges = displayChanges; }
+	Coord textCursorPos() { return m_cursor; }
 
 	QUndoGroup* getUndo() { return &m_undoGroup; }
 	

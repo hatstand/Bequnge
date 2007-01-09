@@ -74,8 +74,21 @@ public:
 	void trackChanges(bool track) {m_trackChanges = track;}
 	QHash<Coord, QPair<QChar, QChar> > changes() { return m_changes; }
 	void removeChange(Coord c) { m_changes.remove(c); }
+	
+	void toggleBreakpoint(Coord c) { if (isBreakpoint(c)) m_breakpoints.removeAll(c); else m_breakpoints << c; }
+	void clearAllBreakpoints() { m_breakpoints.clear(); }
+	bool isBreakpoint(Coord c) { return m_breakpoints.contains(c); }
+	QList<Coord> breakpoints() { return m_breakpoints; }
+	
+	void toggleWatchpoint(Coord c) { if (isWatchpoint(c)) m_watchpoints.removeAll(c); else m_watchpoints << c; }
+	void clearAllWatchpoints() { m_watchpoints.clear(); }
+	bool isWatchpoint(Coord c) { return m_watchpoints.contains(c); }
+	QList<Coord> watchpoints() { return m_watchpoints; }
 
 	void save(QString filename);
+
+signals:
+	void watchpointTriggered(Coord c, QChar oldValue);
 
 private:
 	typedef boost::array<int,2> PlaneCoord;
@@ -97,6 +110,9 @@ private:
 	
 	bool m_trackChanges;
 	QHash<Coord, QPair<QChar, QChar> > m_changes;
+	
+	QList<Coord> m_breakpoints;
+	QList<Coord> m_watchpoints;
 };
 
 

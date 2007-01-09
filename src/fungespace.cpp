@@ -38,6 +38,9 @@ FungeSpace::FungeSpace(FungeSpace* space)
 		m_positiveEdges[i] = space->getPositiveEdge(i);
 		m_negativeEdges[i] = space->getNegativeEdge(i);
 	}
+	
+	m_breakpoints = space->m_breakpoints;
+	m_watchpoints = space->m_watchpoints;
 }
 
 void FungeSpace::parseHeader(QIODevice* dev)
@@ -204,6 +207,9 @@ void FungeSpace::setChar(Coord pos, QChar c)
 		else
 			m_changes.insert(pos, QPair<QChar, QChar>(oldValue, c));
 	}
+	
+	if (isWatchpoint(pos))
+		emit watchpointTriggered(pos, oldValue);
 }
 
 QChar FungeSpace::getChar(Coord pos)
