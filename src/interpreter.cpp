@@ -315,7 +315,9 @@ void Interpreter::divide()
 	int x = popItem();
 	int y = popItem();
 
-	int z = y / x;
+	int z = 0;
+	if (x != 0)
+		z = y / x;
 
 	qDebug() << y << "/" << x << "=" << z;
 	pushItem(z);
@@ -416,20 +418,16 @@ void Interpreter::random()
 
 void Interpreter::turnLeft()
 {
-	Q_ASSERT(m_space->dimensions() >= 2);
-
-	// TODO
+	int oldXDirection = m_ip->m_direction[0];
 	m_ip->m_direction[0] = -m_ip->m_direction[1];
-	m_ip->m_direction[1] = m_ip->m_direction[0];
+	m_ip->m_direction[1] = oldXDirection;
 }
 
 void Interpreter::turnRight()
 {
-	Q_ASSERT(m_space->dimensions() >= 2);
-
-	// TODO
+	int oldXDirection = m_ip->m_direction[0];
 	m_ip->m_direction[0] = m_ip->m_direction[1];
-	m_ip->m_direction[1] = -m_ip->m_direction[0];
+	m_ip->m_direction[1] = -oldXDirection;
 }
 
 void Interpreter::upDimension()
