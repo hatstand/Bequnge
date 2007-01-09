@@ -253,17 +253,17 @@ Interpreter::Status Interpreter::compute(QChar command)
 	else if(command.isNumber())
 		pushNumber(command);
 	else if(command == 'a')
-		pushNumber(10);
+		pushItem(10);
 	else if(command == 'b')
-		pushNumber(11);
+		pushItem(11);
 	else if(command == 'c')
-		pushNumber(12);
+		pushItem(12);
 	else if(command == 'd')
-		pushNumber(13);
+		pushItem(13);
 	else if(command == 'e')
-		pushNumber(14);
+		pushItem(14);
 	else if(command == 'f')
-		pushNumber(15);
+		pushItem(15);
 	else if(command == '@')
 	{
 		if (end())
