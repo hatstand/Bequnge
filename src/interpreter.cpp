@@ -18,7 +18,7 @@ Interpreter::InstructionPointer::InstructionPointer(Coord pos, Coord dir, Coord 
 
 Interpreter::InstructionPointer::InstructionPointer(const Interpreter::InstructionPointer& ip)
 	:m_pos(ip.m_pos), m_direction(ip.m_direction), m_storageOffset(ip.m_storageOffset),
-	m_stringMode(ip.m_stringMode), m_waitingForInput(ip.m_waitingForInput) 
+	m_stringMode(ip.m_stringMode), m_commentMode(ip.m_commentMode), m_waitingForInput(ip.m_waitingForInput) 
 {
 	// Deep copy the stack stack
 	/*foreach(QStack<int>* i, ip.m_stackStack)
@@ -59,6 +59,7 @@ Interpreter::Interpreter(FungeSpace* space, QObject* parent)
 	m_ip = new InstructionPointer(Coord(), direction, Coord());
 
 	m_ip->m_stringMode = false;
+	m_ip->m_commentMode = false;
 
 	m_ips << m_ip;
 
@@ -75,7 +76,9 @@ Interpreter::~Interpreter()
 
 void Interpreter::jumpSpaces()
 {
-	if(m_space->getChar(m_ip->m_pos).category() == QChar::Separator_Space)
+	QChar t = m_space->getChar(m_ip->m_pos);
+
+	if(t.category() == QChar::Separator_Space || (m_ip->m_commentMode && t != ';'))
 	{
 		m_jumpedSpace = true;	
 		move();
@@ -196,6 +199,8 @@ Interpreter::Status Interpreter::compute(QChar command)
 		absolute();
 	else if(command == '"')
 		string();
+	else if(command == ';')
+		comment();
 	else if(command == '\'')
 		character();
 	else if(command == ':')
@@ -451,6 +456,11 @@ void Interpreter::string()
 	//	pushItem('\0');
 
 	m_ip->m_stringMode = !m_ip->m_stringMode;
+}
+
+void Interpreter::comment()
+{
+	m_ip->m_commentMode = !m_ip->m_commentMode;
 }
 
 void Interpreter::character()

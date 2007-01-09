@@ -45,6 +45,7 @@ public:
 		int m_particleGroup;
 
 		bool m_stringMode;
+		bool m_commentMode;
 		WaitingForInput m_waitingForInput;
 	};
 
@@ -115,6 +116,7 @@ private:
 	void reverse();
 	void absolute();
 	void string();
+	void comment();
 	void character();
 	void duplicate();
 	void pop();
