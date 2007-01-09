@@ -329,9 +329,9 @@ void Interpreter::notf()
 {
 	int x = popItem();
 	if(x)
-		pushItem(1);
-	else
 		pushItem(0);
+	else
+		pushItem(1);
 }
 
 void Interpreter::greaterThan()
