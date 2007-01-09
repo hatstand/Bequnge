@@ -90,7 +90,7 @@ private:
 	bool m_jumpedSpace;
 	
 	Status compute(QChar);
-	void move();
+	void move(bool skipSpaces = true);
 	void jumpSpaces();
 
 
@@ -118,6 +118,7 @@ private:
 	void string();
 	void comment();
 	void character();
+	void storeCharacter();
 	void duplicate();
 	void pop();
 	void swap();

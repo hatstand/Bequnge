@@ -85,7 +85,7 @@ void Interpreter::jumpSpaces()
 	}
 }
 
-void Interpreter::move()
+void Interpreter::move(bool skipSpaces)
 {
 	if (m_ip == NULL)
 		return;
@@ -99,7 +99,8 @@ void Interpreter::move()
 			m_ip->m_pos[i] = m_space->getPositiveEdge(i);
 	}
 
-	jumpSpaces();
+	if (skipSpaces)
+		jumpSpaces();
 
 	//qDebug() << "Moved to:" << m_pos;
 	emit ipChanged(m_ip);
@@ -207,6 +208,8 @@ Interpreter::Status Interpreter::compute(QChar command)
 		comment();
 	else if(command == '\'')
 		character();
+	else if(command == 's')
+		storeCharacter();
 	else if(command == ':')
 		duplicate();
 	else if(command == '$')
@@ -482,8 +485,13 @@ void Interpreter::comment()
 void Interpreter::character()
 {
 	move();
-	pushItem(QChar('\0').unicode());
 	pushItem(m_space->getChar(m_ip->m_pos).unicode());
+}
+
+void Interpreter::storeCharacter()
+{
+	move(false);
+	m_space->setChar(m_ip->m_pos, popItem());
 }
 
 void Interpreter::duplicate()
