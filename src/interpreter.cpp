@@ -315,7 +315,7 @@ void Interpreter::divide()
 	int x = popItem();
 	int y = popItem();
 
-	int z = y * x;
+	int z = y / x;
 
 	qDebug() << y << "/" << x << "=" << z;
 	pushItem(z);
