@@ -132,6 +132,7 @@ private:
 	void trampoline();
 	void jump();
 	void iterate();
+	void getSysInfo();
 
 	void beginBlock();
 	void endBlock();

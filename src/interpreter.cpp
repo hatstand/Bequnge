@@ -78,7 +78,7 @@ void Interpreter::jumpSpaces()
 {
 	QChar t = m_space->getChar(m_ip->m_pos);
 
-	if(t.category() == QChar::Separator_Space || (m_ip->m_commentMode && t != ';'))
+	if(t.category() == QChar::Separator_Space || (m_ip->m_commentMode && t != ';') || (!m_ip->m_stringMode && t == 'z'))
 	{
 		m_jumpedSpace = true;	
 		move();
@@ -189,10 +189,14 @@ Interpreter::Status Interpreter::compute(QChar command)
 		turnLeft();
 	else if(command == ']')
 		turnRight();
-	else if(command == 'z')
+	/*else if(command == 'z')
 		upDimension();
 	else if(command == 'y')
-		downDimension();
+		downDimension();*/
+	else if(command == 'z')
+		;// Nop
+	else if(command == 'y')
+		getSysInfo();
 	else if(command == 'r')
 		reverse();
 	else if(command == 'x')
@@ -807,4 +811,9 @@ void Interpreter::panic(QString message)
 	message = "PANIC!: " + message;
 	qDebug() << m_ip->m_pos[0] << m_ip->m_pos[1];
 	qFatal(message.toAscii());
+}
+
+void Interpreter::getSysInfo()
+{
+	
 }
