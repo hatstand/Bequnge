@@ -749,24 +749,15 @@ void Interpreter::pushItem(int c)
 
 void Interpreter::pushVector(Coord c)
 {
-	foreach(int x, c)
-	{
-		pushItem(x);
-	}
+	pushItem(c[0]);
+	pushItem(c[1]);
 }
 
 Coord Interpreter::popVector()
 {
 	Coord c;
-	QStack<int> t;
-
-	for(uint i = 0; i < m_space->dimensions(); ++i)
-		t.push(popItem());
-
-	while(!t.isEmpty())
-	{
-		c << t.pop();
-	}
+	c[1] = popItem();
+	c[0] = popItem();
 
 	return c;
 }
