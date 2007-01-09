@@ -10,7 +10,8 @@ SET(BEQUNGE-SOURCES
 	fungeconsole.cpp
 	fungecommand.cpp
 	stackstack.cpp
-	coord.cpp)
+	coord.cpp
+	extradimensions.cpp)
 
 # Header files that have Q_OBJECT in
 SET(BEQUNGE-MOC-HEADERS

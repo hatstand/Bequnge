@@ -18,6 +18,7 @@ using namespace PAPI;
 
 class QMouseEvent;
 class QKeyEvent;
+class ExtraDimensions;
 
 #include "OGLFT.h"
 #include "fungespace.h"
@@ -44,6 +45,11 @@ public:
 	void displayChanges(bool displayChanges) { m_displayChanges = displayChanges; }
 
 	QUndoGroup* getUndo() { return &m_undoGroup; }
+	
+	float fontSize() { return m_fontSize; }
+	void setCameraMoveSpeed(float cameraMoveSpeed) { m_cameraMoveSpeed = cameraMoveSpeed; }
+	void setEye(float radius, float vert, float horiz);
+	void resetEye();
 
 public slots:
 	void setStringMode(bool enabled);
@@ -86,7 +92,6 @@ private:
 	QList<float> fungeSpaceToGl(Coord c, bool premultiplied);
 	void toggleStringMode();
 	void setCursorDirection(int direction);
-	void setEye(float radius, float vert, float horiz);
 	void setActivePlane(int plane);
 	int otherPlane();
 	Coord selectionTopLeft();
@@ -168,12 +173,8 @@ private:
 	float m_cameraMoveSpeed;
 	QPoint m_preDragMousePosition;
 	
-	// > 3D viewing
-	QMap<int, float> m_actualGridAlpha;
-	QMap<int, float> m_destinationGridAlpha;
-	int m_ascensionLevel;
-	float m_actualExtraDimensionsOffset[3];
-	float m_destinationExtraDimensionsOffset[3];
+	// Extra dimensions
+	ExtraDimensions* m_extraDimensions;
 	
 	// Fonts
 	FT_Face m_fontFace;

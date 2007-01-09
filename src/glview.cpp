@@ -1,5 +1,6 @@
 #include "glview.h"
 #include "fungespace.h"
+#include "extradimensions.h"
 
 #include <QTimer>
 #include <QMouseEvent>
@@ -49,9 +50,6 @@ GLView::GLView(FungeSpace* fungeSpace, QWidget* parent)
 	m_fpsCounterTimer = new QTimer(this);
 	m_fpsCounterTimer->start(2000);
 	connect(m_fpsCounterTimer, SIGNAL(timeout()), SLOT(updateFPSCounter()));
-	
-	// Reset the view
-	resetView();
 	
 	// Load the font
 	QResource fontResource("luximr.ttf");
@@ -106,6 +104,11 @@ GLView::GLView(FungeSpace* fungeSpace, QWidget* parent)
 	// Particle groups
 	m_cursorPG = m_P.GenParticleGroups(1, 200);
 	m_explosionsPG = m_P.GenParticleGroups(1, 5000);
+	
+	m_extraDimensions = new ExtraDimensions(this);
+	
+	// Reset the view
+	resetView();
 }
 
 
@@ -164,36 +167,7 @@ void GLView::initializeGL()
 		glEnd();
 	glEndList();
 	
-	glNewList(m_displayListsBase + GRID, GL_COMPILE);
-		glBegin(GL_LINES);
-			for (int y=0 ; y<=40 ; y+=10)
-			{
-				for (int z=0 ; z<=40 ; z+=10)
-				{
-					glVertex3f(0.0f, - m_fontSize * y, m_fontSize * z);
-					glVertex3f(m_fontSize * 40, - m_fontSize * y, m_fontSize * z);
-				}
-			}
-			
-			for (int x=0 ; x<=40 ; x+=10)
-			{
-				for (int z=0 ; z<=40 ; z+=10)
-				{
-					glVertex3f(m_fontSize * x, 0.0f, m_fontSize * z);
-					glVertex3f(m_fontSize * x, - m_fontSize * 40, m_fontSize * z);
-				}
-			}
-			
-			for (int x=0 ; x<=40 ; x+=10)
-			{
-				for (int y=0 ; y<=40 ; y+=10)
-				{
-					glVertex3f(m_fontSize * x, - m_fontSize * y, 0.0f);
-					glVertex3f(m_fontSize * x, - m_fontSize * y, m_fontSize * 40);
-				}
-			}
-		glEnd();
-	glEndList();
+	m_extraDimensions->prepareCallList(m_displayListsBase + GRID);
 }
 
 void GLView::resizeGL(int width, int height)
@@ -203,7 +177,7 @@ void GLView::resizeGL(int width, int height)
 	glMatrixMode(GL_PROJECTION);
 	glLoadIdentity();
 	
-	gluPerspective(50.0f,(GLfloat)width/(GLfloat)height,0.1f,100.0f);
+	gluPerspective(50.0f,(GLfloat)width/(GLfloat)height,0.1f,10000.0f);
 	glMatrixMode(GL_MODELVIEW);
 }
 
@@ -221,42 +195,12 @@ void GLView::updateCamera(int i)
 	else
 		m_actualEyeOffset[i] += diff * m_cameraMoveSpeed;
 	
-	m_destinationExtraDimensionsOffset[0] = cursor()[3] * (m_fontSize * 0.28f);
-	m_destinationExtraDimensionsOffset[1] = - cursor()[4] * (m_fontSize * 0.28f);
-	m_destinationExtraDimensionsOffset[2] = - cursor()[5] * (m_fontSize * 0.28f);
-	
-	diff = m_destinationExtraDimensionsOffset[i] - m_actualExtraDimensionsOffset[i];
-	if (fabs(diff) < 0.01)
-		m_actualExtraDimensionsOffset[i] = m_destinationExtraDimensionsOffset[i];
-	else
-		m_actualExtraDimensionsOffset[i] += diff * 0.2;
-	
 	QList<float> c = fungeSpaceToGl(cursor(), false);
 	diff = c[i] - m_actualCursorPos[i];
 	if (fabs(diff) < 0.01)
 		m_actualCursorPos[i] = c[i];
 	else
 		m_actualCursorPos[i] += diff * m_cameraMoveSpeed;
-	
-	if (i == 0)
-	{
-		QList<int> keys = m_destinationGridAlpha.keys();
-		foreach (int index, keys)
-		{
-			diff = m_destinationGridAlpha[index] - m_actualGridAlpha[index];
-			if (fabs(diff) < 0.001)
-			{
-				m_actualGridAlpha[index] = m_destinationGridAlpha[index];
-				if (m_actualGridAlpha[index] == 0.0f)
-				{
-					m_actualGridAlpha.remove(index);
-					m_destinationGridAlpha.remove(index);
-				}
-			}
-			else
-				m_actualGridAlpha[index] += diff * (m_execution ? 0.2 : 0.05);
-		}
-	}
 }
 
 void GLView::paintGL()
@@ -270,13 +214,16 @@ void GLView::paintGL()
 	updateCamera(0);
 	updateCamera(1);
 	updateCamera(2);
+	m_extraDimensions->updatePositions();
 	
-	gluLookAt(m_actualEyeOffset[0] + m_actualCursorPos[0] + m_actualCameraOffset[0] + m_actualExtraDimensionsOffset[0],
-	          m_actualEyeOffset[1] + m_actualCursorPos[1] + m_actualCameraOffset[1] + m_actualExtraDimensionsOffset[1],
-	          m_actualEyeOffset[2] + m_actualCursorPos[2] + m_actualCameraOffset[2] + m_actualExtraDimensionsOffset[2],
-	          m_actualCursorPos[0] + m_actualCameraOffset[0] + m_actualExtraDimensionsOffset[0],
-	          m_actualCursorPos[1] + m_actualCameraOffset[1] + m_actualExtraDimensionsOffset[1],
-	          m_actualCursorPos[2] + m_actualCameraOffset[2] + m_actualExtraDimensionsOffset[2],
+	const float* extraDimensionsOffset = m_extraDimensions->cameraOffset();
+	
+	gluLookAt(m_actualEyeOffset[0] + m_actualCursorPos[0] + m_actualCameraOffset[0] + extraDimensionsOffset[0],
+	          m_actualEyeOffset[1] + m_actualCursorPos[1] + m_actualCameraOffset[1] + extraDimensionsOffset[1],
+	          m_actualEyeOffset[2] + m_actualCursorPos[2] + m_actualCameraOffset[2] + extraDimensionsOffset[2],
+	          m_actualCursorPos[0] + m_actualCameraOffset[0] + extraDimensionsOffset[0],
+	          m_actualCursorPos[1] + m_actualCameraOffset[1] + extraDimensionsOffset[1],
+	          m_actualCursorPos[2] + m_actualCameraOffset[2] + extraDimensionsOffset[2],
 	          0.0f,
 	          1.0f,
 	          0.0f);
@@ -287,7 +234,7 @@ void GLView::paintGL()
 		drawFunge(m_fungeSpace->getCode());
 		
 		// Draw the cursor
-		if ((m_ascensionLevel == 0) && (m_cursorBlinkOn || !hasFocus()))
+		if ((m_extraDimensions->ascensionLevel() == 0) && (m_cursorBlinkOn || !hasFocus()))
 		{
 			glPushMatrix();
 				Coord coords = m_cursor;
@@ -374,63 +321,8 @@ void GLView::paintGL()
 			}
 		}
 		
-		// Draw the ascension grid(s)
-		foreach (int i, m_actualGridAlpha.keys())
-		{
-			float xDiff = m_destinationExtraDimensionsOffset[0] - m_actualExtraDimensionsOffset[0];
-			float yDiff = m_actualExtraDimensionsOffset[1] - m_destinationExtraDimensionsOffset[1];
-			
-			if (xDiff > 6.496f)
-				xDiff = 6.496f;
-			if (yDiff > 6.496f)
-				yDiff = 6.496f;
-			
-			int oldX;
-			if (xDiff < 0)
-				oldX = 1;
-			else if (xDiff == 0)
-				oldX = 0;
-			else
-				oldX = -1;
-			
-			int oldY;
-			if (yDiff < 0)
-				oldY = 1;
-			else if (yDiff == 0)
-				oldY = 0;
-			else
-				oldY = -1;
-			
-			for (int x=m_cursor[i*3 + 0] - 3 ; x<=m_cursor[i*3 + 0] + 3 ; ++x)
-			{
-				for (int y=m_cursor[i*3 + 1] - 3 ; y<=m_cursor[i*3 + 1] + 3 ; ++y)
-				{
-					float alphaMultiplier = 1.0f - sqrtf(powf(x - m_cursor[i*3 + 0], 2) + powf(y - m_cursor[i*3 + 1], 2)) / 5;
-					float oldAlphaMultiplier = 1.0f - sqrtf(powf(x - m_cursor[i*3 + 0] + oldX, 2) + powf(y - m_cursor[i*3 + 1] + oldY, 2)) / 5;
-					
-					alphaMultiplier += (alphaMultiplier - oldAlphaMultiplier) * (sqrtf(powf(xDiff, 2) + powf(yDiff, 2))) / 9.1867313f;
-					
-					glPushMatrix();
-						Coord gridStart = m_cursor;
-						gridStart[0] += (x * 70) - 20;
-						gridStart[1] += (y * 70) - 20;
-						gridStart[2] += (m_cursor[i*3 + 2] * 70) + 20;
-						
-						QList<float> coord = fungeSpaceToGl(gridStart, true);
-						coord[0] -= 2.4f;
-						coord[1] += m_fontSize - 0.1f;
-						coord[2] -= m_fontSize/2 - 2.4f;
-						
-						glTranslatef(coord[0], coord[1] - 2.5f, coord[2]);
-						if ((x == m_cursor[i*3 + 0]) && (y == m_cursor[i*3 + 1]))
-							glColor4f(0.0f, 0.5f * alphaMultiplier, 0.0f, m_actualGridAlpha[i] * alphaMultiplier);
-						else
-							glColor4f(0.5f * alphaMultiplier, 0.5f * alphaMultiplier, 0.5f * alphaMultiplier, m_actualGridAlpha[i] * alphaMultiplier);
-						glCallList(m_displayListsBase + GRID);
-					glPopMatrix();
-				}
-			}
-		}
+		// Draw ascension grids
+		m_extraDimensions->drawGridLines();
 		
 		// Draw explosion particles
 		m_P.CurrentGroup(m_explosionsPG);
@@ -443,7 +335,7 @@ void GLView::paintGL()
 		glClear(GL_DEPTH_BUFFER_BIT);
 		
 		// Draw bounding boxes in the depth buffer
-		if (m_ascensionLevel == 0)
+		if (m_extraDimensions->ascensionLevel() == 0)
 		{
 			QHashIterator<Coord, QChar> i(m_fungeSpace->getCode());
 			glColorMask(false, false, false, false);
@@ -530,7 +422,7 @@ void GLView::drawFunge(QHash<Coord, QChar> fungeCode)
 		Coord coords = i.key();
 		QChar data = i.value();
 		
-		if (m_ascensionLevel > 0)
+		if (m_extraDimensions->ascensionLevel() > 0)
 		{
 			if ((coords[0] >= c[0] + 20) || (coords[0] < c[0] - 20) ||
 				(coords[1] >= c[1] + 20) || (coords[1] < c[1] - 20) ||
@@ -540,7 +432,7 @@ void GLView::drawFunge(QHash<Coord, QChar> fungeCode)
 		
 		if (cursorExtraDimensions != coords.mid(3))
 		{
-			if (m_ascensionLevel != 1)
+			if (m_extraDimensions->ascensionLevel() != 1)
 				continue;
 			
 			int diff = c[3] - coords[3];
@@ -568,7 +460,7 @@ void GLView::drawFunge(QHash<Coord, QChar> fungeCode)
 		coords[2] += coords[5] * 70;
 		
 		glPushMatrix();
-			if ((coords == m_cursor) && (m_cursorBlinkOn || !hasFocus()) && (m_ascensionLevel == 0))
+			if ((coords == m_cursor) && (m_cursorBlinkOn || !hasFocus()) && (m_extraDimensions->ascensionLevel() == 0))
 				glColor4f(0.0f, 0.0f, 0.0f, 1.0f);
 			else if (m_mouseHoveringOverChar && (m_mouseHover == coords))
 				glColor4f(1.0f, 0.2f, 0.2f, 1.0f);
@@ -728,7 +620,7 @@ void GLView::wheelEvent(QWheelEvent* event)
 	if (m_zoomLevel < 1.0f)
 		m_zoomLevel = 1.0f;
 	
-	setEye(m_zoomLevel, 35.0f, 0.0f);
+	resetEye();
 }
 
 Coord GLView::glToFungeSpace(float x, float y, float z)
@@ -843,7 +735,7 @@ void GLView::mouseReleaseEvent(QMouseEvent* event)
 	{
 	case Qt::MidButton:
 		m_rotateDragging = false;
-		setEye(m_zoomLevel, 30.0f, 0.0f);
+		resetEye();
 		break;
 		
 	case Qt::LeftButton:
@@ -927,12 +819,9 @@ void GLView::keyPressEvent(QKeyEvent* event)
 	else if (event->key() == Qt::Key_Tab)
 		setActivePlane(otherPlane());
 	else if ((event->key() == Qt::Key_Up) && (event->modifiers() & Qt::ControlModifier))
-		setAscensionLevel(m_ascensionLevel+1);
+		m_extraDimensions->ascendDimensions();
 	else if ((event->key() == Qt::Key_Down) && (event->modifiers() & Qt::ControlModifier))
-	{
-		if (m_ascensionLevel > 0)
-			setAscensionLevel(m_ascensionLevel-1);
-	}
+		m_extraDimensions->descendDimensions();
 	else if (!event->text().isEmpty())
 	{
 		QChar c = event->text()[0];
@@ -987,7 +876,7 @@ void GLView::setCursorDirection(int direction)
 	else if (a == 3)
 		m_activePlane = 0;
 	
-	setEye(m_zoomLevel, 30.0f, 0.0f);
+	resetEye();
 	
 	emit cursorDirectionChanged(direction);
 }
@@ -1061,17 +950,7 @@ void GLView::resetView()
 	m_actualCursorPos[1] = 0.0f;
 	m_actualCursorPos[2] = 0.0f;
 	
-	m_actualExtraDimensionsOffset[0] = 0.0f;
-	m_actualExtraDimensionsOffset[1] = 0.0f;
-	m_actualExtraDimensionsOffset[2] = 0.0f;
-	
-	m_destinationExtraDimensionsOffset[0] = m_actualExtraDimensionsOffset[0];
-	m_destinationExtraDimensionsOffset[1] = m_actualExtraDimensionsOffset[1];
-	m_destinationExtraDimensionsOffset[2] = m_actualExtraDimensionsOffset[2];
-	
-	m_destinationGridAlpha.clear();
-	m_actualGridAlpha.clear();
-	m_ascensionLevel = 0;
+	m_extraDimensions->resetView();
 	
 	m_cameraMoveSpeed = 0.2;
 	
@@ -1079,6 +958,11 @@ void GLView::resetView()
 	
 	if (m_stringMode)
 		toggleStringMode();
+}
+
+void GLView::resetEye()
+{
+	setEye(m_zoomLevel, 30.0f, 0.0f);
 }
 
 void GLView::updateFPSCounter()
@@ -1167,9 +1051,12 @@ Coord GLView::selectionBottomRight()
 
 void GLView::moveCursor(int x, int y, int z, QTextCursor::MoveMode mode)
 {
-	m_cursor[m_ascensionLevel*3 + 0] += x;
-	m_cursor[m_ascensionLevel*3 + 1] += y;
-	m_cursor[m_ascensionLevel*3 + 2] += z;
+	m_cursor[m_extraDimensions->ascensionLevel()*3 + 0] += x;
+	m_cursor[m_extraDimensions->ascensionLevel()*3 + 1] += y;
+	m_cursor[m_extraDimensions->ascensionLevel()*3 + 2] += z;
+	
+	if (m_extraDimensions->ascensionLevel() != 0)
+		m_extraDimensions->move(x, y, z);
 	
 	m_selectionEnd = m_cursor;
 	
@@ -1400,7 +1287,7 @@ void GLView::clearRect(Coord topLeft, Coord bottomRight, ChangeList* changes)
 
 void GLView::setAscensionLevel(int level)
 {
-	if (level == m_ascensionLevel)
+	if (level == m_extraDimensions->ascensionLevel())
 		return;
 
 #ifndef SOUND_DISABLED
@@ -1408,22 +1295,7 @@ void GLView::setAscensionLevel(int level)
 #endif
 	m_enableWhoosh = true;
 
-	for (int i=m_ascensionLevel ; i>level ; --i)
-		m_destinationGridAlpha[i] = 0.0f;
-	for (int i=m_ascensionLevel+1 ; i<=level ; ++i)
-		m_destinationGridAlpha[i] = 0.75f;
-	
-	m_ascensionLevel = level;
-	if (level == 0)
-	{
-		m_cameraMoveSpeed = 0.2;
-		setEye(m_zoomLevel, 30.0f, 0.0f);
-	}
-	else
-	{
-		m_cameraMoveSpeed = 0.01;
-		setEye(40.0f, 30.0f, -30.0f);
-	}
+	m_extraDimensions->setAscensionLevel(level);
 }
 
 void GLView::ipChanged(Interpreter::InstructionPointer* ip)
