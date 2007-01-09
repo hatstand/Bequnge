@@ -87,7 +87,7 @@ void ExtraDimensions::updateScaleFactor(float cameraMoveSpeed)
 
 void ExtraDimensions::ascendDimensions()
 {
-	if (m_ascensionLevel >= 32)
+	if (m_ascensionLevel > 35)
 		return;
 	
 	m_ascensionLevel++;
