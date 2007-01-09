@@ -217,18 +217,17 @@ void GLView::paintGL()
 	m_extraDimensions->updatePositions();
 	
 	const float* extraDimensionsOffset = m_extraDimensions->cameraOffset();
+	float scaleFactor = m_extraDimensions->scaleFactor();
 	
-	gluLookAt(m_actualEyeOffset[0] + m_actualCursorPos[0] + m_actualCameraOffset[0] + extraDimensionsOffset[0],
-	          m_actualEyeOffset[1] + m_actualCursorPos[1] + m_actualCameraOffset[1] + extraDimensionsOffset[1],
-	          m_actualEyeOffset[2] + m_actualCursorPos[2] + m_actualCameraOffset[2] + extraDimensionsOffset[2],
-	          m_actualCursorPos[0] + m_actualCameraOffset[0] + extraDimensionsOffset[0],
-	          m_actualCursorPos[1] + m_actualCameraOffset[1] + extraDimensionsOffset[1],
-	          m_actualCursorPos[2] + m_actualCameraOffset[2] + extraDimensionsOffset[2],
+	gluLookAt(m_actualEyeOffset[0] + m_actualCursorPos[0] + m_actualCameraOffset[0] + extraDimensionsOffset[0] * scaleFactor,
+	          m_actualEyeOffset[1] + m_actualCursorPos[1] + m_actualCameraOffset[1] + extraDimensionsOffset[1] * scaleFactor,
+	          m_actualEyeOffset[2] + m_actualCursorPos[2] + m_actualCameraOffset[2] + extraDimensionsOffset[2] * scaleFactor,
+	          m_actualCursorPos[0] + m_actualCameraOffset[0] + extraDimensionsOffset[0] * scaleFactor,
+	          m_actualCursorPos[1] + m_actualCameraOffset[1] + extraDimensionsOffset[1] * scaleFactor,
+	          m_actualCursorPos[2] + m_actualCameraOffset[2] + extraDimensionsOffset[2] * scaleFactor,
 	          0.0f,
 	          1.0f,
 	          0.0f);
-	
-	float scaleFactor = m_extraDimensions->scaleFactor();
 	
 	glScalef(0.004f * scaleFactor, 0.004f * scaleFactor, 0.004f * scaleFactor);
 	glPushMatrix();

@@ -154,8 +154,8 @@ float ExtraDimensions::gridSize(int ascensionLevel)
 
 void ExtraDimensions::drawGridLines(int i)
 {
-	float xDiff = m_destinationCameraOffset[0] - m_actualCameraOffset[0];
-	float yDiff = m_actualCameraOffset[1] - m_destinationCameraOffset[1];
+	float xDiff = (m_destinationCameraOffset[0] - m_actualCameraOffset[0]) * m_actualScaleFactor;
+	float yDiff = (m_actualCameraOffset[1] - m_destinationCameraOffset[1]) * m_actualScaleFactor;
 	
 	if (xDiff > 6.496f)
 		xDiff = 6.496f;
@@ -210,10 +210,16 @@ void ExtraDimensions::drawGridLines()
 void ExtraDimensions::updatePositions()
 {
 	float diff = m_destinationScaleFactor - m_actualScaleFactor;
-	if (fabs(diff) < m_scaleFactorDiff)
+	
+	if (isnan(diff) || fabs(diff) < m_scaleFactorDiff)
 		m_actualScaleFactor = m_destinationScaleFactor;
 	else
-		m_actualScaleFactor += diff * 0.05;
+	{
+		float normalisedDiff = fabs((diff / m_scaleFactorDiff) / 10000.0f);
+		if (isnan(normalisedDiff) || normalisedDiff < 1.0f)
+			normalisedDiff = 1.0f;
+		m_actualScaleFactor += diff * normalisedDiff * 0.05;
+	}
 	
 	for (int i=0 ; i<3 ; ++i)
 	{
