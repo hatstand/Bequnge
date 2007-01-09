@@ -1,0 +1,19 @@
+#!/usr/bin/make -f
+
+
+include debian/cmake_cdbs.mk
+include /usr/share/cdbs/1/rules/debhelper.mk
+#include /usr/share/cdbs/1/class/cmake.mk
+
+
+DEB_DH_INSTALL_ARGS = --sourcedir=debian/tmp
+
+
+binary-install/bequnge::
+	
+	mkdir debian/bequnge/usr/share/applications
+	cp debian/bequnge.desktop debian/bequnge/usr/share/applications
+	dh_desktop
+
+	mkdir debian/bequnge/usr/share/bequnge
+	cp src/icons/beq.png debian/bequnge/usr/share/bequnge

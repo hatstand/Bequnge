@@ -1,0 +1,12 @@
+[Desktop Entry]
+Version=0.01
+Encoding=UTF-8
+Name=bequnge
+GenericName= bequnge thingy
+Comment=bequnge thing
+Exec=bequnge
+Terminal=false
+Type=Application
+Categories=Application;Development;
+MimeType=application/x-bequnge;
+Icon = /usr/share/bequnge/beq.png
