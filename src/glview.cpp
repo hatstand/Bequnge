@@ -177,7 +177,7 @@ void GLView::resizeGL(int width, int height)
 	glMatrixMode(GL_PROJECTION);
 	glLoadIdentity();
 	
-	gluPerspective(50.0f,(GLfloat)width/(GLfloat)height,0.1f,10000.0f);
+	gluPerspective(50.0f, (GLfloat)width/(GLfloat)height, 0.1f, 1000000.0f);
 	glMatrixMode(GL_MODELVIEW);
 }
 
@@ -228,7 +228,9 @@ void GLView::paintGL()
 	          1.0f,
 	          0.0f);
 	
-	glScalef(0.004f, 0.004f, 0.004f);
+	float scaleFactor = m_extraDimensions->scaleFactor();
+	
+	glScalef(0.004f * scaleFactor, 0.004f * scaleFactor, 0.004f * scaleFactor);
 	glPushMatrix();
 		// Draw the fungespace
 		drawFunge(m_fungeSpace->getCode());

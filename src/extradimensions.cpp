@@ -21,6 +21,9 @@ void ExtraDimensions::resetView()
 	m_destinationCameraOffset[1] = m_actualCameraOffset[1];
 	m_destinationCameraOffset[2] = m_actualCameraOffset[2];
 	
+	m_actualScaleFactor = 1.0f;
+	m_destinationScaleFactor = 1.0f;
+	
 	m_destinationGridAlpha.clear();
 	m_actualGridAlpha.clear();
 	m_ascensionLevel = 0;
@@ -70,29 +73,38 @@ void ExtraDimensions::setAscensionLevel(int level)
 		descendDimensions();
 }
 
+void ExtraDimensions::updateScaleFactor(float cameraMoveSpeed)
+{
+	m_glView->setCameraMoveSpeed(cameraMoveSpeed);
+	if (m_ascensionLevel == 0)
+		m_glView->resetEye();
+	else
+		m_glView->setEye(6.0f, 30.0f, -30.0f);
+	
+	m_destinationScaleFactor = 10.0f / powf(10.0f, 1 + m_ascensionLevel);
+	m_scaleFactorDiff = 0.001f / powf(10.0f, m_ascensionLevel) - 0.001f / powf(10.0f, 1 + m_ascensionLevel);
+}
+
 void ExtraDimensions::ascendDimensions()
 {
+	if (m_ascensionLevel >= 32)
+		return;
+	
 	m_ascensionLevel++;
 	m_destinationGridAlpha[m_ascensionLevel] = 0.75f;
 	
-	m_glView->setCameraMoveSpeed(0.01);
-	m_glView->setEye(4.0f * powf(10.0f, m_ascensionLevel), 30.0f, -30.0f);
+	updateScaleFactor(0.07);
 }
 
 void ExtraDimensions::descendDimensions()
 {
-	if (m_ascensionLevel == 0)
+	if (m_ascensionLevel <= 0)
 		return;
 	
 	m_destinationGridAlpha[m_ascensionLevel] = 0.0f;
 	m_ascensionLevel--;
 	
-	m_glView->setCameraMoveSpeed(0.2);
-	
-	if (m_ascensionLevel == 0)
-		m_glView->resetEye();
-	else
-		m_glView->setEye(4.0f * powf(10.0f, m_ascensionLevel), 30.0f, -30.0f);
+	updateScaleFactor(0.2);
 }
 
 void ExtraDimensions::move(int x, int y, int z)
@@ -118,6 +130,11 @@ int ExtraDimensions::ascensionLevel() const
 const float* ExtraDimensions::cameraOffset() const
 {
 	return (const float*) &m_actualCameraOffset;
+}
+
+float ExtraDimensions::scaleFactor() const
+{
+	return m_actualScaleFactor;
 }
 
 int ExtraDimensions::oldPosFromDiff(float diff)
@@ -151,8 +168,7 @@ void ExtraDimensions::drawGridLines(int i)
 	float size = 250.0f * gridSize(i);
 	float scaleFactor = 0.1f * pow(10.0f, i);
 	
-	int n = 3;
-	if (i != m_ascensionLevel) n=2;
+	int n = (i == m_ascensionLevel ? 3 : 2);
 	
 	for (int x=-n ; x<=n ; ++x)
 	{
@@ -184,15 +200,24 @@ void ExtraDimensions::drawGridLines()
 	glPushMatrix();
 		glTranslatef(m_destinationCameraOffset[0] * 250.0f, m_destinationCameraOffset[1] * 250.0f, m_destinationCameraOffset[2] * 250.0f);
 		foreach (int i, m_actualGridAlpha.keys())
-			drawGridLines(i);
+		{
+			if (i >= m_ascensionLevel - 2)
+				drawGridLines(i);
+		}
 	glPopMatrix();
 }
 
 void ExtraDimensions::updatePositions()
 {
+	float diff = m_destinationScaleFactor - m_actualScaleFactor;
+	if (fabs(diff) < m_scaleFactorDiff)
+		m_actualScaleFactor = m_destinationScaleFactor;
+	else
+		m_actualScaleFactor += diff * 0.05;
+	
 	for (int i=0 ; i<3 ; ++i)
 	{
-		float diff = m_destinationCameraOffset[i] - m_actualCameraOffset[i];
+		diff = m_destinationCameraOffset[i] - m_actualCameraOffset[i];
 		if (fabs(diff) < 0.01)
 			m_actualCameraOffset[i] = m_destinationCameraOffset[i];
 		else
@@ -201,7 +226,7 @@ void ExtraDimensions::updatePositions()
 	
 	foreach (int index, m_destinationGridAlpha.keys())
 	{
-		float diff = m_destinationGridAlpha[index] - m_actualGridAlpha[index];
+		diff = m_destinationGridAlpha[index] - m_actualGridAlpha[index];
 		if (fabs(diff) < 0.001)
 		{
 			m_actualGridAlpha[index] = m_destinationGridAlpha[index];

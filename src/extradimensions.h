@@ -21,6 +21,7 @@ public:
 	
 	int ascensionLevel() const;
 	const float* cameraOffset() const;
+	float scaleFactor() const;
 	
 	void drawGridLines();
 	void updatePositions();
@@ -29,6 +30,7 @@ private:
 	float gridSize(int ascensionLevel);
 	int oldPosFromDiff(float diff);
 	void drawGridLines(int i);
+	void updateScaleFactor(float cameraMoveSpeed);
 	
 private:
 	GLView* m_glView;
@@ -43,6 +45,10 @@ private:
 	
 	float m_actualCameraOffset[3];
 	float m_destinationCameraOffset[3];
+	
+	float m_actualScaleFactor;
+	float m_destinationScaleFactor;
+	float m_scaleFactorDiff;
 };
 
 #endif
