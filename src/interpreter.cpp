@@ -491,7 +491,7 @@ void Interpreter::duplicate()
 
 void Interpreter::pop()
 {
-	m_ip->m_stack->pop();
+	popItem();
 }
 
 void Interpreter::swap()
