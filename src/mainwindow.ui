@@ -29,19 +29,6 @@
     <addaction name="actionAbout" />
     <addaction name="actionAboutQt" />
    </widget>
-   <widget class="QMenu" name="menuDebug" >
-    <property name="title" >
-     <string>Debug</string>
-    </property>
-    <addaction name="actionDebug" />
-    <addaction name="actionStop" />
-    <addaction name="actionStep" />
-    <addaction name="separator" />
-    <addaction name="actionToggleBreakpoint" />
-    <addaction name="actionToggleWatchpoint" />
-    <addaction name="actionClearAllWatchpoints" />
-    <addaction name="actionClearAllBreakpoints" />
-   </widget>
    <widget class="QMenu" name="menuEdit" >
     <property name="title" >
      <string>Edit</string>
@@ -65,6 +52,19 @@
     <addaction name="actionSave_as" />
     <addaction name="separator" />
     <addaction name="actionQuit" />
+   </widget>
+   <widget class="QMenu" name="menuDebug" >
+    <property name="title" >
+     <string>Debug</string>
+    </property>
+    <addaction name="actionDebug" />
+    <addaction name="actionStop" />
+    <addaction name="actionStep" />
+    <addaction name="separator" />
+    <addaction name="actionToggleBreakpoint" />
+    <addaction name="actionToggleWatchpoint" />
+    <addaction name="actionClearAllBreakpoints" />
+    <addaction name="actionClearAllWatchpoints" />
    </widget>
    <addaction name="menuFile" />
    <addaction name="menuEdit" />
