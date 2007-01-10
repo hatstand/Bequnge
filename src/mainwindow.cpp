@@ -50,6 +50,7 @@ MainWindow::MainWindow(QWidget* parent)
 	m_ui.stackDock->hide();
 	m_ui.consoleDock->hide();
 	m_ui.debuggerDock->hide();
+	m_ui.documentationDock->hide();
 	
 	m_ui.displayFungeSpace->setEnabled(false);
 

@@ -37,10 +37,6 @@ GLView::GLView(FungeSpace* fungeSpace, QWidget* parent)
 {
 	setFocusPolicy(Qt::WheelFocus);
 	
-	m_origin.append(0);
-	m_origin.append(0);
-	m_origin.append(0);
-	
 	// Setup the redraw timer
 	m_redrawTimer = new QTimer(this);
 	connect(m_redrawTimer, SIGNAL(timeout()), SLOT(updateGL()));
