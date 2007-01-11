@@ -59,31 +59,31 @@ public:
 	// Place a char in FungeSpace
 	void setChar(Coord, QChar);
 	// Get a char from a Coord in FungeSpace
-	QChar getChar(Coord);
+	QChar getChar(Coord) const;
 
 	// Get all the code back out from FungeSpace
 	QHash<Coord, QChar> getCode();
 	
 	// Get the code edges (only correct if code doesn't shrink)
-	int getPositiveEdge(int dimension){ return m_positiveEdges[dimension]; }
-	int getNegativeEdge(int dimension) { return m_negativeEdges[dimension]; }
+	int getPositiveEdge(int dimension) const { return m_positiveEdges[dimension]; }
+	int getNegativeEdge(int dimension) const { return m_negativeEdges[dimension]; }
 	
-	uint dimensions() { return m_dimensions; }
+	uint dimensions() const { return m_dimensions; }
 	void setDimensions(uint dimensions);
 	
 	void trackChanges(bool track) {m_trackChanges = track;}
-	QHash<Coord, QPair<QChar, QChar> > changes() { return m_changes; }
+	QHash<Coord, QPair<QChar, QChar> > changes() const { return m_changes; }
 	void removeChange(Coord c) { m_changes.remove(c); }
 	
 	void toggleBreakpoint(Coord c) { if (isBreakpoint(c)) m_breakpoints.removeAll(c); else m_breakpoints << c; }
 	void clearAllBreakpoints() { m_breakpoints.clear(); }
-	bool isBreakpoint(Coord c) { return m_breakpoints.contains(c); }
-	QList<Coord> breakpoints() { return m_breakpoints; }
+	bool isBreakpoint(Coord c) const { return m_breakpoints.contains(c); }
+	QList<Coord> breakpoints() const { return m_breakpoints; }
 	
 	void toggleWatchpoint(Coord c) { if (isWatchpoint(c)) m_watchpoints.removeAll(c); else m_watchpoints << c; }
 	void clearAllWatchpoints() { m_watchpoints.clear(); }
-	bool isWatchpoint(Coord c) { return m_watchpoints.contains(c); }
-	QList<Coord> watchpoints() { return m_watchpoints; }
+	bool isWatchpoint(Coord c) const { return m_watchpoints.contains(c); }
+	QList<Coord> watchpoints() const { return m_watchpoints; }
 
 	void save(QString filename);
 

@@ -11,7 +11,8 @@ SET(BEQUNGE-SOURCES
 	fungecommand.cpp
 	stackstack.cpp
 	coord.cpp
-	extradimensions.cpp)
+	extradimensions.cpp
+	sysinfo.cpp)
 
 # Header files that have Q_OBJECT in
 SET(BEQUNGE-MOC-HEADERS

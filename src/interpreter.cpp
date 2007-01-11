@@ -1,4 +1,5 @@
 #include "interpreter.h"
+#include "sysinfo.h"
 
 #include <QDebug>
 #include <QStringList>
@@ -190,10 +191,10 @@ Interpreter::Status Interpreter::compute(QChar command)
 		turnLeft();
 	else if(command == ']')
 		turnRight();
-	/*else if(command == 'z')
+	else if(command == 'Z')
 		upDimension();
-	else if(command == 'y')
-		downDimension();*/
+	else if(command == 'Y')
+		downDimension();
 	else if(command == 'z')
 		;// Nop
 	else if(command == 'y')
@@ -814,5 +815,103 @@ void Interpreter::panic(QString message)
 
 void Interpreter::getSysInfo()
 {
-	
+	int t = popItem();
+
+	int currentStackSize = m_ip->m_stack->size();
+
+	using namespace SysInfo;
+
+	if(t <= 0)
+	{
+		pushEnvVariables(m_ip->m_stack);
+		pushCommandLineArgs(m_ip->m_stack);
+		pushStackSizes(m_ip->m_stack, m_ip->m_stackStack, currentStackSize);
+		pushStackStackSize(m_ip->m_stack, m_ip->m_stackStack);
+		pushTime(m_ip->m_stack);
+		pushDate(m_ip->m_stack);
+		pushGreatestPoint(m_ip->m_stack, *m_space);
+		pushLeastPoint(m_ip->m_stack, *m_space);
+		pushStorageOffset(m_ip->m_stack, *m_ip);
+		pushDirection(m_ip->m_stack, *m_ip);
+		pushPosition(m_ip->m_stack, *m_ip);
+		pushTeam(m_ip->m_stack, *m_ip);
+		pushUUID(m_ip->m_stack, *m_ip);
+		pushDimensions(m_ip->m_stack, *m_space);
+		pushSeparator(m_ip->m_stack);
+		pushOperatingParadigm(m_ip->m_stack);
+		pushVersion(m_ip->m_stack);
+		pushHandprint(m_ip->m_stack);
+		pushBytesPerCell(m_ip->m_stack);
+		pushFlags(m_ip->m_stack);
+	}
+	else
+	{
+		switch(t)
+		{
+			case 1:
+				pushFlags(m_ip->m_stack);
+				break;
+			case 2:
+				pushBytesPerCell(m_ip->m_stack);
+				break;
+			case 3:
+				pushHandprint(m_ip->m_stack);
+				break;
+			case 4:
+				pushVersion(m_ip->m_stack);
+				break;
+			case 5:
+				pushOperatingParadigm(m_ip->m_stack);
+				break;
+			case 6:
+				pushSeparator(m_ip->m_stack);
+				break;
+			case 7:
+				pushDimensions(m_ip->m_stack, *m_space);
+				break;
+			case 8:
+				pushUUID(m_ip->m_stack, *m_ip);
+				break;
+			case 9:
+				pushTeam(m_ip->m_stack, *m_ip);
+				break;
+			case 10:
+				pushPosition(m_ip->m_stack, *m_ip);
+				break;
+			case 11:
+				pushDirection(m_ip->m_stack, *m_ip);
+				break;
+			case 12:
+				pushStorageOffset(m_ip->m_stack, *m_ip);
+				break;
+			case 13:
+				pushLeastPoint(m_ip->m_stack, *m_space);
+				break;
+			case 14:
+				pushGreatestPoint(m_ip->m_stack, *m_space);
+				break;
+			case 15:
+				pushDate(m_ip->m_stack);
+				break;
+			case 16:
+				pushTime(m_ip->m_stack);
+				break;
+			case 17:
+				pushStackStackSize(m_ip->m_stack, m_ip->m_stackStack);
+				break;
+			case 18:
+				pushStackSizes(m_ip->m_stack, m_ip->m_stackStack, currentStackSize);
+				break;
+			case 19:
+				pushCommandLineArgs(m_ip->m_stack);
+				break;
+			case 20:
+				pushEnvVariables(m_ip->m_stack);
+				break;
+			default:
+				qWarning("Invalid value for system information");
+				break;
+		}
+	}
 }
+

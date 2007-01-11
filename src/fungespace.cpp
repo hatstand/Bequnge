@@ -212,7 +212,7 @@ void FungeSpace::setChar(Coord pos, QChar c)
 		emit watchpointTriggered(pos, oldValue);
 }
 
-QChar FungeSpace::getChar(Coord pos)
+QChar FungeSpace::getChar(Coord pos) const
 {
 	if(m_space.contains(pos))
 		return m_space[pos];
