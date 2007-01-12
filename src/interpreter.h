@@ -30,8 +30,8 @@ public:
 
 	struct InstructionPointer
 	{
-		InstructionPointer(Coord, Coord, Coord);
-		InstructionPointer(const InstructionPointer&);
+		InstructionPointer(Coord, Coord, Coord, int);
+		InstructionPointer(const InstructionPointer&, int);
 		~InstructionPointer();
 
 		Coord m_pos;
@@ -47,6 +47,8 @@ public:
 		bool m_stringMode;
 		bool m_commentMode;
 		WaitingForInput m_waitingForInput;
+
+		int m_id;
 	};
 
 
@@ -150,6 +152,8 @@ private:
 	Coord popVector();
 
 	void panic(QString message = NULL);
+
+	int m_ipid;
 };
 
 #endif

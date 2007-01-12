@@ -116,7 +116,7 @@ void SysInfo::pushUUID(QStack<int>* stack, const Interpreter::InstructionPointer
 {
 	// Unique ID for IP
 	// TODO: do this properly
-	stack->push((int)&ip);
+	stack->push(ip.m_id);
 }
 
 void SysInfo::pushDimensions(QStack<int>* stack, const FungeSpace& space)

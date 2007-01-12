@@ -8,18 +8,19 @@
 #include <time.h>
 #include <unistd.h>
 
-Interpreter::InstructionPointer::InstructionPointer(Coord pos, Coord dir, Coord store)
+Interpreter::InstructionPointer::InstructionPointer(Coord pos, Coord dir, Coord store, int id)
 	:m_pos(pos), m_direction(dir), m_storageOffset(store), 
-	m_stringMode(false), m_waitingForInput(NotWaiting) 
+	m_stringMode(false), m_waitingForInput(NotWaiting), m_id(id) 
 {
 	QStack<int>* t = new QStack<int>();
 	m_stack = t;
 	m_stackStack.push(t);
 }
 
-Interpreter::InstructionPointer::InstructionPointer(const Interpreter::InstructionPointer& ip)
+Interpreter::InstructionPointer::InstructionPointer(const Interpreter::InstructionPointer& ip, int id)
 	:m_pos(ip.m_pos), m_direction(ip.m_direction), m_storageOffset(ip.m_storageOffset),
-	m_stringMode(ip.m_stringMode), m_commentMode(ip.m_commentMode), m_waitingForInput(ip.m_waitingForInput) 
+	m_stringMode(ip.m_stringMode), m_commentMode(ip.m_commentMode), m_waitingForInput(ip.m_waitingForInput),
+	m_id(id)
 {
 	// Deep copy the stack stack
 	/*foreach(QStack<int>* i, ip.m_stackStack)
@@ -51,13 +52,13 @@ Interpreter::InstructionPointer::~InstructionPointer()
 }
 
 Interpreter::Interpreter(FungeSpace* space, QObject* parent)
-	: QObject(parent),m_space(space)
+	: QObject(parent),m_space(space),m_ipid(0)
 {
 	m_version = "1";
 
 	Coord direction;
 	direction[0] = 1;
-	m_ip = new InstructionPointer(Coord(), direction, Coord());
+	m_ip = new InstructionPointer(Coord(), direction, Coord(), m_ipid++);
 
 	m_ip->m_stringMode = false;
 	m_ip->m_commentMode = false;
@@ -777,7 +778,7 @@ int Interpreter::popItem()
 
 void Interpreter::split()
 {
-	InstructionPointer* t = new InstructionPointer(*m_ip);
+	InstructionPointer* t = new InstructionPointer(*m_ip, m_ipid++);
 	m_ips.prepend(t);
 
 	qSwap(m_ip, t);
