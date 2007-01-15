@@ -23,13 +23,6 @@ Interpreter::InstructionPointer::InstructionPointer(const Interpreter::Instructi
 	m_id(id)
 {
 	// Deep copy the stack stack
-	/*foreach(QStack<int>* i, ip.m_stackStack)
-	{
-		QStack<int>* t = new QStack<int>();
-		qCopy(i->begin(), i->end(), t->begin());
-		m_stackStack.push(t);
-	}*/
-
 	for(StackStack::const_iterator it = ip.m_stackStack.constBegin(); it != ip.m_stackStack.constEnd(); ++it)
 	{
 		QStack<int>* t = new QStack<int>();
