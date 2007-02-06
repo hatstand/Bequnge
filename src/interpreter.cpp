@@ -8,34 +8,19 @@
 #include <time.h>
 #include <unistd.h>
 
-Interpreter::InstructionPointer::InstructionPointer(Coord pos, Coord dir, Coord store, int id)
-	:m_pos(pos), m_direction(dir), m_storageOffset(store), 
+Interpreter::InstructionPointer::InstructionPointer(StackStackCollectionModel* model, Coord position, Coord direction, Coord storageOffset, int id)
+	:m_pos(position), m_direction(direction), m_storageOffset(storageOffset),
 	m_stringMode(false), m_waitingForInput(NotWaiting), m_id(id) 
 {
-	QStack<int>* t = new QStack<int>();
-	m_stack = t;
-	m_stackStack.push(t);
+	m_stackStack = model->newStackStack();
 }
 
-Interpreter::InstructionPointer::InstructionPointer(const Interpreter::InstructionPointer& ip, int id)
+Interpreter::InstructionPointer::InstructionPointer(StackStackCollectionModel* model, const Interpreter::InstructionPointer& ip, int id)
 	:m_pos(ip.m_pos), m_direction(ip.m_direction), m_storageOffset(ip.m_storageOffset),
 	m_stringMode(ip.m_stringMode), m_commentMode(ip.m_commentMode), m_waitingForInput(ip.m_waitingForInput),
 	m_id(id)
 {
-	// Deep copy the stack stack
-	for(StackStack::const_iterator it = ip.m_stackStack.constBegin(); it != ip.m_stackStack.constEnd(); ++it)
-	{
-		QStack<int>* t = new QStack<int>();
-
-		foreach(int x, **it)
-		{
-			t->push(x);
-		}
-
-		m_stackStack.push(t);
-	}
-
-	m_stack = m_stackStack.top();
+	m_stackStack = model->deepCopy(ip.m_stackStack);
 }
 
 Interpreter::InstructionPointer::~InstructionPointer()

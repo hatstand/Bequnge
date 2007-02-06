@@ -2,11 +2,14 @@
 #define INTERPRETER_H
 
 #include "fungespace.h"
-#include "stackstack.h"
 
 #include <QIODevice>
 #include <QStack>
 #include <QColor>
+
+class StackStack;
+class Stack;
+class StackStackCollectionModel;
 
 class Interpreter: public QObject
 {
@@ -30,16 +33,14 @@ public:
 
 	struct InstructionPointer
 	{
-		InstructionPointer(Coord, Coord, Coord, int);
-		InstructionPointer(const InstructionPointer&, int);
+		InstructionPointer(StackStackCollectionModel* model, Coord position, Coord direction, Coord storageOffset, int id);
+		InstructionPointer(StackStackCollectionModel* model, const InstructionPointer& ip, int id);
 		~InstructionPointer();
 
 		Coord m_pos;
 		Coord m_direction;
 		Coord m_storageOffset;
-		//QStack<QStack<int>* > m_stackStack;
-		StackStack m_stackStack;
-		QStack<int>* m_stack;
+		StackStack* m_stackStack;
 		
 		QColor m_color;
 		int m_particleGroup;
