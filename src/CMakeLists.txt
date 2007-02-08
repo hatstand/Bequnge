@@ -9,7 +9,8 @@ SET(BEQUNGE-SOURCES
 	stringmodewidget.cpp
 	fungeconsole.cpp
 	fungecommand.cpp
-	stackstack.cpp
+	treemodel.cpp
+	treeitem.cpp
 	coord.cpp
 	extradimensions.cpp
 	sysinfo.cpp)
@@ -21,7 +22,8 @@ SET(BEQUNGE-MOC-HEADERS
 	glview.h
 	interpreter.h
 	mainwindow.h
-	stringmodewidget.h)
+	stringmodewidget.h
+	treemodel.h)
 
 # UI files
 SET(BEQUNGE-UI
