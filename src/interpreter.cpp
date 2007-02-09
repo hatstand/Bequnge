@@ -10,33 +10,43 @@
 
 Interpreter::InstructionPointer::InstructionPointer(StackStackCollectionModel* model, Coord position, Coord direction, Coord storageOffset, int id)
 	:m_pos(position), m_direction(direction), m_storageOffset(storageOffset),
-	m_stringMode(false), m_waitingForInput(NotWaiting), m_id(id) 
+	m_stringMode(false), m_waitingForInput(NotWaiting), m_id(id),
+	m_usingSecondStack(false)
 {
-	m_stackStack = model->newStackStack();
+	m_stackStack = model->newStackStack(this);
 }
 
 Interpreter::InstructionPointer::InstructionPointer(StackStackCollectionModel* model, const Interpreter::InstructionPointer& ip, int id)
 	:m_pos(ip.m_pos), m_direction(ip.m_direction), m_storageOffset(ip.m_storageOffset),
 	m_stringMode(ip.m_stringMode), m_commentMode(ip.m_commentMode), m_waitingForInput(ip.m_waitingForInput),
-	m_id(id)
+	m_id(id), m_usingSecondStack(false)
 {
-	m_stackStack = model->deepCopy(ip.m_stackStack);
+	m_stackStack = model->deepCopy(this, ip.m_stackStack);
 }
 
 Interpreter::InstructionPointer::~InstructionPointer()
 {
-	for(StackStack::iterator it = m_stackStack.begin(); it != m_stackStack.end(); ++it)
-		delete(*it);
+	delete m_stackStack;
 }
 
-Interpreter::Interpreter(FungeSpace* space, QObject* parent)
+Stack* Interpreter::InstructionPointer::stack()
+{
+	if (m_usingSecondStack)
+		return m_stackStack->secondStack();
+	else
+		return m_stackStack->topStack();
+}
+
+Interpreter::Interpreter(StackStackCollectionModel* stackModel, FungeSpace* space, QObject* parent)
 	: QObject(parent),m_space(space),m_ipid(0)
 {
 	m_version = "1";
+	
+	m_stackModel = stackModel;
 
 	Coord direction;
 	direction[0] = 1;
-	m_ip = new InstructionPointer(Coord(), direction, Coord(), m_ipid++);
+	m_ip = new InstructionPointer(m_stackModel, Coord(), direction, Coord(), m_ipid++);
 
 	m_ip->m_stringMode = false;
 	m_ip->m_commentMode = false;
@@ -497,7 +507,7 @@ void Interpreter::swap()
 
 void Interpreter::clear()
 {
-	m_ip->m_stack->clear();
+	m_ip->m_stackStack->topStack()->clear();
 }
 
 void Interpreter::vertIf()
@@ -610,92 +620,83 @@ void Interpreter::iterate()
 
 void Interpreter::beginBlock()
 {
-	int x = popItem();
-	QStack<int>* newStack;
-
-	int s = m_ip->m_stack->size();
-	newStack = new QStack<int>();
-
-	if(s >= x)
+	int n = m_ip->stack()->pop();
+	
+	Stack* newStack = m_ip->m_stackStack->pushEmptyStack();
+	
+	if (n >= 0)
 	{
-		foreach(int o, m_ip->m_stack->mid(s-x))
+		DataCellItem* item = (DataCellItem*) m_ip->m_stackStack->secondStack()->firstChild();
+		for (int i=0 ; i<n ; i++)
 		{
-			newStack->push(o);
+			if (item == NULL)
+				newStack->pushToBottom(0);
+			else
+			{
+				newStack->pushToBottom(item->value());
+				item = (DataCellItem*) item->nextSibling();
+			}
 		}
-	}
-	else if(x < 0)
-	{
-		for(int i = 0; i < qAbs(x); ++i)
-			m_ip->m_stack->push(QChar(' ').unicode());
 	}
 	else
 	{
-		foreach(int o, m_ip->m_stack->mid(0))
-			newStack->push(o);
-
-		for(int i = 0; i < x - s; ++i)
-			newStack->push(QChar(' ').unicode());
+		n = abs(n);
+		for (int i=0 ; i<n ; i++)
+			m_ip->m_stackStack->secondStack()->push(0);
 	}
 
+	m_ip->m_usingSecondStack = true;
 	pushVector(m_ip->m_storageOffset);
+	m_ip->m_usingSecondStack = false;
 
 	for(uint i = 0; i < m_space->dimensions(); ++i)
 		m_ip->m_storageOffset[i] = m_ip->m_pos[i] + m_ip->m_direction[i];
-
-	m_ip->m_stack = newStack;
-	m_ip->m_stackStack.push(m_ip->m_stack);
 }
 
 void Interpreter::endBlock()
 {
-	int x = qAbs(popItem());
+	int n = popItem();
 	
-	QStack<int>* oldStack = m_ip->m_stackStack.pop();
-	m_ip->m_stack = m_ip->m_stackStack.top();
+	m_ip->m_usingSecondStack = true;
 	m_ip->m_storageOffset = popVector();
-	int s = oldStack->size();
-
-	if(s >= x)
+	m_ip->m_usingSecondStack = false;
+	
+	if (n >= 0)
 	{
-		foreach(int i, oldStack->mid(s-x))
-		{
-			m_ip->m_stack->push(i);
-		}
+		QStack<int> tempStack;
+		for (int i=0 ; i<n ; i++)
+			tempStack << popItem();
+		m_ip->m_stackStack->removeTopStack();
+		while (tempStack.count() > 0)
+			pushItem(tempStack.pop());
 	}
 	else
 	{
-		for(int i = 0; i < x-s; ++i)
-			m_ip->m_stack->push(QChar(' ').unicode());
-
-		foreach(int i, *oldStack)
-		{
-			m_ip->m_stack->push(i);
-		}
+		m_ip->m_stackStack->removeTopStack();
+		for (int i=0 ; i<abs(n) ; i++)
+			popItem();
 	}
-
-
-	delete(oldStack);
 }
 
 void Interpreter::stackUnderStack()
 {
-	if(m_ip->m_stackStack.size() == 1)
+	if(m_ip->m_stackStack->count() == 1)
 		reverse();
 
-	int n = qAbs(popItem());
-	if(n == 0)
-		return;
-
-	QStack<int>* over = m_ip->m_stackStack.pop();
-	QStack<int>* under = m_ip->m_stackStack.top();
-
-	m_ip->m_stackStack.push(over);
-
-	while(n > 0 && !under->isEmpty())
+	int n = popItem();
+	
+	Stack* source = m_ip->m_stackStack->secondStack();
+	Stack* dest = m_ip->m_stackStack->topStack();
+	
+	if (n < 0)
 	{
-		over->push(under->pop());
-		--n;
+		source = dest;
+		dest = m_ip->m_stackStack->secondStack();
+		n = abs(n);
 	}
+	
+	for (int i=0 ; i<n ; i++)
+		dest->push(source->pop());
 }
 
 void Interpreter::getFunge()
@@ -723,8 +724,7 @@ void Interpreter::pushNumber(QChar n)
 
 void Interpreter::pushItem(int c)
 {
-	m_ip->m_stack->push(c);
-	emit stackPushed(c);
+	m_ip->stack()->push(c);
 }
 
 void Interpreter::pushVector(Coord c)
@@ -744,19 +744,12 @@ Coord Interpreter::popVector()
 
 int Interpreter::popItem()
 {
-	if(m_ip->m_stack->isEmpty())
-		return 0;
-
-	int n = m_ip->m_stack->pop();
-	
-	emit stackPopped();
-	
-	return n;
+	return m_ip->stack()->pop();
 }
 
 void Interpreter::split()
 {
-	InstructionPointer* t = new InstructionPointer(*m_ip, m_ipid++);
+	InstructionPointer* t = new InstructionPointer(m_stackModel, *m_ip, m_ipid++);
 	m_ips.prepend(t);
 
 	qSwap(m_ip, t);
@@ -796,96 +789,96 @@ void Interpreter::getSysInfo()
 {
 	int t = popItem();
 
-	int currentStackSize = m_ip->m_stack->size();
+	int currentStackSize = m_ip->stack()->count();
 
 	using namespace SysInfo;
 
 	if(t <= 0)
 	{
-		pushEnvVariables(m_ip->m_stack);
-		pushCommandLineArgs(m_ip->m_stack);
-		pushStackSizes(m_ip->m_stack, m_ip->m_stackStack, currentStackSize);
-		pushStackStackSize(m_ip->m_stack, m_ip->m_stackStack);
-		pushTime(m_ip->m_stack);
-		pushDate(m_ip->m_stack);
-		pushGreatestPoint(m_ip->m_stack, *m_space);
-		pushLeastPoint(m_ip->m_stack, *m_space);
-		pushStorageOffset(m_ip->m_stack, *m_ip);
-		pushDirection(m_ip->m_stack, *m_ip);
-		pushPosition(m_ip->m_stack, *m_ip);
-		pushTeam(m_ip->m_stack, *m_ip);
-		pushUUID(m_ip->m_stack, *m_ip);
-		pushDimensions(m_ip->m_stack, *m_space);
-		pushSeparator(m_ip->m_stack);
-		pushOperatingParadigm(m_ip->m_stack);
-		pushVersion(m_ip->m_stack);
-		pushHandprint(m_ip->m_stack);
-		pushBytesPerCell(m_ip->m_stack);
-		pushFlags(m_ip->m_stack);
+		pushEnvVariables(m_ip->stack());
+		pushCommandLineArgs(m_ip->stack());
+		pushStackSizes(m_ip->stack(), m_ip->m_stackStack, currentStackSize);
+		pushStackStackSize(m_ip->stack(), m_ip->m_stackStack);
+		pushTime(m_ip->stack());
+		pushDate(m_ip->stack());
+		pushGreatestPoint(m_ip->stack(), *m_space);
+		pushLeastPoint(m_ip->stack(), *m_space);
+		pushStorageOffset(m_ip->stack(), *m_ip);
+		pushDirection(m_ip->stack(), *m_ip);
+		pushPosition(m_ip->stack(), *m_ip);
+		pushTeam(m_ip->stack(), *m_ip);
+		pushUUID(m_ip->stack(), *m_ip);
+		pushDimensions(m_ip->stack(), *m_space);
+		pushSeparator(m_ip->stack());
+		pushOperatingParadigm(m_ip->stack());
+		pushVersion(m_ip->stack());
+		pushHandprint(m_ip->stack());
+		pushBytesPerCell(m_ip->stack());
+		pushFlags(m_ip->stack());
 	}
 	else
 	{
 		switch(t)
 		{
 			case 1:
-				pushFlags(m_ip->m_stack);
+				pushFlags(m_ip->stack());
 				break;
 			case 2:
-				pushBytesPerCell(m_ip->m_stack);
+				pushBytesPerCell(m_ip->stack());
 				break;
 			case 3:
-				pushHandprint(m_ip->m_stack);
+				pushHandprint(m_ip->stack());
 				break;
 			case 4:
-				pushVersion(m_ip->m_stack);
+				pushVersion(m_ip->stack());
 				break;
 			case 5:
-				pushOperatingParadigm(m_ip->m_stack);
+				pushOperatingParadigm(m_ip->stack());
 				break;
 			case 6:
-				pushSeparator(m_ip->m_stack);
+				pushSeparator(m_ip->stack());
 				break;
 			case 7:
-				pushDimensions(m_ip->m_stack, *m_space);
+				pushDimensions(m_ip->stack(), *m_space);
 				break;
 			case 8:
-				pushUUID(m_ip->m_stack, *m_ip);
+				pushUUID(m_ip->stack(), *m_ip);
 				break;
 			case 9:
-				pushTeam(m_ip->m_stack, *m_ip);
+				pushTeam(m_ip->stack(), *m_ip);
 				break;
 			case 10:
-				pushPosition(m_ip->m_stack, *m_ip);
+				pushPosition(m_ip->stack(), *m_ip);
 				break;
 			case 11:
-				pushDirection(m_ip->m_stack, *m_ip);
+				pushDirection(m_ip->stack(), *m_ip);
 				break;
 			case 12:
-				pushStorageOffset(m_ip->m_stack, *m_ip);
+				pushStorageOffset(m_ip->stack(), *m_ip);
 				break;
 			case 13:
-				pushLeastPoint(m_ip->m_stack, *m_space);
+				pushLeastPoint(m_ip->stack(), *m_space);
 				break;
 			case 14:
-				pushGreatestPoint(m_ip->m_stack, *m_space);
+				pushGreatestPoint(m_ip->stack(), *m_space);
 				break;
 			case 15:
-				pushDate(m_ip->m_stack);
+				pushDate(m_ip->stack());
 				break;
 			case 16:
-				pushTime(m_ip->m_stack);
+				pushTime(m_ip->stack());
 				break;
 			case 17:
-				pushStackStackSize(m_ip->m_stack, m_ip->m_stackStack);
+				pushStackStackSize(m_ip->stack(), m_ip->m_stackStack);
 				break;
 			case 18:
-				pushStackSizes(m_ip->m_stack, m_ip->m_stackStack, currentStackSize);
+				pushStackSizes(m_ip->stack(), m_ip->m_stackStack, currentStackSize);
 				break;
 			case 19:
-				pushCommandLineArgs(m_ip->m_stack);
+				pushCommandLineArgs(m_ip->stack());
 				break;
 			case 20:
-				pushEnvVariables(m_ip->m_stack);
+				pushEnvVariables(m_ip->stack());
 				break;
 			default:
 				qWarning("Invalid value for system information");

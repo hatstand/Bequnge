@@ -8,26 +8,26 @@
 
 namespace SysInfo
 {
-	void pushEnvVariables(QStack<int>* stack);
-	void pushCommandLineArgs(QStack<int>* stack);
-	void pushStackSizes(QStack<int>* stack, const StackStack& stackStack, int);
-	void pushStackStackSize(QStack<int>* stack, const StackStack& stackStack);
-	void pushTime(QStack<int>* stack);
-	void pushDate(QStack<int>* stack);
-	void pushGreatestPoint(QStack<int>* stack, const FungeSpace& space);
-	void pushLeastPoint(QStack<int>* stack, const FungeSpace& space);
-	void pushStorageOffset(QStack<int>* stack, const Interpreter::InstructionPointer& ip);
-	void pushDirection(QStack<int>* stack, const Interpreter::InstructionPointer& ip);
-	void pushPosition(QStack<int>* stack, const Interpreter::InstructionPointer& ip);
-	void pushTeam(QStack<int>* stack, const Interpreter::InstructionPointer& ip);
-	void pushUUID(QStack<int>* stack, const Interpreter::InstructionPointer& ip);
-	void pushDimensions(QStack<int>* stack, const FungeSpace& space);
-	void pushSeparator(QStack<int>* stack);
-	void pushOperatingParadigm(QStack<int>* stack);
-	void pushVersion(QStack<int>* stack);
-	void pushHandprint(QStack<int>* stack);
-	void pushBytesPerCell(QStack<int>* stack);
-	void pushFlags(QStack<int>* stack);
+	void pushEnvVariables(Stack* stack);
+	void pushCommandLineArgs(Stack* stack);
+	void pushStackSizes(Stack* stack, StackStack* stackStack, int);
+	void pushStackStackSize(Stack* stack, StackStack* stackStack);
+	void pushTime(Stack* stack);
+	void pushDate(Stack* stack);
+	void pushGreatestPoint(Stack* stack, const FungeSpace& space);
+	void pushLeastPoint(Stack* stack, const FungeSpace& space);
+	void pushStorageOffset(Stack* stack, const Interpreter::InstructionPointer& ip);
+	void pushDirection(Stack* stack, const Interpreter::InstructionPointer& ip);
+	void pushPosition(Stack* stack, const Interpreter::InstructionPointer& ip);
+	void pushTeam(Stack* stack, const Interpreter::InstructionPointer& ip);
+	void pushUUID(Stack* stack, const Interpreter::InstructionPointer& ip);
+	void pushDimensions(Stack* stack, const FungeSpace& space);
+	void pushSeparator(Stack* stack);
+	void pushOperatingParadigm(Stack* stack);
+	void pushVersion(Stack* stack);
+	void pushHandprint(Stack* stack);
+	void pushBytesPerCell(Stack* stack);
+	void pushFlags(Stack* stack);
 }
 
 

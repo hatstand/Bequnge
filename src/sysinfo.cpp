@@ -5,13 +5,13 @@
 #include <QDate>
 #include <QDir>
 
-void SysInfo::pushEnvVariables(QStack<int>* stack)
+void SysInfo::pushEnvVariables(Stack* stack)
 {
 	// Null terminated env variables
-	stack->push('\0');
+	stack->push(0);
 	foreach(QString i, QProcess::systemEnvironment())
 	{
-		stack->push('\0');
+		stack->push(0);
 		for(int j = i.size() - 1; j > -1; --j)
 		{
 			stack->push(i[j].unicode());
@@ -19,49 +19,50 @@ void SysInfo::pushEnvVariables(QStack<int>* stack)
 	}
 }
 
-void SysInfo::pushCommandLineArgs(QStack<int>* stack)
+void SysInfo::pushCommandLineArgs(Stack* stack)
 {
 	// Command line arguments
 	// TODO
-	stack->push('\0');
+	stack->push(0);
 }
 
-void SysInfo::pushStackSizes(QStack<int>* stack, const StackStack& stackStack, int currentStackSize)
+void SysInfo::pushStackSizes(Stack* stack, StackStack* stackStack, int currentStackSize)
 {
 	// Stack sizes
-	QVectorIterator<QStack<int>*> it(stackStack);
-	it.toBack();
-	while(it.hasPrevious())
+	QStack<int> tempStack;
+	Stack* s = stackStack->topStack();
+	while (s != NULL)
 	{
-		QStack<int>* s = it.previous();
-		// Stack size has to be *before* this call
-		if(s == stack)
-			stack->push(currentStackSize);
+		if (stack == s)
+			tempStack.push(currentStackSize);
 		else
-			stack->push(s->size());
+			tempStack.push(s->count());
+		s = (Stack*) s->nextSibling();
 	}
+	while (tempStack.count() > 0)
+		stack->push(tempStack.pop());
 }
 
-void SysInfo::pushStackStackSize(QStack<int>* stack, const StackStack& stackStack)
+void SysInfo::pushStackStackSize(Stack* stack, StackStack* stackStack)
 {
 	// Stack Stack size
-	stack->push(stackStack.size());
+	stack->push(stackStack->count());
 }
 
-void SysInfo::pushTime(QStack<int>* stack)
+void SysInfo::pushTime(Stack* stack)
 {
 	QTime time = QTime::currentTime();
 	stack->push(time.hour() * 256 * 256 + time.minute() * 256 + time.second());
 }
 
-void SysInfo::pushDate(QStack<int>* stack)
+void SysInfo::pushDate(Stack* stack)
 {
 	// Date
 	QDate date = QDate::currentDate();
 	stack->push((date.year() - 1900)*256*256 + date.month()*256 + date.day());
 }
 
-void SysInfo::pushGreatestPoint(QStack<int>* stack, const FungeSpace& space)
+void SysInfo::pushGreatestPoint(Stack* stack, const FungeSpace& space)
 {
 	// Greatest point
 	for(uint i = space.dimensions()-1; i > -1; --i)
@@ -70,7 +71,7 @@ void SysInfo::pushGreatestPoint(QStack<int>* stack, const FungeSpace& space)
 	}
 }
 
-void SysInfo::pushLeastPoint(QStack<int>* stack, const FungeSpace& space)
+void SysInfo::pushLeastPoint(Stack* stack, const FungeSpace& space)
 {
 	// Least point
 	for(uint i = space.dimensions()-1; i > -1; --i)
@@ -79,7 +80,7 @@ void SysInfo::pushLeastPoint(QStack<int>* stack, const FungeSpace& space)
 	}
 }
 
-void SysInfo::pushStorageOffset(QStack<int>* stack, const Interpreter::InstructionPointer& ip)
+void SysInfo::pushStorageOffset(Stack* stack, const Interpreter::InstructionPointer& ip)
 {
 	// Storage Offset
 	for(uint i = ip.m_storageOffset.count() - 1; i > -1; ++i)
@@ -88,7 +89,7 @@ void SysInfo::pushStorageOffset(QStack<int>* stack, const Interpreter::Instructi
 	}
 }
 
-void SysInfo::pushDirection(QStack<int>* stack, const Interpreter::InstructionPointer& ip)
+void SysInfo::pushDirection(Stack* stack, const Interpreter::InstructionPointer& ip)
 {
 	// IP Delta
 	for(uint i = ip.m_direction.count() - 1; i > -1; ++i)
@@ -97,7 +98,7 @@ void SysInfo::pushDirection(QStack<int>* stack, const Interpreter::InstructionPo
 	}
 }
 
-void SysInfo::pushPosition(QStack<int>* stack, const Interpreter::InstructionPointer& ip)
+void SysInfo::pushPosition(Stack* stack, const Interpreter::InstructionPointer& ip)
 {
 	// IP position
 	for(uint i = ip.m_pos.count() - 1; i > -1; ++i)
@@ -106,57 +107,57 @@ void SysInfo::pushPosition(QStack<int>* stack, const Interpreter::InstructionPoi
 	}
 }
 
-void SysInfo::pushTeam(QStack<int>* stack, const Interpreter::InstructionPointer& ip)
+void SysInfo::pushTeam(Stack* stack, const Interpreter::InstructionPointer& ip)
 {
 	// Team number for IP
 	stack->push(1);
 }
 
-void SysInfo::pushUUID(QStack<int>* stack, const Interpreter::InstructionPointer& ip)
+void SysInfo::pushUUID(Stack* stack, const Interpreter::InstructionPointer& ip)
 {
 	// Unique ID for IP
 	// TODO: do this properly
 	stack->push(ip.m_id);
 }
 
-void SysInfo::pushDimensions(QStack<int>* stack, const FungeSpace& space)
+void SysInfo::pushDimensions(Stack* stack, const FungeSpace& space)
 {
 	// Dimensions
 	stack->push(space.dimensions());
 }
 
-void SysInfo::pushSeparator(QStack<int>* stack)
+void SysInfo::pushSeparator(Stack* stack)
 {
 	// Path separator
 	stack->push(QDir::separator().unicode());
 }
 
-void SysInfo::pushOperatingParadigm(QStack<int>* stack)
+void SysInfo::pushOperatingParadigm(Stack* stack)
 {
 	// Operating paradigm
 	// Unavailable
 	stack->push(0);
 }
 
-void SysInfo::pushVersion(QStack<int>* stack)
+void SysInfo::pushVersion(Stack* stack)
 {
 	// version
 	stack->push(1);
 }
 
-void SysInfo::pushHandprint(QStack<int>* stack)
+void SysInfo::pushHandprint(Stack* stack)
 {
 	// handprint
 	stack->push(42);
 }
 
-void SysInfo::pushBytesPerCell(QStack<int>* stack)
+void SysInfo::pushBytesPerCell(Stack* stack)
 {
 	// bytes per cell
 	stack->push(sizeof(int));
 }
 
-void SysInfo::pushFlags(QStack<int>* stack)
+void SysInfo::pushFlags(Stack* stack)
 {
 	// Flags
 	int ret = 0;

@@ -85,8 +85,9 @@ MainWindow::MainWindow(QWidget* parent)
 	connect(m_glView->getUndo(), SIGNAL(canRedoChanged(bool)), m_ui.actionRedo, SLOT(setEnabled(bool)));
 	
 	// Setup the stack list
-	m_stackModel = new QStandardItemModel(this);
-	m_ui.stackList->setModel(m_stackModel);
+	m_ui.stackList->addColumn("Value");
+	m_ui.stackList->header()->hide();
+	m_ui.stackList->setSortColumn(-1);
 	
 	// Setup the auto-step timer
 	m_autoStepTimer = new QTimer(this);
@@ -151,7 +152,7 @@ void MainWindow::slotOpen()
 	
 	delete m_interpreter;
 	m_interpreter = NULL;
-	m_stackModel->clear();
+	m_ui.stackList->clear();
 }
 
 void MainWindow::slotNew()
@@ -164,7 +165,7 @@ void MainWindow::slotNew()
 	
 	delete m_interpreter;
 	m_interpreter = NULL;
-	m_stackModel->clear();
+	m_ui.stackList->clear();
 }
 
 void MainWindow::slotDebug()
@@ -179,16 +180,14 @@ void MainWindow::slotDebug()
 	delete m_executionFungeSpace;
 	m_executionFungeSpace = new FungeSpace(m_fungeSpace);
 	m_executionFungeSpace->trackChanges(true);
-	m_stackModel->clear();
+	m_ui.stackList->clear();
 	
 	// Make an interpreter
 	delete m_interpreter;
-	m_interpreter = new Interpreter(m_executionFungeSpace, this);
+	m_interpreter = new Interpreter(m_ui.stackList, m_executionFungeSpace, this);
 	connect(m_interpreter, SIGNAL(ipCreated(int, Interpreter::InstructionPointer*)), SLOT(slotIpCreated(int, Interpreter::InstructionPointer*)));
 	connect(m_interpreter, SIGNAL(ipChanged(Interpreter::InstructionPointer*)), SLOT(slotIpChanged(Interpreter::InstructionPointer*)));
 	connect(m_interpreter, SIGNAL(ipDestroyed(Interpreter::InstructionPointer*)), SLOT(slotIpDestroyed(Interpreter::InstructionPointer*)));
-	connect(m_interpreter, SIGNAL(stackPushed(int)), SLOT(slotStackPushed(int)), Qt::DirectConnection);
-	connect(m_interpreter, SIGNAL(stackPopped()), SLOT(slotStackPopped()), Qt::DirectConnection);
 	connect(m_executionFungeSpace, SIGNAL(watchpointTriggered(Coord, QChar)), SLOT(slotWatchpointTriggered(Coord, QChar)), Qt::DirectConnection);
 	connect(m_interpreter, SIGNAL(output(QChar)), SLOT(slotOutput(QChar)));
 	connect(m_interpreter, SIGNAL(output(QString)), SLOT(slotOutput(QString)));
@@ -260,19 +259,6 @@ void MainWindow::slotIpDestroyed(Interpreter::InstructionPointer* ip)
 	m_glView->ipDestroyed(ip);
 }
 
-void MainWindow::slotStackPushed(int value)
-{
-	QList<QStandardItem*> items;
-	items.append(new QStandardItem(QString::number(value) + " \"" + QChar(value) + "\""));
-	
-	m_stackModel->insertRow(0, items);
-}
-
-void MainWindow::slotStackPopped()
-{
-	m_stackModel->removeRow(0);
-}
-
 void MainWindow::showExecutionSpace(bool execution)
 {
 	if ((m_executionFungeSpace == NULL) && (execution))
@@ -299,7 +285,6 @@ void MainWindow::slotStop()
 	
 	delete m_interpreter;
 	m_interpreter = NULL;
-	m_stackModel->clear();
 	showExecutionSpace(false);
 	
 	m_ui.actionStep->setEnabled(false);

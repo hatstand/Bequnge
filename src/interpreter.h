@@ -36,11 +36,14 @@ public:
 		InstructionPointer(StackStackCollectionModel* model, Coord position, Coord direction, Coord storageOffset, int id);
 		InstructionPointer(StackStackCollectionModel* model, const InstructionPointer& ip, int id);
 		~InstructionPointer();
+		
+		Stack* stack();
 
 		Coord m_pos;
 		Coord m_direction;
 		Coord m_storageOffset;
 		StackStack* m_stackStack;
+		bool m_usingSecondStack;
 		
 		QColor m_color;
 		int m_particleGroup;
@@ -53,7 +56,7 @@ public:
 	};
 
 
-	Interpreter(FungeSpace* space, QObject* parent = 0);
+	Interpreter(StackStackCollectionModel* stackModel, FungeSpace* space, QObject* parent = 0);
 	virtual ~Interpreter();
 
 	void run();
@@ -83,6 +86,7 @@ signals:
 	void stackPopped();
 
 private:
+	StackStackCollectionModel* m_stackModel;
 	QList<InstructionPointer*> m_ips;
 	InstructionPointer* m_ip;
 

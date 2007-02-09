@@ -98,8 +98,9 @@ void FungeSpace::readInAll(QIODevice* dev)
 		for(uint i = 0; i < m_dimensions; ++i)
 			pos << 0;
 
-		while((line = dev->readLine()) != NULL)
+		while(!dev->atEnd())
 		{
+			line = dev->readLine();
 			int i = 0;
 			for(; i < line.length(); ++i)
 			{

@@ -47,8 +47,6 @@ private slots:
 	void slotIpChanged(Interpreter::InstructionPointer* ip);
 	void slotIpDestroyed(Interpreter::InstructionPointer* ip);
 	
-	void slotStackPushed(int value);
-	void slotStackPopped();
 	void slotOutput(QChar c);
 	void slotOutput(QString str);
 	
@@ -73,8 +71,6 @@ private:
 	QTimer* m_autoStepTimer;
 	Interpreter* m_interpreter;
 	bool m_fullSpeedExecution;
-	
-	QStandardItemModel* m_stackModel;
 
 	QSettings m_settings;
 	

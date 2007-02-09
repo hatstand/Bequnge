@@ -19,10 +19,11 @@ int main(int argc, char** argv)
 		return app.exec();
 	}
 
-	QFile* f = new QFile(argv[1]);
-	FungeSpace s(f);
-	Interpreter i(&s);
-	i.run();
-
-	s.save("temp");
+// TODO: Doesn't work without a stackstackmodel
+// 	QFile* f = new QFile(argv[1]);
+// 	FungeSpace s(f);
+// 	Interpreter i(&s);
+// 	i.run();
+// 
+// 	s.save("temp");
 }

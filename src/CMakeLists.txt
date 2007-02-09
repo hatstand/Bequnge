@@ -9,8 +9,7 @@ SET(BEQUNGE-SOURCES
 	stringmodewidget.cpp
 	fungeconsole.cpp
 	fungecommand.cpp
-	treemodel.cpp
-	treeitem.cpp
+	stackstack.cpp
 	coord.cpp
 	extradimensions.cpp
 	sysinfo.cpp)
@@ -23,7 +22,7 @@ SET(BEQUNGE-MOC-HEADERS
 	interpreter.h
 	mainwindow.h
 	stringmodewidget.h
-	treemodel.h)
+	stackstack.h)
 
 # UI files
 SET(BEQUNGE-UI
@@ -55,7 +54,7 @@ LINK_DIRECTORIES("${CMAKE_CURRENT_BINARY_DIR}/../ParticleLib")
 
 ADD_EXECUTABLE(bequnge ${BEQUNGE-SOURCES} ${BEQUNGE-SOURCES-MOC} ${BEQUNGE-SOURCES-UI} ${BEQUNGE-SOURCES-RESOURCE})
 
-TARGET_LINK_LIBRARIES(bequnge -lParticle ${QT_QTCORE_LIBRARY} ${QT_QTGUI_LIBRARY} ${QT_QTOPENGL_LIBRARY} ${FREETYPE_LINK_FLAGS} ${OPENAL_LIBRARY} ${ALUT_LIBRARY} ${OGGVORBIS_LIBRARIES})
+TARGET_LINK_LIBRARIES(bequnge -lParticle ${QT_QTCORE_LIBRARY} ${QT_QTGUI_LIBRARY} ${QT_QTOPENGL_LIBRARY} ${QT_QT3SUPPORT_LIBRARY} ${FREETYPE_LINK_FLAGS} ${OPENAL_LIBRARY} ${ALUT_LIBRARY} ${OGGVORBIS_LIBRARIES})
 
 INSTALL(TARGETS bequnge
 	RUNTIME DESTINATION bin)
