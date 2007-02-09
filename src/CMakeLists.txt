@@ -21,8 +21,7 @@ SET(BEQUNGE-MOC-HEADERS
 	glview.h
 	interpreter.h
 	mainwindow.h
-	stringmodewidget.h
-	stackstack.h)
+	stringmodewidget.h)
 
 # UI files
 SET(BEQUNGE-UI
