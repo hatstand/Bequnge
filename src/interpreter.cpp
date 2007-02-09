@@ -87,7 +87,7 @@ void Interpreter::jumpSpaces()
 
 	if(t.category() == QChar::Separator_Space || (m_ip->m_commentMode && t != ';') || (!m_ip->m_stringMode && t == 'z'))
 	{
-		m_jumpedSpace = true;	
+		m_ip->m_jumpedSpace = true;	
 		move();
 	}
 }
@@ -115,9 +115,9 @@ void Interpreter::move(bool skipSpaces)
 
 Interpreter::Status Interpreter::step()
 {
-	if(m_jumpedSpace)
+	if(m_ip->m_jumpedSpace)
 	{
-		m_jumpedSpace = false;
+		m_ip->m_jumpedSpace = false;
 		if(m_ip->m_stringMode)
 			pushItem(QChar(' ').unicode());
 	}

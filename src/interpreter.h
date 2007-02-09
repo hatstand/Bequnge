@@ -52,6 +52,7 @@ public:
 		bool m_stringMode;
 		bool m_commentMode;
 		WaitingForInput m_waitingForInput;
+		bool m_jumpedSpace;
 
 		int m_id;
 	
@@ -98,7 +99,6 @@ private:
 	QString m_version;
 
 	FungeSpace* m_space;
-	bool m_jumpedSpace;
 	
 	Status compute(QChar);
 	void move(bool skipSpaces = true);
