@@ -31,8 +31,9 @@ public:
 		WaitingForInteger
 	};
 
-	struct InstructionPointer
+	class InstructionPointer
 	{
+	public:
 		InstructionPointer(StackStackCollectionModel* model, Coord position, Coord direction, Coord storageOffset, int id);
 		InstructionPointer(StackStackCollectionModel* model, const InstructionPointer& ip, int id);
 		~InstructionPointer();
@@ -53,6 +54,9 @@ public:
 		WaitingForInput m_waitingForInput;
 
 		int m_id;
+	
+	private:
+		void init();
 	};
 
 

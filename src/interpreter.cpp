@@ -13,6 +13,7 @@ Interpreter::InstructionPointer::InstructionPointer(StackStackCollectionModel* m
 	m_stringMode(false), m_waitingForInput(NotWaiting), m_id(id),
 	m_usingSecondStack(false)
 {
+	init();
 	m_stackStack = model->newStackStack(this);
 }
 
@@ -21,7 +22,23 @@ Interpreter::InstructionPointer::InstructionPointer(StackStackCollectionModel* m
 	m_stringMode(ip.m_stringMode), m_commentMode(ip.m_commentMode), m_waitingForInput(ip.m_waitingForInput),
 	m_id(id), m_usingSecondStack(false)
 {
+	init();
 	m_stackStack = model->deepCopy(this, ip.m_stackStack);
+}
+
+void Interpreter::InstructionPointer::init()
+{
+	static QList<QColor> colorList;
+	
+	if (colorList.count() == 0)
+	{
+		colorList.append(Qt::red);
+		colorList.append(Qt::cyan);
+		colorList.append(Qt::yellow);
+		colorList.append(Qt::magenta);
+	}
+	
+	m_color = colorList[m_id % colorList.count()];
 }
 
 Interpreter::InstructionPointer::~InstructionPointer()

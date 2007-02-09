@@ -17,28 +17,30 @@ StackStack* StackStackCollectionModel::deepCopy(Interpreter::InstructionPointer*
 	return new StackStack(this, ip, original);
 }
 
-StackStack::StackStack(Q3ListView* parent, Interpreter::InstructionPointer* ip)
-	: Q3ListViewItem(parent), m_ip(ip)
-{
-	pushEmptyStack();
-	setOpen(true);
-}
-
 StackStack::StackStack(Q3ListView* parent, Interpreter::InstructionPointer* ip, StackStack* original)
 	: Q3ListViewItem(parent), m_ip(ip)
 {
-	Stack* stack = (Stack*) original->firstChild();
-	
-	QStack<Stack*> tempStack;
-	while (stack)
+	if (original == NULL)
+		pushEmptyStack();
+	else
 	{
-		tempStack.push(stack);
-		stack = (Stack*) stack->nextSibling();
+		Stack* stack = (Stack*) original->firstChild();
+		
+		QStack<Stack*> tempStack;
+		while (stack)
+		{
+			tempStack.push(stack);
+			stack = (Stack*) stack->nextSibling();
+		}
+		while (tempStack.count() > 0)
+			new Stack(this, tempStack.pop());
 	}
-	while (tempStack.count() > 0)
-		new Stack(this, tempStack.pop());
 	
 	setOpen(true);
+	
+	QPixmap icon(16, 16);
+	icon.fill(ip->m_color);
+	setPixmap(0, icon);
 }
 
 QString StackStack::text(int column) const

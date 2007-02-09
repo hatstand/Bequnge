@@ -102,11 +102,6 @@ MainWindow::MainWindow(QWidget* parent)
 	// Disable the stop and step actions
 	m_ui.actionStep->setEnabled(false);
 	m_ui.actionStop->setEnabled(false);
-	
-	m_ipColorList.append(Qt::red);
-	m_ipColorList.append(Qt::cyan);
-	m_ipColorList.append(Qt::yellow);
-	m_ipColorList.append(Qt::magenta);
 }
 
 MainWindow::~MainWindow()
@@ -194,8 +189,7 @@ void MainWindow::slotDebug()
 	connect(m_interpreter, SIGNAL(input(Interpreter::WaitingForInput)), m_ui.consoleBox, SLOT(getInput(Interpreter::WaitingForInput)));
 	connect(m_ui.consoleBox, SIGNAL(charEntered(QChar)), SLOT(provideInput(QChar)));
 	connect(m_ui.consoleBox, SIGNAL(intEntered(int)), SLOT(provideInput(int)));
-	
-	m_lastColor = -1;
+
 	m_glView->clearIps();
 	slotIpCreated(0, m_interpreter->ip());
 	
@@ -237,7 +231,6 @@ void MainWindow::slotStep()
 
 void MainWindow::slotIpCreated(int index, Interpreter::InstructionPointer* ip)
 {
-	ip->m_color = m_ipColorList[++m_lastColor % m_ipColorList.count()];
 	m_glView->ipCreated(index, ip);
 	m_glView->ipChanged(ip);
 }

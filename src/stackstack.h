@@ -18,8 +18,7 @@ public:
 class StackStack : public Q3ListViewItem
 {
 public:
-	StackStack(Q3ListView* parent, Interpreter::InstructionPointer* ip);
-	StackStack(Q3ListView* parent, Interpreter::InstructionPointer* ip, StackStack* original);
+	StackStack(Q3ListView* parent, Interpreter::InstructionPointer* ip, StackStack* original = NULL);
 	
 	QString text(int column) const;
 	

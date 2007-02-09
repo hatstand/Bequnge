@@ -73,9 +73,6 @@ private:
 	bool m_fullSpeedExecution;
 
 	QSettings m_settings;
-	
-	QList<QColor> m_ipColorList;
-	int m_lastColor;
 };
 
 
