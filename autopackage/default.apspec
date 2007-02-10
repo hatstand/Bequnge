@@ -1,5 +1,5 @@
 [Meta]
-RootName: @purplehatstands.com/bequnge:0.1
+RootName: @purplehatstands.com/bequnge:0.2
 DisplayName: BeQunge
 ShortName: bequnge
 Maintainer: David Sansome <me@davidsansome.com>
@@ -7,7 +7,7 @@ Packager: David Sansome <me@davidsansome.com>
 Summary: BeQunge is an OpenGL n-dimensional funge interpreter
 URL: http://purplehatstands.com/bequnge
 License: GNU General Public License, Version 2
-SoftwareVersion: 0.1
+SoftwareVersion: 0.2
 Repository: http://purplehatstands.com/autopackage/bequnge.xml
 
 # If you change the autopackage but not the software itself,

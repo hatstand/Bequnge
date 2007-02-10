@@ -2,11 +2,11 @@ Source: bequnge
 Section: universe/devel
 Priority: optional
 Build-Depends: debhelper, libalut-dev, libboost-dev, libopenal-dev, libqt4-dev ( >= 4.2), gcc (>= 4:4.0), cmake (>= 2.4), libvorbis-dev, libogg-dev, cdbs
-Maintainer: Chris Jones <cej105@soton.ac.uk>
+Maintainer: Chris Jones <cej105@ecs.soton.ac.uk>
 Standards-Version: 3.7.2
 
 Package: bequnge
 Architecture: any
 Depends: ${shlibs:Depends}
-Description: Thingy
+Description: BeQunge is an n-dimensional code editor, interpreter and debugger for the Funge programming language.
 

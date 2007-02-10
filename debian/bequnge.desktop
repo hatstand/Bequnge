@@ -1,9 +1,9 @@
 [Desktop Entry]
-Version=0.01
+Version=0.2
 Encoding=UTF-8
-Name=bequnge
-GenericName= bequnge thingy
-Comment=bequnge thing
+Name=BeQunge
+GenericName=BeQunge
+Comment=BeQunge is an n-dimensional code editor, interpreter and debugger for the Funge programming language.
 Exec=bequnge
 Terminal=false
 Type=Application
