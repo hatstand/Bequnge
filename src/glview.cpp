@@ -1346,9 +1346,10 @@ pVec GLView::colorToVector(const QColor& color)
 
 void GLView::computeParticles(const Coord& point, int direction, const QColor& color)
 {
-	pVec cursorVec(point[0] * FONT_SIZE + FONT_SIZE/2,
-	               - point[1] * FONT_SIZE + FONT_SIZE/2,
-	               - point[2] * FONT_SIZE);
+	Coord translatedPoint = m_extraDimensions->nDTo3D(point);
+	pVec cursorVec(translatedPoint[0] * FONT_SIZE + FONT_SIZE/2,
+	               - translatedPoint[1] * FONT_SIZE + FONT_SIZE/2,
+	               - translatedPoint[2] * FONT_SIZE);
 	
 	int absDir = abs(direction);
 	pVec directionVec(absDir == 1 ? 0.1f : 0.0f,
