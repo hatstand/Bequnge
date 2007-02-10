@@ -4,6 +4,7 @@
 #include <QMap>
 
 class GLView;
+class Coord;
 
 class ExtraDimensions
 {
@@ -23,8 +24,10 @@ public:
 	const float* cameraOffset() const;
 	float scaleFactor() const;
 	
-	void drawGridLines();
+	void drawGridLines(const float* offset);
 	void updatePositions();
+	
+	Coord nDTo3D(const Coord& c) const;
 
 private:
 	float gridSize(int ascensionLevel);
@@ -34,7 +37,6 @@ private:
 	
 private:
 	GLView* m_glView;
-	float m_fontSize;
 	
 	int m_callListId;
 	

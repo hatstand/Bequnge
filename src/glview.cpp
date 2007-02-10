@@ -1,6 +1,7 @@
 #include "glview.h"
 #include "fungespace.h"
 #include "extradimensions.h"
+#include "magicnumbers.h"
 
 #include <QTimer>
 #include <QMouseEvent>
@@ -56,8 +57,7 @@ GLView::GLView(FungeSpace* fungeSpace, QWidget* parent)
 	args.memory_size = fontResource.size();
 	FT_Open_Face(OGLFT::Library::instance(), &args, 0, &m_fontFace);
 	
-	m_fontSize = 29;
-	m_font = new OGLFT::Filled(m_fontFace, m_fontSize - 5);
+	m_font = new OGLFT::Filled(m_fontFace, FONT_SIZE - 5);
 	
 	if ( m_font == 0 || !m_font->isValid() )
 	{
@@ -156,10 +156,10 @@ void GLView::initializeGL()
 	
 	glNewList(m_displayListsBase + CURSOR, GL_COMPILE);
 		glBegin(GL_QUADS);
-			glVertex3f(m_fontSize - 5.0f, m_fontSize, 0.0f);
-			glVertex3f(0.0f, m_fontSize, 0.0f);
+			glVertex3f(FONT_SIZE - 5.0f, FONT_SIZE, 0.0f);
+			glVertex3f(0.0f, FONT_SIZE, 0.0f);
 			glVertex3f(0.0f, 0.0f, 0.0f);
-			glVertex3f(m_fontSize - 5.0f, 0.0f, 0.0f);
+			glVertex3f(FONT_SIZE - 5.0f, 0.0f, 0.0f);
 		glEnd();
 	glEndList();
 	
@@ -215,17 +215,17 @@ void GLView::paintGL()
 	const float* extraDimensionsOffset = m_extraDimensions->cameraOffset();
 	float scaleFactor = m_extraDimensions->scaleFactor();
 	
-	gluLookAt(m_actualEyeOffset[0] + m_actualCursorPos[0] + m_actualCameraOffset[0] + extraDimensionsOffset[0] * scaleFactor,
-	          m_actualEyeOffset[1] + m_actualCursorPos[1] + m_actualCameraOffset[1] + extraDimensionsOffset[1] * scaleFactor,
-	          m_actualEyeOffset[2] + m_actualCursorPos[2] + m_actualCameraOffset[2] + extraDimensionsOffset[2] * scaleFactor,
-	          m_actualCursorPos[0] + m_actualCameraOffset[0] + extraDimensionsOffset[0] * scaleFactor,
-	          m_actualCursorPos[1] + m_actualCameraOffset[1] + extraDimensionsOffset[1] * scaleFactor,
-	          m_actualCursorPos[2] + m_actualCameraOffset[2] + extraDimensionsOffset[2] * scaleFactor,
+	gluLookAt(m_actualEyeOffset[0] + m_actualCursorPos[0] * scaleFactor + m_actualCameraOffset[0] + extraDimensionsOffset[0] * scaleFactor,
+	          m_actualEyeOffset[1] + m_actualCursorPos[1] * scaleFactor + m_actualCameraOffset[1] + extraDimensionsOffset[1] * scaleFactor,
+	          m_actualEyeOffset[2] + m_actualCursorPos[2] * scaleFactor + m_actualCameraOffset[2] + extraDimensionsOffset[2] * scaleFactor,
+	          m_actualCursorPos[0] * scaleFactor + m_actualCameraOffset[0] + extraDimensionsOffset[0] * scaleFactor,
+	          m_actualCursorPos[1] * scaleFactor + m_actualCameraOffset[1] + extraDimensionsOffset[1] * scaleFactor,
+	          m_actualCursorPos[2] * scaleFactor + m_actualCameraOffset[2] + extraDimensionsOffset[2] * scaleFactor,
 	          0.0f,
 	          1.0f,
 	          0.0f);
 	
-	glScalef(0.004f * scaleFactor, 0.004f * scaleFactor, 0.004f * scaleFactor);
+	glScalef(FONT_SCALE_FACTOR * scaleFactor, FONT_SCALE_FACTOR * scaleFactor, FONT_SCALE_FACTOR * scaleFactor);
 	glPushMatrix();
 		// Draw the fungespace
 		drawFunge(m_fungeSpace->getCode());
@@ -234,17 +234,14 @@ void GLView::paintGL()
 		if ((m_extraDimensions->ascensionLevel() == 0) && (m_cursorBlinkOn || !hasFocus()))
 		{
 			glPushMatrix();
-				Coord coords = m_cursor;
-				coords[0] += coords[3] * 70;
-				coords[1] += coords[4] * 70;
-				coords[2] += coords[5] * 70;
+				Coord coords = m_extraDimensions->nDTo3D(m_cursor);
 				QList<float> coord = fungeSpaceToGl(coords, true);
 				glTranslatef(coord[0] - 0.01f, coord[1] - 2.5f, coord[2] - 0.01f);
 				if (m_activePlane == 0)
 				{
-					glTranslatef(m_fontSize/2, 0.0f, 0.0f);
+					glTranslatef(FONT_SIZE/2, 0.0f, 0.0f);
 					glRotatef(90.0f, 0.0f, 1.0f, 0.0f);
-					glTranslatef(-m_fontSize/2, 0.0f, 0.0f);
+					glTranslatef(-FONT_SIZE/2, 0.0f, 0.0f);
 				}
 				glColor4f(0.0f, 1.0f, 0.0f, 1.0f);
 				glCallList(m_displayListsBase + CURSOR);
@@ -262,17 +259,14 @@ void GLView::paintGL()
 			foreach (Interpreter::InstructionPointer* ip, m_ips)
 			{
 				glPushMatrix();
-					Coord coords = ip->m_pos;
-					coords[0] += coords[3] * 70;
-					coords[1] += coords[4] * 70;
-					coords[2] += coords[5] * 70;
+					Coord coords = m_extraDimensions->nDTo3D(m_cursor);
 					QList<float> coord = fungeSpaceToGl(coords, true);
 					glTranslatef(coord[0] - 0.01f, coord[1] - 2.5f, coord[2] - 0.01f);
 					if (m_activePlane == 0)
 					{
-						glTranslatef(m_fontSize/2, 0.0f, 0.0f);
+						glTranslatef(FONT_SIZE/2, 0.0f, 0.0f);
 						glRotatef(90.0f, 0.0f, 1.0f, 0.0f);
-						glTranslatef(-m_fontSize/2, 0.0f, 0.0f);
+						glTranslatef(-FONT_SIZE/2, 0.0f, 0.0f);
 					}
 					qglColor(ip->m_color);
 					glCallList(m_displayListsBase + CURSOR);
@@ -336,7 +330,7 @@ void GLView::paintGL()
 		}
 		
 		// Draw ascension grids
-		m_extraDimensions->drawGridLines();
+		m_extraDimensions->drawGridLines(m_actualCursorPos);
 		
 		// Draw explosion particles
 		m_P.CurrentGroup(m_explosionsPG);
@@ -364,9 +358,9 @@ void GLView::paintGL()
 					glTranslatef(coord[0], coord[1], coord[2]);
 					if (m_activePlane == 0)
 					{
-						glTranslatef(m_fontSize/2, 0.0f, 0.0f);
+						glTranslatef(FONT_SIZE/2, 0.0f, 0.0f);
 						glRotatef(90.0f, 0.0f, 1.0f, 0.0f);
-						glTranslatef(-m_fontSize/2, 0.0f, 0.0f);
+						glTranslatef(-FONT_SIZE/2, 0.0f, 0.0f);
 					}
 					glCallList(m_displayListsBase + CURSOR);
 				glPopMatrix();
@@ -497,9 +491,9 @@ void GLView::drawFunge(QHash<Coord, QChar> fungeCode)
 			
 			if (m_activePlane == 0)
 			{
-				glTranslatef(m_fontSize/2, 0.0f, 0.0f);
+				glTranslatef(FONT_SIZE/2, 0.0f, 0.0f);
 				glRotatef(90.0f, 0.0f, 1.0f, 0.0f);
-				glTranslatef(-m_fontSize/2, 0.0f, 0.0f);
+				glTranslatef(-FONT_SIZE/2, 0.0f, 0.0f);
 			}
 			m_font->draw(data);
 		glPopMatrix();
@@ -516,12 +510,12 @@ void GLView::drawCube(Coord startPos, Coord endPos)
 	cubeEnd[2] = temp;
 	
 	cubeStart[0] -= 2.4f;
-	cubeStart[1] += m_fontSize - 0.1f;
-	cubeStart[2] -= m_fontSize/2 - 2.4f;
+	cubeStart[1] += FONT_SIZE - 0.1f;
+	cubeStart[2] -= FONT_SIZE/2 - 2.4f;
 	
-	cubeEnd[0] += m_fontSize - 2.6f;
+	cubeEnd[0] += FONT_SIZE - 2.6f;
 	cubeEnd[1] += 0.1f;
-	cubeEnd[2] += m_fontSize/2 - 0.1f;
+	cubeEnd[2] += FONT_SIZE/2 - 0.1f;
 	
 	cubeEnd[0] -= cubeStart[0];
 	cubeEnd[1] -= cubeStart[1];
@@ -639,7 +633,7 @@ void GLView::wheelEvent(QWheelEvent* event)
 
 Coord GLView::glToFungeSpace(float x, float y, float z)
 {
-	float size = m_fontSize;
+	float size = FONT_SIZE;
 	
 	Coord ret;
 	ret.append((int)(floor(x/size)));
@@ -650,7 +644,7 @@ Coord GLView::glToFungeSpace(float x, float y, float z)
 
 QList<float> GLView::fungeSpaceToGl(Coord c, bool premultiplied)
 {
-	float size = m_fontSize;
+	float size = FONT_SIZE;
 	if (!premultiplied)
 		size *= 0.004f;
 	
@@ -1000,14 +994,14 @@ void GLView::ipCreated(int index, Interpreter::InstructionPointer* ip)
 
 void GLView::ipDestroyed(Interpreter::InstructionPointer* ip)
 {
-	pVec ipVec(ip->m_pos[0] * m_fontSize + m_fontSize/2,
-	               - ip->m_pos[1] * m_fontSize + m_fontSize/2,
-	               - ip->m_pos[2] * m_fontSize);
+	pVec ipVec(ip->m_pos[0] * FONT_SIZE + FONT_SIZE/2,
+	               - ip->m_pos[1] * FONT_SIZE + FONT_SIZE/2,
+	               - ip->m_pos[2] * FONT_SIZE);
 	
 	m_P.CurrentGroup(m_explosionsPG);
 	m_P.Color(colorToVector(ip->m_color));
 	m_P.Velocity(PDSphere(pVec(0), 10.0f, 5.0f));
-	m_P.Source(300, PDSphere(ipVec, m_fontSize/2));
+	m_P.Source(300, PDSphere(ipVec, FONT_SIZE/2));
 	
 	m_P.DeleteParticleGroups(ip->m_particleGroup);
 	
@@ -1352,9 +1346,9 @@ pVec GLView::colorToVector(const QColor& color)
 
 void GLView::computeParticles(const Coord& point, int direction, const QColor& color)
 {
-	pVec cursorVec(point[0] * m_fontSize + m_fontSize/2,
-	               - point[1] * m_fontSize + m_fontSize/2,
-	               - point[2] * m_fontSize);
+	pVec cursorVec(point[0] * FONT_SIZE + FONT_SIZE/2,
+	               - point[1] * FONT_SIZE + FONT_SIZE/2,
+	               - point[2] * FONT_SIZE);
 	
 	int absDir = abs(direction);
 	pVec directionVec(absDir == 1 ? 0.1f : 0.0f,
@@ -1365,7 +1359,7 @@ void GLView::computeParticles(const Coord& point, int direction, const QColor& c
 	
 	m_P.Velocity(pVec(0));
 	m_P.Color(colorToVector(color));
-	m_P.Source(1, PDSphere(cursorVec, m_fontSize/2));
+	m_P.Source(1, PDSphere(cursorVec, FONT_SIZE/2));
 	m_P.RandomAccel(PDCone(pVec(0.0f, 0.0f, 0.0f), directionVec, 0.5f));
 	m_P.TargetAlpha(0.0f, 0.02f);
 	m_P.KillOld(100.0f);

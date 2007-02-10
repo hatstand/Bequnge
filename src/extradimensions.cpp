@@ -1,5 +1,7 @@
 #include "extradimensions.h"
 #include "glview.h"
+#include "coord.h"
+#include "magicnumbers.h"
 
 #include <math.h>
 #include <QDebug>
@@ -8,7 +10,6 @@ ExtraDimensions::ExtraDimensions(GLView* glView)
 	: m_ascensionLevel(0),
 	  m_glView(glView)
 {
-	m_fontSize = m_glView->fontSize();
 }
 
 void ExtraDimensions::resetView()
@@ -39,8 +40,8 @@ void ExtraDimensions::prepareCallList(int id)
 			{
 				for (int z=-20 ; z<=20 ; z+=10)
 				{
-					glVertex3f(m_fontSize * -20, - m_fontSize * y, m_fontSize * z);
-					glVertex3f(m_fontSize * 20, - m_fontSize * y, m_fontSize * z);
+					glVertex3f(FONT_SIZE * -20, - FONT_SIZE * y, FONT_SIZE * z);
+					glVertex3f(FONT_SIZE * 20, - FONT_SIZE * y, FONT_SIZE * z);
 				}
 			}
 			
@@ -48,8 +49,8 @@ void ExtraDimensions::prepareCallList(int id)
 			{
 				for (int z=-20 ; z<=20 ; z+=10)
 				{
-					glVertex3f(m_fontSize * x, m_fontSize * 20, m_fontSize * z);
-					glVertex3f(m_fontSize * x, - m_fontSize * 20, m_fontSize * z);
+					glVertex3f(FONT_SIZE * x, FONT_SIZE * 20, FONT_SIZE * z);
+					glVertex3f(FONT_SIZE * x, - FONT_SIZE * 20, FONT_SIZE * z);
 				}
 			}
 			
@@ -57,8 +58,8 @@ void ExtraDimensions::prepareCallList(int id)
 			{
 				for (int y=-20 ; y<=20 ; y+=10)
 				{
-					glVertex3f(m_fontSize * x, - m_fontSize * y, m_fontSize * -20);
-					glVertex3f(m_fontSize * x, - m_fontSize * y, m_fontSize * 20);
+					glVertex3f(FONT_SIZE * x, - FONT_SIZE * y, FONT_SIZE * -20);
+					glVertex3f(FONT_SIZE * x, - FONT_SIZE * y, FONT_SIZE * 20);
 				}
 			}
 		glEnd();
@@ -149,7 +150,7 @@ int ExtraDimensions::oldPosFromDiff(float diff)
 
 float ExtraDimensions::gridSize(int ascensionLevel)
 {
-	return m_fontSize * 0.028f * powf(10.0, ascensionLevel);
+	return FONT_SIZE * 0.028f * powf(10.0, ascensionLevel);
 }
 
 void ExtraDimensions::drawGridLines(int i)
@@ -195,10 +196,13 @@ void ExtraDimensions::drawGridLines(int i)
 	}
 }
 
-void ExtraDimensions::drawGridLines()
+void ExtraDimensions::drawGridLines(const float* offset)
 {
 	glPushMatrix();
-		glTranslatef(m_destinationCameraOffset[0] * 250.0f, m_destinationCameraOffset[1] * 250.0f, m_destinationCameraOffset[2] * 250.0f);
+		glTranslatef(m_destinationCameraOffset[0] * 250.0f + offset[0] * R_FONT_SCALE_FACTOR,
+		             m_destinationCameraOffset[1] * 250.0f + offset[1] * R_FONT_SCALE_FACTOR,
+		             m_destinationCameraOffset[2] * 250.0f + offset[2] * R_FONT_SCALE_FACTOR);
+		
 		foreach (int i, m_actualGridAlpha.keys())
 		{
 			if (i >= m_ascensionLevel - 2)
@@ -245,5 +249,14 @@ void ExtraDimensions::updatePositions()
 		else
 			m_actualGridAlpha[index] += diff * 0.05;
 	}
+}
+
+Coord ExtraDimensions::nDTo3D(const Coord& c) const
+{
+	Coord ret = c;
+	for (int i=0 ; i<c.count() ; ++i)
+		ret[i%3] += ret[i] * (i/3) * CHARS_PER_CUBE;
+	
+	return ret;
 }
 

@@ -47,7 +47,6 @@ public:
 
 	QUndoGroup* getUndo() { return &m_undoGroup; }
 	
-	float fontSize() { return m_fontSize; }
 	void setCameraMoveSpeed(float cameraMoveSpeed) { m_cameraMoveSpeed = cameraMoveSpeed; }
 	void setEye(float radius, float vert, float horiz);
 	void resetEye();
@@ -180,7 +179,6 @@ private:
 	// Fonts
 	FT_Face m_fontFace;
 	OGLFT::Face* m_font;
-	float m_fontSize;
 	QFont m_fontLarge;
 	QFont m_fontSmall;
 	QFontMetrics* m_metricsSmall;
