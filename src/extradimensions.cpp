@@ -255,7 +255,7 @@ Coord ExtraDimensions::nDTo3D(const Coord& c) const
 {
 	Coord ret = c;
 	for (int i=0 ; i<c.count() ; ++i)
-		ret[i%3] += ret[i] * (i/3) * CHARS_PER_CUBE;
+		ret[i%3] += ret[i] * int(0.1f * pow(10.0f, int(i/3))) * CHARS_PER_CUBE;
 	
 	return ret;
 }
