@@ -259,7 +259,7 @@ void GLView::paintGL()
 			foreach (Interpreter::InstructionPointer* ip, m_ips)
 			{
 				glPushMatrix();
-					Coord coords = m_extraDimensions->nDTo3D(m_cursor);
+					Coord coords = m_extraDimensions->nDTo3D(ip->m_pos);
 					QList<float> coord = fungeSpaceToGl(coords, true);
 					glTranslatef(coord[0] - 0.01f, coord[1] - 2.5f, coord[2] - 0.01f);
 					if (m_activePlane == 0)
