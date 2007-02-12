@@ -375,9 +375,9 @@ void GLView::paintGL()
 	
 	if (m_execution)
 	{
-		renderText(width() - m_execution2Rect.width(), m_executionRect.height() + m_execution2Rect.height(), m_execution2Str, m_fontSmall);
+		renderText(width() - m_execution2Rect.width(), m_executionRect.height() + m_execution2Rect.height(), m_execution2Str, m_fontSmall, 10000);
 		glColor3f(0.0f, 1.0f, 0.0f);
-		renderText(width() - m_executionRect.width(), m_executionRect.height(), m_executionStr, m_fontLarge);
+		renderText(width() - m_executionRect.width(), m_executionRect.height(), m_executionStr, m_fontLarge, 10000);
 	}
 	
 	glPushMatrix();
