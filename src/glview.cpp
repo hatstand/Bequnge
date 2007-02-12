@@ -1311,7 +1311,10 @@ void GLView::ipChanged(Interpreter::InstructionPointer* ip)
 	if (ip == m_followingIP)
 	{
 		if (Coord() != ip->m_direction.mid(3))
+		{
 			setAscensionLevel(1);
+			m_extraDimensions->move(ip->m_pos);
+		}
 		else
 			setAscensionLevel(0);
 	}

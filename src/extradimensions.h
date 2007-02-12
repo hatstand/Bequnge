@@ -19,6 +19,7 @@ public:
 	void descendDimensions();
 	
 	void move(int x, int y, int z);
+	void move(Coord pos);
 	
 	int ascensionLevel() const;
 	const float* cameraOffset() const;
