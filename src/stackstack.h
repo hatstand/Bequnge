@@ -1,11 +1,12 @@
 #ifndef STACKSTACK_H
 #define STACKSTACK_H
 
-#include <Q3ListView>
+#include <QTreeWidget>
+#include <QTreeWidgetItem>
 
 #include "interpreter.h"
 
-class StackStackCollectionModel : public Q3ListView
+class StackStackCollectionModel : public QTreeWidget
 {
 public:
 	StackStackCollectionModel(QWidget* parent);
@@ -15,12 +16,10 @@ public:
 };
 
 
-class StackStack : public Q3ListViewItem
+class StackStack : public QTreeWidgetItem
 {
 public:
-	StackStack(Q3ListView* parent, Interpreter::InstructionPointer* ip, StackStack* original = NULL);
-	
-	QString text(int column) const;
+	StackStack(StackStackCollectionModel* parent, Interpreter::InstructionPointer* ip, StackStack* original = NULL);
 	
 	Stack* topStack();
 	Stack* secondStack();
@@ -36,13 +35,10 @@ private:
 };
 
 
-class Stack : public Q3ListViewItem
+class Stack : public QTreeWidgetItem
 {
 public:
-	Stack(StackStack* parent);
-	Stack(StackStack* parent, Stack* original);
-	
-	QString text(int column) const;
+	Stack(StackStack* parent, Stack* original = NULL);
 	
 	int peek();
 	int pop();
@@ -53,7 +49,7 @@ public:
 };
 
 
-class DataCellItem : public Q3ListViewItem
+class DataCellItem : public QTreeWidgetItem
 {
 public:
 	DataCellItem(Stack* parent, int v);

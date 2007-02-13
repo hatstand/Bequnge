@@ -641,15 +641,15 @@ void Interpreter::beginBlock()
 	
 	if (n >= 0)
 	{
-		DataCellItem* item = (DataCellItem*) m_ip->m_stackStack->secondStack()->firstChild();
+		int max = m_ip->m_stackStack->secondStack()->childCount();
 		for (int i=0 ; i<n ; i++)
 		{
-			if (item == NULL)
+			if (i > max)
 				newStack->pushToBottom(0);
 			else
 			{
+				DataCellItem* item = (DataCellItem*) m_ip->m_stackStack->secondStack()->child(i);
 				newStack->pushToBottom(item->value());
-				item = (DataCellItem*) item->nextSibling();
 			}
 		}
 	}

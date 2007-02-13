@@ -85,9 +85,6 @@ MainWindow::MainWindow(QWidget* parent)
 	connect(m_glView->getUndo(), SIGNAL(canRedoChanged(bool)), m_ui.actionRedo, SLOT(setEnabled(bool)));
 	
 	// Setup the stack list
-	m_ui.stackList->addColumn("Value");
-	m_ui.stackList->header()->hide();
-	m_ui.stackList->setSortColumn(-1);
 	
 	// Setup the auto-step timer
 	m_autoStepTimer = new QTimer(this);

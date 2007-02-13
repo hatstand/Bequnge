@@ -30,14 +30,13 @@ void SysInfo::pushStackSizes(Stack* stack, StackStack* stackStack, int currentSt
 {
 	// Stack sizes
 	QStack<int> tempStack;
-	Stack* s = stackStack->topStack();
-	while (s != NULL)
+	for (int i=0 ; i<stackStack->count() ; ++i)
 	{
+		Stack* s = (Stack*) stackStack->child(i);
 		if (stack == s)
 			tempStack.push(currentStackSize);
 		else
 			tempStack.push(s->count());
-		s = (Stack*) s->nextSibling();
 	}
 	while (tempStack.count() > 0)
 		stack->push(tempStack.pop());

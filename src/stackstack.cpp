@@ -3,8 +3,10 @@
 #include <QChar>
 
 StackStackCollectionModel::StackStackCollectionModel(QWidget* parent)
-	: Q3ListView(parent)
+	: QTreeWidget(parent)
 {
+	setHeaderLabel("Data");
+	setSortingEnabled(false);
 }
 
 StackStack* StackStackCollectionModel::newStackStack(Interpreter::InstructionPointer* ip)
@@ -17,49 +19,39 @@ StackStack* StackStackCollectionModel::deepCopy(Interpreter::InstructionPointer*
 	return new StackStack(this, ip, original);
 }
 
-StackStack::StackStack(Q3ListView* parent, Interpreter::InstructionPointer* ip, StackStack* original)
-	: Q3ListViewItem(parent), m_ip(ip)
+StackStack::StackStack(StackStackCollectionModel* parent, Interpreter::InstructionPointer* ip, StackStack* original)
+	: QTreeWidgetItem(0), m_ip(ip)
 {
+	parent->insertTopLevelItem(0, this);
+	setExpanded(true);
+	
 	if (original == NULL)
 		pushEmptyStack();
 	else
 	{
-		Stack* stack = (Stack*) original->firstChild();
-		
-		QStack<Stack*> tempStack;
-		while (stack)
-		{
-			tempStack.push(stack);
-			stack = (Stack*) stack->nextSibling();
-		}
-		while (tempStack.count() > 0)
-			new Stack(this, tempStack.pop());
+		for (int i=original->childCount()-1 ; i>=0 ; --i)
+			new Stack(this, (Stack*) original->child(i));
 	}
-	
-	setOpen(true);
 	
 	QPixmap icon(16, 16);
 	icon.fill(ip->m_color);
-	setPixmap(0, icon);
-}
-
-QString StackStack::text(int column) const
-{
-	return "Instruction pointer " + QString::number(m_ip->m_id);
+	setIcon(0, QIcon(icon));
+	
+	setText(0, "Instruction pointer " + QString::number(m_ip->m_id));
 }
 
 Stack* StackStack::topStack()
 {
 	if (childCount() < 1)
 		return pushEmptyStack();
-	return (Stack*) firstChild();
+	return (Stack*) child(0);
 }
 
 Stack* StackStack::secondStack()
 {
 	if (childCount() < 1)
 		pushEmptyStack();
-	return (Stack*) firstChild()->nextSibling();
+	return (Stack*) child(1);
 }
 
 Stack* StackStack::pushEmptyStack()
@@ -69,7 +61,7 @@ Stack* StackStack::pushEmptyStack()
 
 void StackStack::removeTopStack()
 {
-	delete firstChild();
+	delete child(0);
 }
 
 int StackStack::count()
@@ -77,32 +69,19 @@ int StackStack::count()
 	return childCount();
 }
 
-Stack::Stack(StackStack* parent)
-	: Q3ListViewItem(parent)
-{
-	setOpen(true);
-}
-
 Stack::Stack(StackStack* parent, Stack* original)
-	: Q3ListViewItem(parent)
+	: QTreeWidgetItem(0)
 {
-	DataCellItem* item = (DataCellItem*) original->firstChild();
+	parent->insertChild(0, this);
+	setExpanded(true);
 	
-	QStack<int> tempStack;
-	while (item)
+	if (original != NULL)
 	{
-		tempStack.push(item->value());
-		item = (DataCellItem*) item->nextSibling();
+		for (int i=original->childCount()-1 ; i>=0 ; --i)
+			new DataCellItem(this, ((DataCellItem*) original->child(i))->value());
 	}
-	while (tempStack.count() > 0)
-		push(tempStack.pop());
 	
-	setOpen(true);
-}
-
-QString Stack::text(int column) const
-{
-	return "Stack";
+	setText(0, "Stack");
 }
 
 int Stack::peek()
@@ -110,7 +89,7 @@ int Stack::peek()
 	if (childCount() == 0)
 		return 0;
 	
-	return ((DataCellItem*) firstChild())->value();
+	return ((DataCellItem*) child(0))->value();
 }
 
 int Stack::pop()
@@ -118,8 +97,8 @@ int Stack::pop()
 	if (childCount() == 0)
 		return 0;
 	
-	int ret = ((DataCellItem*) firstChild())->value();
-	delete firstChild();
+	int ret = ((DataCellItem*) child(0))->value();
+	delete child(0);
 	return ret;
 }
 
@@ -130,22 +109,14 @@ void Stack::push(int value)
 
 void Stack::pushToBottom(int value)
 {
-	DataCellItem* newItem = new DataCellItem(this, value);
-	
-	if (childCount() == 0)
-		return;
-	
-	// Find the last child
-	DataCellItem* lastChild = (DataCellItem*) firstChild();
-	while (lastChild->nextSibling() != NULL)
-		lastChild = (DataCellItem*) lastChild->nextSibling();
-	newItem->moveItem(lastChild);
+	DataCellItem* newItem = new DataCellItem(NULL, value);
+	insertChild(childCount(), newItem);
 }
 
 void Stack::clear()
 {
-	while (firstChild())
-		delete firstChild();
+	while (childCount() > 0)
+		delete child(childCount()-1);
 }
 
 int Stack::count()
@@ -154,9 +125,10 @@ int Stack::count()
 }
 
 DataCellItem::DataCellItem(Stack* parent, int v)
-	: Q3ListViewItem(parent)
+	: QTreeWidgetItem(0)
 {
 	setValue(v);
+	parent->insertChild(0, this);
 }
 
 int DataCellItem::value()
