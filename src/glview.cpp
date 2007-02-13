@@ -370,14 +370,14 @@ void GLView::paintGL()
 	glPopMatrix();
 	
 	glColor3f(1.0f, 1.0f, 1.0f);
-	renderText(0, 15, "Cursor: " + QString::number(m_cursor[0]) + ", " + QString::number(m_cursor[1]) + ", " + QString::number(m_cursor[2]));
-	renderText(0, 30, "FPS: " + QString::number(m_fpsCounter));
+	renderText(0, 15, "Cursor: " + QString::number(m_cursor[0]) + ", " + QString::number(m_cursor[1]) + ", " + QString::number(m_cursor[2]), QFont(), 10000);
+	renderText(0, 30, "FPS: " + QString::number(m_fpsCounter), QFont(), 11000);
 	
 	if (m_execution)
 	{
-		renderText(width() - m_execution2Rect.width(), m_executionRect.height() + m_execution2Rect.height(), m_execution2Str, m_fontSmall, 10000);
+		renderText(width() - m_execution2Rect.width(), m_executionRect.height() + m_execution2Rect.height(), m_execution2Str, m_fontSmall, 12000);
 		glColor3f(0.0f, 1.0f, 0.0f);
-		renderText(width() - m_executionRect.width(), m_executionRect.height(), m_executionStr, m_fontLarge, 10000);
+		renderText(width() - m_executionRect.width(), m_executionRect.height(), m_executionStr, m_fontLarge, 13000);
 	}
 	
 	glPushMatrix();
@@ -1330,7 +1330,7 @@ Coord GLView::cursor()
 
 void GLView::drawWhoosh()
 {
-	renderText(width() - m_offsetWhoosh*(width()/20), 4*height()/5, "Whoooossshhh!", m_fontWhoosh);
+	renderText(width() - m_offsetWhoosh*(width()/20), 4*height()/5, "Whoooossshhh!", m_fontWhoosh, 14000);
 
 	if(++m_offsetWhoosh > 24)
 	{

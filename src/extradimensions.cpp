@@ -130,7 +130,12 @@ void ExtraDimensions::move(Coord pos)
 	m_destinationCameraOffset[2] = 0.0f;
 	
 	for (int i=3 ; i<pos.count() ; ++i)
-		m_destinationCameraOffset[i%3] += pos[i] * gridSize(i/3);
+	{
+		float sign = 1.0f;
+		if (i%3 != 0) sign = -1.0f;
+		
+		m_destinationCameraOffset[i%3] += sign * pos[i] * gridSize(i/3);
+	}
 }
 
 int ExtraDimensions::ascensionLevel() const
