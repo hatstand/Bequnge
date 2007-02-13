@@ -22,7 +22,7 @@
 #ifdef WIN32
 #include <stdlib.h>
 // This is because their stupid compiler thinks it's smart.
-#define inline __forceinline
+//#define inline __forceinline
 #endif
 
 namespace PAPI
