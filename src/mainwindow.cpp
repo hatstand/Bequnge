@@ -363,7 +363,7 @@ void MainWindow::doFullSpeedExecution()
 	int i=0;
 	while (m_fullSpeedExecution)
 	{
-		switch (m_interpreter->step())
+		switch (m_interpreter->stepAll())
 		{
 		case Interpreter::End:
 		case Interpreter::Invalid:
