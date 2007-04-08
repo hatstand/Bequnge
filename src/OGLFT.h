@@ -24,6 +24,10 @@
 
 #define OGLFT_NO_SOLID 1
 
+#ifndef APIENTRY
+#define APIENTRY
+#endif
+
 #include <cmath>
 #include <map>
 #include <list>
