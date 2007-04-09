@@ -5,8 +5,13 @@
 #include <QString>
 #include <QFile>
 
+#ifdef Q_OS_DARWIN
+#include <al.h>
+#include <alc.h>
+#else
 #include <AL/al.h>
 #include <AL/alc.h>
+#endif
 #include <AL/alut.h>
 
 #include <ogg/ogg.h>
