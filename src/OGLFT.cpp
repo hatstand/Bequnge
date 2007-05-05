@@ -19,6 +19,9 @@
  *
  */
 
+#include <GL/gl.h>
+#include <GL/glu.h>
+
 #include <iostream>
 #include <iomanip>
 #ifdef HAVE_CONFIG_H
@@ -2543,11 +2546,11 @@ namespace OGLFT {
 
     tess_obj_ = gluNewTess();
 
-    gluTessCallback( tess_obj_, GLU_TESS_VERTEX, (GLvoid (APIENTRY *)(...)) vertexCallback );
-    gluTessCallback( tess_obj_, GLU_TESS_BEGIN, (GLvoid (APIENTRY *)(...)) beginCallback );
-    gluTessCallback( tess_obj_, GLU_TESS_END, (GLvoid (APIENTRY *)(...)) endCallback );
-    gluTessCallback( tess_obj_, GLU_TESS_COMBINE_DATA, (GLvoid (APIENTRY *)(...)) combineCallback );
-    gluTessCallback( tess_obj_, GLU_TESS_ERROR, (GLvoid (APIENTRY *)(...)) errorCallback );
+    gluTessCallback( tess_obj_, GLU_TESS_VERTEX, (void (APIENTRY *)()) vertexCallback );
+    gluTessCallback( tess_obj_, GLU_TESS_BEGIN, (void (APIENTRY *)()) beginCallback );
+    gluTessCallback( tess_obj_, GLU_TESS_END, (void (APIENTRY *)()) endCallback );
+    gluTessCallback( tess_obj_, GLU_TESS_COMBINE_DATA, (void (APIENTRY *)()) combineCallback );
+    gluTessCallback( tess_obj_, GLU_TESS_ERROR, (void (APIENTRY *)()) errorCallback );
 	 
   }
 
