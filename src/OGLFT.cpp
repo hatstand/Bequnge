@@ -2552,11 +2552,19 @@ namespace OGLFT {
 
     tess_obj_ = gluNewTess();
 
+#ifdef Q_OS_DARWIN
     gluTessCallback( tess_obj_, GLU_TESS_VERTEX, (void (APIENTRY *)(...)) vertexCallback );
     gluTessCallback( tess_obj_, GLU_TESS_BEGIN, (void (APIENTRY *)(...)) beginCallback );
     gluTessCallback( tess_obj_, GLU_TESS_END, (void (APIENTRY *)(...)) endCallback );
     gluTessCallback( tess_obj_, GLU_TESS_COMBINE_DATA, (void (APIENTRY *)(...)) combineCallback );
     gluTessCallback( tess_obj_, GLU_TESS_ERROR, (void (APIENTRY *)(...)) errorCallback );
+#else
+    gluTessCallback( tess_obj_, GLU_TESS_VERTEX, (void (APIENTRY *)()) vertexCallback );
+    gluTessCallback( tess_obj_, GLU_TESS_BEGIN, (void (APIENTRY *)()) beginCallback );
+    gluTessCallback( tess_obj_, GLU_TESS_END, (void (APIENTRY *)()) endCallback );
+    gluTessCallback( tess_obj_, GLU_TESS_COMBINE_DATA, (void (APIENTRY *)()) combineCallback );
+    gluTessCallback( tess_obj_, GLU_TESS_ERROR, (void (APIENTRY *)()) errorCallback );
+#endif
 	 
   }
 
