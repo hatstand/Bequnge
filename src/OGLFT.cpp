@@ -19,9 +19,6 @@
  *
  */
 
-#include <GL/gl.h>
-#include <GL/glu.h>
-
 #include <iostream>
 #include <iomanip>
 #ifdef HAVE_CONFIG_H
@@ -31,6 +28,15 @@
 #include <QRegExp>
 #endif
 #include "OGLFT.h"
+
+#ifdef Q_OS_DARWIN
+#include <OpenGL/gl.h>
+#include <OpenGL/glu.h>
+#else
+#include <GL/gl.h>
+#include <GL/glu.h>
+#endif
+
 
 namespace OGLFT {
 
@@ -2546,11 +2552,11 @@ namespace OGLFT {
 
     tess_obj_ = gluNewTess();
 
-    gluTessCallback( tess_obj_, GLU_TESS_VERTEX, (void (APIENTRY *)()) vertexCallback );
-    gluTessCallback( tess_obj_, GLU_TESS_BEGIN, (void (APIENTRY *)()) beginCallback );
-    gluTessCallback( tess_obj_, GLU_TESS_END, (void (APIENTRY *)()) endCallback );
-    gluTessCallback( tess_obj_, GLU_TESS_COMBINE_DATA, (void (APIENTRY *)()) combineCallback );
-    gluTessCallback( tess_obj_, GLU_TESS_ERROR, (void (APIENTRY *)()) errorCallback );
+    gluTessCallback( tess_obj_, GLU_TESS_VERTEX, (void (APIENTRY *)(...)) vertexCallback );
+    gluTessCallback( tess_obj_, GLU_TESS_BEGIN, (void (APIENTRY *)(...)) beginCallback );
+    gluTessCallback( tess_obj_, GLU_TESS_END, (void (APIENTRY *)(...)) endCallback );
+    gluTessCallback( tess_obj_, GLU_TESS_COMBINE_DATA, (void (APIENTRY *)(...)) combineCallback );
+    gluTessCallback( tess_obj_, GLU_TESS_ERROR, (void (APIENTRY *)(...)) errorCallback );
 	 
   }
 
