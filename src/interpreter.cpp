@@ -69,8 +69,6 @@ Interpreter::Interpreter(StackStackCollectionModel* stackModel, FungeSpace* spac
 	m_ip->m_commentMode = false;
 
 	m_ips << m_ip;
-
-	srand((int)time(NULL) / (int)getpid());
 }
 
 Interpreter::~Interpreter()
@@ -419,10 +417,9 @@ void Interpreter::lower()
 
 void Interpreter::random()
 {
-	int dim = rand() % m_space->dimensions();
-	int dir = rand() % 1;
-
-	m_ip->m_direction[dim] = (dir == 1) ? dir : -1;
+	for(int i=0 ; i<m_space->dimensions() ; i++)
+		m_ip->m_direction[i] = 0;
+	m_ip->m_direction[rand()%m_space->dimensions()] = (rand()%2)?1:-1;
 }
 
 void Interpreter::turnLeft()

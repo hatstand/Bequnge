@@ -2,6 +2,7 @@
 
 #include <QFile>
 #include <QDebug>
+#include <QDateTime>
 
 #include "mainwindow.h"
 #include "interpreter.h"
@@ -10,6 +11,8 @@
 int main(int argc, char** argv)
 {
 	QApplication app(argc, argv);
+
+	qsrand(QDateTime::currentDateTime().toTime_t());
 
 	if (app.arguments().count() < 2 || app.arguments().at(1) == "--gui")
 	{
