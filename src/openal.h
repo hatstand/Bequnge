@@ -6,13 +6,14 @@
 #include <QFile>
 
 #ifdef Q_OS_DARWIN
-#include <al.h>
-#include <alc.h>
+#include <openal/al.h>
+#include <openal/alc.h>
+#include <openal/alut.h>
 #else
 #include <AL/al.h>
 #include <AL/alc.h>
-#endif
 #include <AL/alut.h>
+#endif
 
 #include <ogg/ogg.h>
 #include <vorbis/codec.h>
