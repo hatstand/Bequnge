@@ -6,7 +6,7 @@
 #include <QDebug>
 #include <QIODevice>
 
-#include <boost/array.hpp>
+#include <tr1/array>
 
 #include "coord.h"
 
@@ -91,7 +91,7 @@ signals:
 	void watchpointTriggered(Coord c, QChar oldValue);
 
 private:
-	typedef boost::array<int,2> PlaneCoord;
+	typedef std::tr1::array<int,2> PlaneCoord;
 
 	void parseHeader(QIODevice* dev);
 	void readInAll(QIODevice* dev);
