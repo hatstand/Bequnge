@@ -3,9 +3,17 @@ INCLUDE(UsePkgConfig)
 # Include our custom cmake modules
 SET(CMAKE_MODULE_PATH ${CMAKE_SOURCE_DIR}/CMake)
 
+# Discover native tr1 support
+EXEC_PROGRAM(${CMAKE_CXX_COMPILER} ARGS ${CMAKE_SOURCE_DIR}/has_tr1.cpp RETURN_VALUE TR1)
+IF(TR1)
+	MESSAGE("No native TR1 support found - Looking for Boost instead")
+	FIND_PACKAGE(Boost REQUIRED)
+ELSE(TR1)
+	MESSAGE("Native TR1 support found")
+ENDIF(TR1)
+
 FIND_PACKAGE(Qt4 REQUIRED)
 FIND_PACKAGE(OpenAL)
-FIND_PACKAGE(Boost REQUIRED)
 FIND_PACKAGE(OggVorbis)
 FIND_PACKAGE(OpenGL REQUIRED)
 
