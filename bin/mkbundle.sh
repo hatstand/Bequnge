@@ -23,7 +23,7 @@ mkdir $RESDIR
 mkdir $FRMDIR
 cp bequnge $EXEDIR/Bequnge
 cp Info.plist Bequnge.app/Contents
-cp ../src/icons/Bequnge.icns ${RESDIR}
+cp Bequnge.icns ${RESDIR}
 
 cp -R /Library/Frameworks/QtCore.framework $FRMDIR
 rm -rf ${FRMDIR}/QtCore.framework/Headers/
