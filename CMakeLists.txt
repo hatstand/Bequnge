@@ -24,12 +24,14 @@ ENDIF (NOT QT_QTOPENGL_FOUND)
 # Find freetype
 PKGCONFIG(freetype2 FREETYPE_INCLUDE_DIR FREETYPE_LIB_DIR FREETYPE_LINK_FLAGS FREETYPE_CFLAGS)
 
+# No freetype pkgconfig in Fink
 IF (NOT FREETYPE_INCLUDE_DIR)
-	#MESSAGE(FATAL_ERROR "Freetype was not found.")
 	FIND_PROGRAM(FREETYPECONFIG_EXECUTABLE NAMES freetype-config PATHS
 		/usr/bin
 		/usr/local/bin
 		/opt/local/bin
+		/sw/bin
+		/sw/lib/freetype2/bin
 	)
 	SET(FREETYPE_LIBRARIES)
 	SET(FREETYPE_INCLUDE_DIR)
