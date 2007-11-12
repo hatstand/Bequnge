@@ -64,10 +64,9 @@ $(MASTER_DMG): $(WC_DMG) $(addprefix $(SOURCE_DIR)/,$(SOURCE_FILES))
 	done
 	#rm -f "$@"
 	#hdiutil create -srcfolder "$(WC_DIR)" -format UDZO -imagekey zlib-level=9 "$@" -volname "$(NAME) $(VERSION)" -scrub -quiet
-	WC_DEV=`hdiutil info | grep "$(WC_DIR)" | grep "Apple_HFS" | awk '{print $$1}'` && \
-	hdiutil detach $$WC_DEV -quiet -force
+	hdiutil detach "$(WC_DIR)" -quiet -force
 	rm -f "$(MASTER_DMG)"
-	hdiutil convert "$(WC_DMG)" -quiet -format UDZO -imagekey zlib-level=9 -o "$@"
+	hdiutil convert -quiet -format UDZO -imagekey zlib-level=9 -o "$@" "$(WC_DMG)" 
 	rm -rf $(WC_DIR)
 	@echo
 

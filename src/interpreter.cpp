@@ -30,7 +30,7 @@ void Interpreter::InstructionPointer::init()
 {
 	static QList<QColor> colorList;
 	
-	if (colorList.count() == 0)
+	if (colorList.isEmpty())
 	{
 		colorList.append(Qt::red);
 		colorList.append(Qt::cyan);
