@@ -67,6 +67,7 @@ $(MASTER_DMG): $(WC_DMG) $(addprefix $(SOURCE_DIR)/,$(SOURCE_FILES))
 	hdiutil detach "$(WC_DIR)" -quiet -force
 	rm -f "$(MASTER_DMG)"
 	hdiutil convert -quiet -format UDZO -imagekey zlib-level=9 -o "$@" "$(WC_DMG)" 
+	hdiutil internet-enable -yes "$@"
 	rm -rf $(WC_DIR)
 	@echo
 
