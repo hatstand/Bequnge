@@ -94,7 +94,8 @@ GLView::GLView(FungeSpace* fungeSpace, QWidget* parent)
 
 	// Sound
 #ifndef SOUND_DISABLED
-	m_al = new OpenAL();
+	//m_al = new OpenAL();
+	m_sound = new Sound(this);
 #endif
 	
 	// Particle groups
@@ -113,7 +114,7 @@ GLView::~GLView()
 	delete m_font;
 	delete m_metricsSmall;
 #ifndef SOUND_DISABLED
-	delete m_al;
+	//delete m_al;
 #endif
 }
 
@@ -1299,7 +1300,7 @@ void GLView::setAscensionLevel(int level)
 		return;
 
 #ifndef SOUND_DISABLED
-	m_al->play();
+	m_sound->play();
 #endif
 	m_enableWhoosh = true;
 

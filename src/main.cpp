@@ -14,6 +14,8 @@ int main(int argc, char** argv)
 
 	qsrand(QDateTime::currentDateTime().toTime_t());
 
+	app.setApplicationName("Bequnge");
+
 	if (app.arguments().count() < 2 || app.arguments().at(1) == "--gui")
 	{
 		MainWindow* win = new MainWindow(NULL);

@@ -12,6 +12,7 @@ SET(BEQUNGE-SOURCES
 	stackstack.cpp
 	coord.cpp
 	extradimensions.cpp
+	sound.cpp
 	sysinfo.cpp)
 
 # Header files that have Q_OBJECT in
@@ -21,6 +22,7 @@ SET(BEQUNGE-MOC-HEADERS
 	glview.h
 	interpreter.h
 	mainwindow.h
+	sound.h
 	stringmodewidget.h)
 
 # UI files
@@ -30,6 +32,9 @@ SET(BEQUNGE-UI
 # Resource files
 SET(BEQUNGE-RESOURCES
 	resources.qrc)
+
+SET(PHONON
+	-framework phonon)
 
 # Magic
 IF (SOUND_DISABLED)

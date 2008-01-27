@@ -24,7 +24,7 @@ class ExtraDimensions;
 #include "fungespace.h"
 #include "fungecommand.h"
 #include "interpreter.h"
-#include "openal.h"
+#include "sound.h"
 
 class GLView : public QGLWidget
 {
@@ -198,7 +198,8 @@ private:
 	int m_explosionsPG;
 
 #ifndef SOUND_DISABLED
-	OpenAL* m_al;
+	//OpenAL* m_al;
+	Sound* m_sound;
 #endif
 
 	bool m_enableWhoosh;
