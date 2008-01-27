@@ -1,15 +1,20 @@
 #include "sound.h"
-
-#include <Phonon>
-using namespace Phonon;
+#include <QDebug>
+#include <QUrl>
 
 Sound::Sound(QObject* parent)
 	: QObject(parent) {
-	media_ = createPlayer(Phonon::MusicCategory, MediaSource(":/sounds/shortwhoosh.ogg"));
+	
+	media_ = new MediaObject(this);
+	output_ = new AudioOutput(MusicCategory, this);
+	
+	createPath(media_, output_);
+	
+	// Hehehehehehehehe
+	media_->setCurrentSource(QUrl("http://www.purplehatstands.com/svn/bequnge/src/sounds/shortwhoosh.ogg"));
 }
 
 Sound::~Sound() {
-	delete media_;
 }
 
 void Sound::play() {

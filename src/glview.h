@@ -197,10 +197,7 @@ private:
 	int m_cursorPG;
 	int m_explosionsPG;
 
-#ifndef SOUND_DISABLED
-	//OpenAL* m_al;
 	Sound* m_sound;
-#endif
 
 	bool m_enableWhoosh;
 	QFont m_fontWhoosh;

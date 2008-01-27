@@ -2,7 +2,8 @@
 #define SOUND_H
 
 #include <QObject>
-#include <Phonon>
+#include <phonon/mediaobject.h>
+#include <phonon/audiooutput.h>
 using namespace Phonon;
 
 class Sound : public QObject {
@@ -14,6 +15,7 @@ public:
 	
 private:
 	MediaObject* media_;
+	AudioOutput* output_;
 };
 
 #endif

@@ -93,10 +93,7 @@ GLView::GLView(FungeSpace* fungeSpace, QWidget* parent)
 	m_undoGroup.setActiveStack(currentUndo);
 
 	// Sound
-#ifndef SOUND_DISABLED
-	//m_al = new OpenAL();
 	m_sound = new Sound(this);
-#endif
 	
 	// Particle groups
 	m_cursorPG = m_P.GenParticleGroups(1, 200);
@@ -113,9 +110,6 @@ GLView::~GLView()
 {
 	delete m_font;
 	delete m_metricsSmall;
-#ifndef SOUND_DISABLED
-	//delete m_al;
-#endif
 }
 
 void GLView::initializeGL()
@@ -828,9 +822,9 @@ void GLView::keyPressEvent(QKeyEvent* event)
 	else if (event->key() == Qt::Key_Tab)
 		setActivePlane(otherPlane());
 	else if ((event->key() == Qt::Key_Up) && (event->modifiers() & Qt::ControlModifier))
-		m_extraDimensions->ascendDimensions();
+		setAscensionLevel(m_extraDimensions->ascensionLevel() + 1);
 	else if ((event->key() == Qt::Key_Down) && (event->modifiers() & Qt::ControlModifier))
-		m_extraDimensions->descendDimensions();
+		setAscensionLevel(m_extraDimensions->ascensionLevel() - 1);
 	else if (!event->text().isEmpty())
 	{
 		QChar c = event->text()[0];
@@ -1299,9 +1293,7 @@ void GLView::setAscensionLevel(int level)
 	if (level == m_extraDimensions->ascensionLevel())
 		return;
 
-#ifndef SOUND_DISABLED
 	m_sound->play();
-#endif
 	m_enableWhoosh = true;
 
 	m_extraDimensions->setAscensionLevel(level);
