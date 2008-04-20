@@ -125,6 +125,10 @@ void GLView::recreateFbos()
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 	
+	m_sceneFbo->bind();
+	glClear(GL_COLOR_BUFFER_BIT);
+	m_sceneFbo->release();
+	
 	qDeleteAll(m_blurTargets);
 	m_blurTargets.clear();
 	
@@ -137,6 +141,10 @@ void GLView::recreateFbos()
 		glBindTexture(GL_TEXTURE_2D, fbo->texture());
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+		
+		fbo->bind();
+		glClear(GL_COLOR_BUFFER_BIT);
+		fbo->release();
 		
 		m_blurTargets << fbo;
 	}
