@@ -1,6 +1,8 @@
 #ifndef GLVIEW_H
 #define GLVIEW_H
 
+#include "opengl.h"
+
 #include <QGLWidget>
 #include <QTime>
 #include <QFont>
@@ -18,6 +20,9 @@ using namespace PAPI;
 
 class QMouseEvent;
 class QKeyEvent;
+class QGLFramebufferObject;
+
+class Shader;
 class ExtraDimensions;
 
 #include "OGLFT.h"
@@ -25,6 +30,11 @@ class ExtraDimensions;
 #include "fungecommand.h"
 #include "interpreter.h"
 #include "sound.h"
+
+// TODO: Put these in a utils class or namespace
+void glViewport(const QRect& rect);
+void glViewport(const QPoint& pos, const QSize& size);
+void glViewport(int x, int y, const QSize& size);
 
 class GLView : public QGLWidget
 {
@@ -84,6 +94,9 @@ private:
 	void keyPressEvent(QKeyEvent* event);
 	bool focusNextPrevChild(bool next);
 	
+	void recreateFbos();
+	int nextPowerOf2(int n);
+	
 	void updateCamera(int i);
 	float degreesToRadians(float degrees);
 	float modulo(float value, float mod);
@@ -107,6 +120,20 @@ private:
 	void drawFunge(QHash<Coord, QChar> fungeCode);
 	void setAscensionLevel(int level);
 	Coord cursor();
+	
+	void setupCamera();
+	void setupMatrices();
+	void drawScene();
+	void drawBrightParts();
+	void drawCursor();
+	void drawInstructionPointers();
+	void drawSelectionCube();
+	void drawAnnotations();
+	void drawExplosionParticles();
+	void drawDepthBoxes();
+	
+	void blurPass(Shader* shader, QGLFramebufferObject* source, QGLFramebufferObject* target);
+	void drawQuad(float width, float height);
 	
 	void computeParticles(const Coord& point, int direction, const QColor& color);
 	void drawParticles();
@@ -202,6 +229,10 @@ private:
 	bool m_enableWhoosh;
 	QFont m_fontWhoosh;
 	int m_offsetWhoosh;
+	
+	static QList<Shader*> s_ppShaders;
+	QGLFramebufferObject* m_sceneFbo;
+	QList<QGLFramebufferObject*> m_blurTargets;
 };
 
 #endif

@@ -13,7 +13,10 @@ SET(BEQUNGE-SOURCES
 	coord.cpp
 	extradimensions.cpp
 	sound.cpp
-	sysinfo.cpp)
+	sysinfo.cpp
+	shader.cpp
+	opengl.cpp
+)
 
 # Header files that have Q_OBJECT in
 SET(BEQUNGE-MOC-HEADERS
@@ -23,15 +26,18 @@ SET(BEQUNGE-MOC-HEADERS
 	interpreter.h
 	mainwindow.h
 	sound.h
-	stringmodewidget.h)
+	stringmodewidget.h
+)
 
 # UI files
 SET(BEQUNGE-UI
-	mainwindow.ui)
+	mainwindow.ui
+)
 
 # Resource files
 SET(BEQUNGE-RESOURCES
-	resources.qrc)
+	resources.qrc
+)
 
 SET(CMAKE_CXX_FLAGS ${FREETYPE_CFLAGS})
 

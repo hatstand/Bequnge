@@ -2,6 +2,7 @@
 #include "fungespace.h"
 #include "extradimensions.h"
 #include "magicnumbers.h"
+#include "shader.h"
 
 #include <QTimer>
 #include <QMouseEvent>
@@ -13,10 +14,13 @@
 #include <QFocusEvent>
 #include <QUndoStack>
 #include <QBuffer>
+#include <QGLFramebufferObject>
 
 #include <QDebug>
 
 #include <math.h>
+
+QList<Shader*> GLView::s_ppShaders;
 
 
 GLView::GLView(FungeSpace* fungeSpace, QWidget* parent)
@@ -34,7 +38,8 @@ GLView::GLView(FungeSpace* fungeSpace, QWidget* parent)
 	  m_moveDragging(false),
 	  m_rotateDragging(false),
 	  m_enableWhoosh(false),
-	  m_offsetWhoosh(5)
+	  m_offsetWhoosh(5),
+	  m_sceneFbo(NULL)
 {
 	setFocusPolicy(Qt::WheelFocus);
 	
@@ -112,29 +117,50 @@ GLView::~GLView()
 	delete m_metricsSmall;
 }
 
+void GLView::recreateFbos()
+{
+	delete m_sceneFbo;
+	m_sceneFbo = new QGLFramebufferObject(nextPowerOf2(width()), nextPowerOf2(height()), QGLFramebufferObject::Depth);
+	glBindTexture(GL_TEXTURE_2D, m_sceneFbo->texture());
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+	
+	qDeleteAll(m_blurTargets);
+	m_blurTargets.clear();
+	
+	QSize size(m_sceneFbo->size() / 2);
+	for (int i=0 ; i<3 ; ++i)
+	{
+		size /= 2;
+		
+		QGLFramebufferObject* fbo = new QGLFramebufferObject(size, QGLFramebufferObject::Depth);
+		glBindTexture(GL_TEXTURE_2D, fbo->texture());
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+		
+		m_blurTargets << fbo;
+	}
+}
+
+int GLView::nextPowerOf2(int n)
+{
+	int ret = 1;
+	while (ret < n)
+		ret *= 2;
+	return ret;
+}
+
 void GLView::initializeGL()
 {
-	//glClearColor(0.0f, 0.0f, 0.0f, 0.0f);		// This Will Clear The Background Color To Black
-	glClearDepth(1.0);				// Enables Clearing Of The Depth Buffer
-	glDepthFunc(GL_LESS);			        // The Type Of Depth Test To Do
-	glEnable(GL_DEPTH_TEST);		        // Enables Depth Testing
-	glShadeModel(GL_SMOOTH);			// Enables Smooth Color Shading
-	glShadeModel(GL_LINE_SMOOTH);
-	
-	glMatrixMode(GL_PROJECTION);
-	glLoadIdentity();				// Reset The Projection Matrix
-	
-	//gluPerspective(45.0f,(GLfloat)Width/(GLfloat)Height,0.1f,100.0f);	// Calculate The Aspect Ratio Of The Window
-	
-	glMatrixMode(GL_MODELVIEW);
+	// Setup global state
+	glEnable(GL_DEPTH_TEST);
+	glShadeModel(GL_SMOOTH);
 	
 	glPixelStorei( GL_UNPACK_ALIGNMENT, 1 );
 	glTexEnvi( GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_REPLACE );
 	
 	glEnable( GL_BLEND );
 	glBlendFunc( GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA );
-
-	glEnable(GL_LINE_SMOOTH);
 	
 	// Display lists
 	m_displayListsBase = glGenLists(3);
@@ -159,17 +185,15 @@ void GLView::initializeGL()
 	glEndList();
 	
 	m_extraDimensions->prepareCallList(m_displayListsBase + GRID);
+	
+	// Shaders
+	for (int i=0 ; i<4 ; ++i)
+		s_ppShaders << new Shader(":shaders/pp_vert.glsl", ":shaders/pp_pass" + QString::number(i) + ".glsl");
 }
 
 void GLView::resizeGL(int width, int height)
 {
-	glViewport(0, 0, width, height);		// Reset The Current Viewport And Perspective Transformation
-	
-	glMatrixMode(GL_PROJECTION);
-	glLoadIdentity();
-	
-	gluPerspective(50.0f, (GLfloat)width/(GLfloat)height, 0.1f, 1000000.0f);
-	glMatrixMode(GL_MODELVIEW);
+	recreateFbos();
 }
 
 void GLView::updateCamera(int i)
@@ -194,19 +218,51 @@ void GLView::updateCamera(int i)
 		m_actualCursorPos[i] += diff * m_cameraMoveSpeed;
 }
 
-void GLView::paintGL()
+void GLView::drawScene()
 {
-	QTime frameTime;
-	frameTime.start();
+	glClear(GL_DEPTH_BUFFER_BIT | GL_COLOR_BUFFER_BIT);
 	
-	glClear(GL_DEPTH_BUFFER_BIT | GL_COLOR_BUFFER_BIT);	// Clear The Screen And The Depth Buffer
-	glLoadIdentity();				// Reset The View
+	setupMatrices();
+	setupCamera();
 	
-	updateCamera(0);
-	updateCamera(1);
-	updateCamera(2);
-	m_extraDimensions->updatePositions();
+	glPushMatrix();
+		drawFunge(m_fungeSpace->getCode());
+		drawCursor();
+		drawInstructionPointers();
+		drawSelectionCube();
+		drawAnnotations();
+		m_extraDimensions->drawGridLines(m_actualCursorPos);
+		drawExplosionParticles();
+	glPopMatrix();
+}
+
+void GLView::drawBrightParts()
+{
+	glClear(GL_DEPTH_BUFFER_BIT | GL_COLOR_BUFFER_BIT);
 	
+	setupMatrices();
+	setupCamera();
+	
+	glPushMatrix();
+		drawCursor();
+		drawInstructionPointers();
+		drawAnnotations();
+		drawExplosionParticles();
+	glPopMatrix();
+}
+
+void GLView::setupMatrices()
+{
+	glMatrixMode(GL_PROJECTION);
+	glLoadIdentity();
+	gluPerspective(50.0f, float(width())/height(), 0.1f, 1000000.0f); // Ugh
+	
+	glMatrixMode(GL_MODELVIEW);
+	glLoadIdentity();
+}
+
+void GLView::setupCamera()
+{
 	const float* extraDimensionsOffset = m_extraDimensions->cameraOffset();
 	float scaleFactor = m_extraDimensions->scaleFactor();
 	
@@ -221,15 +277,42 @@ void GLView::paintGL()
 	          0.0f);
 	
 	glScalef(FONT_SCALE_FACTOR * scaleFactor, FONT_SCALE_FACTOR * scaleFactor, FONT_SCALE_FACTOR * scaleFactor);
-	glPushMatrix();
-		// Draw the fungespace
-		drawFunge(m_fungeSpace->getCode());
-		
-		// Draw the cursor
-		if ((m_extraDimensions->ascensionLevel() == 0) && (m_cursorBlinkOn || !hasFocus()))
+}
+
+void GLView::drawCursor()
+{
+	// Draw the cursor
+	if ((m_extraDimensions->ascensionLevel() == 0) && (m_cursorBlinkOn || !hasFocus()))
+	{
+		glPushMatrix();
+			Coord coords = m_extraDimensions->nDTo3D(m_cursor);
+			QList<float> coord = fungeSpaceToGl(coords, true);
+			glTranslatef(coord[0] - 0.01f, coord[1] - 2.5f, coord[2] - 0.01f);
+			if (m_activePlane == 0)
+			{
+				glTranslatef(FONT_SIZE/2, 0.0f, 0.0f);
+				glRotatef(90.0f, 0.0f, 1.0f, 0.0f);
+				glTranslatef(-FONT_SIZE/2, 0.0f, 0.0f);
+			}
+			glColor4f(0.0f, 1.0f, 0.0f, 1.0f);
+			glCallList(m_displayListsBase + CURSOR);
+		glPopMatrix();
+	}
+	
+	// Draw the cursor's particles
+	m_P.CurrentGroup(m_cursorPG);
+	computeParticles(m_cursor, m_cursorDirection, Qt::green);
+	drawParticles();
+}
+
+void GLView::drawInstructionPointers()
+{
+	if (m_execution)
+	{
+		foreach (Interpreter::InstructionPointer* ip, m_ips)
 		{
 			glPushMatrix();
-				Coord coords = m_extraDimensions->nDTo3D(m_cursor);
+				Coord coords = m_extraDimensions->nDTo3D(ip->m_pos);
 				QList<float> coord = fungeSpaceToGl(coords, true);
 				glTranslatef(coord[0] - 0.01f, coord[1] - 2.5f, coord[2] - 0.01f);
 				if (m_activePlane == 0)
@@ -238,131 +321,202 @@ void GLView::paintGL()
 					glRotatef(90.0f, 0.0f, 1.0f, 0.0f);
 					glTranslatef(-FONT_SIZE/2, 0.0f, 0.0f);
 				}
-				glColor4f(0.0f, 1.0f, 0.0f, 1.0f);
+				qglColor(ip->m_color);
+				glCallList(m_displayListsBase + CURSOR);
+			glPopMatrix();
+			
+			// Particles
+			/*int direction = 0;
+			if (ip->m_direction[0] > 0) direction = 1;
+			else if (ip->m_direction[0] < 0) direction = -1;
+			else if (ip->m_direction[1] > 0) direction = 2;
+			else if (ip->m_direction[1] < 0) direction = -2;
+			else if (ip->m_direction[2] > 0) direction = 3;
+			else if (ip->m_direction[2] < 0) direction = -3;
+			
+			m_P.CurrentGroup(ip->m_particleGroup);
+			computeParticles(ip->m_pos, direction, ip->m_color);
+			drawParticles();*/
+		}
+	}
+}
+
+void GLView::drawSelectionCube()
+{
+	if (m_selectionAnchor != m_selectionEnd)
+	{
+		Coord selTopLeft = selectionTopLeft();
+		Coord selBottomRight = selectionBottomRight();
+		glPushMatrix();
+			glColor4f(0.5f, 0.5f, 1.0f, 0.3f);
+			drawCube(selTopLeft, selBottomRight);
+		glPopMatrix();
+	}
+}
+
+void GLView::drawAnnotations()
+{
+	// Draw changes
+	if (m_displayChanges)
+	{
+		glColor4f(1.0f, 0.5f, 0.5f, 0.3f);
+		QHash<Coord, QPair<QChar, QChar> > changes = m_fungeSpace->changes();
+		QList<Coord> changeCoords = changes.keys();
+		foreach (Coord c, changeCoords)
+		{
+			glPushMatrix();
+				drawCube(c, c);
+			glPopMatrix();
+		}
+	}
+	
+	// Draw watchpoints and breakpoints
+	glColor4f(0.0f, 1.0f, 0.0f, 0.3f);
+	foreach (Coord c, m_fungeSpace->watchpoints())
+	{
+		glPushMatrix();
+			drawCube(c, c);
+		glPopMatrix();
+	}
+	
+	glColor4f(1.0f, 0.5f, 0.0f, 0.3f);
+	foreach (Coord c, m_fungeSpace->breakpoints())
+	{
+		glPushMatrix();
+			drawCube(c, c);
+		glPopMatrix();
+	}
+}
+
+void GLView::drawExplosionParticles()
+{
+	m_P.CurrentGroup(m_explosionsPG);
+	m_P.TargetAlpha(0.0f, 0.01f);
+	m_P.KillOld(200.0f);
+	m_P.Move();
+	drawParticles();
+}
+
+void GLView::drawDepthBoxes()
+{
+	// Clear the depth buffer
+	glClear(GL_DEPTH_BUFFER_BIT);
+	
+	setupMatrices();
+	setupCamera();
+	
+	// Draw bounding boxes in the depth buffer
+	if (m_extraDimensions->ascensionLevel() == 0)
+	{
+		QHashIterator<Coord, QChar> i(m_fungeSpace->getCode());
+		glColorMask(false, false, false, false);
+		while (i.hasNext())
+		{
+			i.next();
+			Coord coords = i.key();
+			QChar data = i.value();
+			
+			glPushMatrix();
+				QList<float> coord = fungeSpaceToGl(coords, true);
+				glTranslatef(coord[0], coord[1], coord[2]);
+				if (m_activePlane == 0)
+				{
+					glTranslatef(FONT_SIZE/2, 0.0f, 0.0f);
+					glRotatef(90.0f, 0.0f, 1.0f, 0.0f);
+					glTranslatef(-FONT_SIZE/2, 0.0f, 0.0f);
+				}
 				glCallList(m_displayListsBase + CURSOR);
 			glPopMatrix();
 		}
-		
-		// Draw the particles for cursor
-		m_P.CurrentGroup(m_cursorPG);
-		computeParticles(m_cursor, m_cursorDirection, Qt::green);
-		drawParticles();
-		
-		// Draw the instruction pointer(s)
-		if (m_execution)
-		{
-			foreach (Interpreter::InstructionPointer* ip, m_ips)
-			{
-				glPushMatrix();
-					Coord coords = m_extraDimensions->nDTo3D(ip->m_pos);
-					QList<float> coord = fungeSpaceToGl(coords, true);
-					glTranslatef(coord[0] - 0.01f, coord[1] - 2.5f, coord[2] - 0.01f);
-					if (m_activePlane == 0)
-					{
-						glTranslatef(FONT_SIZE/2, 0.0f, 0.0f);
-						glRotatef(90.0f, 0.0f, 1.0f, 0.0f);
-						glTranslatef(-FONT_SIZE/2, 0.0f, 0.0f);
-					}
-					qglColor(ip->m_color);
-					glCallList(m_displayListsBase + CURSOR);
-				glPopMatrix();
-				
-				// Particles
-				/*int direction = 0;
-				if (ip->m_direction[0] > 0) direction = 1;
-				else if (ip->m_direction[0] < 0) direction = -1;
-				else if (ip->m_direction[1] > 0) direction = 2;
-				else if (ip->m_direction[1] < 0) direction = -2;
-				else if (ip->m_direction[2] > 0) direction = 3;
-				else if (ip->m_direction[2] < 0) direction = -3;
-				
-				m_P.CurrentGroup(ip->m_particleGroup);
-				computeParticles(ip->m_pos, direction, ip->m_color);
-				drawParticles();*/
-			}
-		}
-		
-		// Draw the selection cube
-		if (m_selectionAnchor != m_selectionEnd)
-		{
-			Coord selTopLeft = selectionTopLeft();
-			Coord selBottomRight = selectionBottomRight();
-			glPushMatrix();
-				glColor4f(0.5f, 0.5f, 1.0f, 0.3f);
-				drawCube(selTopLeft, selBottomRight);
-			glPopMatrix();
-		}
-		
-		// Draw changes
-		if (m_displayChanges)
-		{
-			glColor4f(1.0f, 0.5f, 0.5f, 0.3f);
-			QHash<Coord, QPair<QChar, QChar> > changes = m_fungeSpace->changes();
-			QList<Coord> changeCoords = changes.keys();
-			foreach (Coord c, changeCoords)
-			{
-				glPushMatrix();
-					drawCube(c, c);
-				glPopMatrix();
-			}
-		}
-		
-		// Draw watchpoints and breakpoints
-		glColor4f(0.0f, 1.0f, 0.0f, 0.3f);
-		foreach (Coord c, m_fungeSpace->watchpoints())
-		{
-			glPushMatrix();
-				drawCube(c, c);
-			glPopMatrix();
-		}
-		
-		glColor4f(1.0f, 0.5f, 0.0f, 0.3f);
-		foreach (Coord c, m_fungeSpace->breakpoints())
-		{
-			glPushMatrix();
-				drawCube(c, c);
-			glPopMatrix();
-		}
-		
-		// Draw ascension grids
-		m_extraDimensions->drawGridLines(m_actualCursorPos);
-		
-		// Draw explosion particles
-		m_P.CurrentGroup(m_explosionsPG);
-		m_P.TargetAlpha(0.0f, 0.01f);
-		m_P.KillOld(200.0f);
-		m_P.Move();
-		drawParticles();
-		
-		// Clear the depth buffer
-		glClear(GL_DEPTH_BUFFER_BIT);
-		
-		// Draw bounding boxes in the depth buffer
-		if (m_extraDimensions->ascensionLevel() == 0)
-		{
-			QHashIterator<Coord, QChar> i(m_fungeSpace->getCode());
-			glColorMask(false, false, false, false);
-			while (i.hasNext())
-			{
-				i.next();
-				Coord coords = i.key();
-				QChar data = i.value();
-				
-				glPushMatrix();
-					QList<float> coord = fungeSpaceToGl(coords, true);
-					glTranslatef(coord[0], coord[1], coord[2]);
-					if (m_activePlane == 0)
-					{
-						glTranslatef(FONT_SIZE/2, 0.0f, 0.0f);
-						glRotatef(90.0f, 0.0f, 1.0f, 0.0f);
-						glTranslatef(-FONT_SIZE/2, 0.0f, 0.0f);
-					}
-					glCallList(m_displayListsBase + CURSOR);
-				glPopMatrix();
-			}
-			glColorMask(true, true, true, true);
-		}
-	glPopMatrix();
+		glColorMask(true, true, true, true);
+	}
+}
+
+void GLView::paintGL()
+{
+	QTime frameTime;
+	frameTime.start();
+	
+	updateCamera(0);
+	updateCamera(1);
+	updateCamera(2);
+	m_extraDimensions->updatePositions();
+	
+	// Draw the scene to the scene FBO
+	m_sceneFbo->bind();
+	glViewport(0, 0, size());
+	drawScene();
+	m_sceneFbo->release();
+	
+	m_blurTargets[0]->bind();
+	glViewport(0, 0, m_blurTargets[0]->size());
+	drawBrightParts();
+	m_blurTargets[0]->release();
+	
+	glDisable(GL_DEPTH_TEST);
+	glDisable(GL_BLEND);
+	
+	// Blur the bright bits
+	blurPass(s_ppShaders[0], m_blurTargets[0], m_blurTargets[0]);
+	blurPass(s_ppShaders[1], m_blurTargets[0], m_blurTargets[0]);
+	blurPass(s_ppShaders[2], m_blurTargets[0], m_blurTargets[0]);
+	blurPass(s_ppShaders[1], m_blurTargets[0], m_blurTargets[0]);
+	blurPass(s_ppShaders[2], m_blurTargets[0], m_blurTargets[0]);
+	blurPass(s_ppShaders[1], m_blurTargets[0], m_blurTargets[0]);
+	blurPass(s_ppShaders[2], m_blurTargets[0], m_blurTargets[0]);
+	blurPass(s_ppShaders[1], m_blurTargets[0], m_blurTargets[0]);
+	blurPass(s_ppShaders[2], m_blurTargets[0], m_blurTargets[0]);
+	blurPass(s_ppShaders[1], m_blurTargets[0], m_blurTargets[0]);
+	
+	// Downsample
+	blurPass(s_ppShaders[2], m_blurTargets[0], m_blurTargets[1]);
+	blurPass(s_ppShaders[1], m_blurTargets[1], m_blurTargets[1]);
+	
+	blurPass(s_ppShaders[2], m_blurTargets[0], m_blurTargets[2]);
+	blurPass(s_ppShaders[1], m_blurTargets[2], m_blurTargets[2]);
+	
+	// Draw back to the screen
+	glViewport(0, 0, size());
+	s_ppShaders[3]->bind();
+	
+	glActiveTexture(GL_TEXTURE0);
+	glEnable(GL_TEXTURE_2D);
+	glBindTexture(GL_TEXTURE_2D, m_sceneFbo->texture());
+	
+	glActiveTexture(GL_TEXTURE1);
+	glEnable(GL_TEXTURE_2D);
+	glBindTexture(GL_TEXTURE_2D, m_blurTargets[0]->texture());
+	
+	glActiveTexture(GL_TEXTURE2);
+	glEnable(GL_TEXTURE_2D);
+	glBindTexture(GL_TEXTURE_2D, m_blurTargets[1]->texture());
+	
+	glActiveTexture(GL_TEXTURE3);
+	glEnable(GL_TEXTURE_2D);
+	glBindTexture(GL_TEXTURE_2D, m_blurTargets[2]->texture());
+	
+	glUniform1i(s_ppShaders[3]->uniformLocation("scene"), 0);
+	glUniform1i(s_ppShaders[3]->uniformLocation("blur1"), 1);
+	glUniform1i(s_ppShaders[3]->uniformLocation("blur2"), 2);
+	glUniform1i(s_ppShaders[3]->uniformLocation("blur3"), 3);
+	
+	drawQuad(float(width()) / m_sceneFbo->width(), float(height()) / m_sceneFbo->height());
+	
+	glDisable(GL_TEXTURE_2D);
+	glActiveTexture(GL_TEXTURE2);
+	glDisable(GL_TEXTURE_2D);
+	glActiveTexture(GL_TEXTURE1);
+	glDisable(GL_TEXTURE_2D);
+	glActiveTexture(GL_TEXTURE0);
+	glDisable(GL_TEXTURE_2D);
+	
+	glEnable(GL_DEPTH_TEST);
+	glEnable(GL_BLEND);
+	
+	Shader::unbind();
+	
+	
+	drawDepthBoxes();
 	
 	glColor3f(1.0f, 1.0f, 1.0f);
 	renderText(0, 15, "Cursor: " + QString::number(m_cursor[0]) + ", " + QString::number(m_cursor[1]) + ", " + QString::number(m_cursor[2]), QFont(), 10000);
@@ -403,7 +557,7 @@ void GLView::paintGL()
 	if (m_cursorBlinkTime.elapsed() > 500)
 	{
 		m_cursorBlinkTime.start();
-		m_cursorBlinkOn = !m_cursorBlinkOn;
+		m_cursorBlinkOn = true;//!m_cursorBlinkOn;
 	}
 	
 	m_redrawTimer->start(qAbs(m_delayMs - frameTime.elapsed()));
@@ -1384,5 +1538,58 @@ void GLView::drawParticles()
 	glDrawArrays(GL_POINTS, 0, (GLsizei)cnt);
 	glDisableClientState(GL_VERTEX_ARRAY);
 	glDisableClientState(GL_COLOR_ARRAY);
+}
+
+void GLView::blurPass(Shader* shader, QGLFramebufferObject* source, QGLFramebufferObject* target)
+{
+	glViewport(0, 0, target->size());
+	target->bind();
+	
+	shader->bind();
+	glActiveTexture(GL_TEXTURE0);
+	glEnable(GL_TEXTURE_2D);
+	glBindTexture(GL_TEXTURE_2D, source->texture());
+	glUniform1i(shader->uniformLocation("source"), 0);
+	glUniform2f(shader->uniformLocation("pixelStep"), 1.0 / target->width(), 1.0 / target->height());
+	drawQuad(1.0, 1.0);
+	glDisable(GL_TEXTURE_2D);
+	
+	target->release();
+}
+
+void GLView::drawQuad(float width, float height)
+{
+	glBegin(GL_QUADS);
+		glMultiTexCoord2f(GL_TEXTURE0, 0.0, height);
+		glMultiTexCoord2f(GL_TEXTURE1, 0.0, 1.0);
+		glVertex2f(-1.0, 1.0);
+		
+		glMultiTexCoord2f(GL_TEXTURE0, width, height);
+		glMultiTexCoord2f(GL_TEXTURE1, 1.0, 1.0);
+		glVertex2f(1.0, 1.0);
+		
+		glMultiTexCoord2f(GL_TEXTURE0, width, 0.0);
+		glMultiTexCoord2f(GL_TEXTURE1, 1.0, 0.0);
+		glVertex2f(1.0, -1.0);
+		
+		glMultiTexCoord2f(GL_TEXTURE0, 0.0, 0.0);
+		glMultiTexCoord2f(GL_TEXTURE1, 0.0, 0.0);
+		glVertex2f(-1.0, -1.0);
+	glEnd();
+}
+
+void glViewport(const QRect& rect)
+{
+	glViewport(rect.x(), rect.y(), rect.width(), rect.height());
+}
+
+void glViewport(const QPoint& pos, const QSize& size)
+{
+	glViewport(pos.x(), pos.y(), size.width(), size.height());
+}
+
+void glViewport(int x, int y, const QSize& size)
+{
+	glViewport(x, y, size.width(), size.height());
 }
 

@@ -1,28 +1,35 @@
 <RCC>
-    <qresource prefix="/" >
-        <file>icons/copy.png</file>
-        <file>icons/cut.png</file>
-        <file>icons/exit.png</file>
-        <file>icons/fullspeed.png</file>
-        <file>icons/new.png</file>
-        <file>icons/open.png</file>
-        <file>icons/paste.png</file>
-        <file>icons/pause.png</file>
-        <file>icons/redo.png</file>
-        <file>icons/run.png</file>
-        <file>icons/save.png</file>
-        <file>icons/saveas.png</file>
-        <file>icons/step.png</file>
-        <file>icons/stop.png</file>
-        <file>icons/undo.png</file>
-        <file>icons/beq.png</file>
-        <file>luximr.ttf</file>
-        
-        <file>docs/index.html</file>
-        <file>docs/keyboardshortcuts.html</file>
-
-		  <file>sounds/whoosh.ogg</file>
-		  <file>sounds/longwhoosh.ogg</file>
-		  <file>sounds/shortwhoosh.ogg</file>
-    </qresource>
+	<qresource prefix="/" >
+		<file>icons/copy.png</file>
+		<file>icons/cut.png</file>
+		<file>icons/exit.png</file>
+		<file>icons/fullspeed.png</file>
+		<file>icons/new.png</file>
+		<file>icons/open.png</file>
+		<file>icons/paste.png</file>
+		<file>icons/pause.png</file>
+		<file>icons/redo.png</file>
+		<file>icons/run.png</file>
+		<file>icons/save.png</file>
+		<file>icons/saveas.png</file>
+		<file>icons/step.png</file>
+		<file>icons/stop.png</file>
+		<file>icons/undo.png</file>
+		<file>icons/beq.png</file>
+		
+		<file>luximr.ttf</file>
+		
+		<file>docs/index.html</file>
+		<file>docs/keyboardshortcuts.html</file>
+		
+		<file>sounds/whoosh.ogg</file>
+		<file>sounds/longwhoosh.ogg</file>
+		<file>sounds/shortwhoosh.ogg</file>
+		
+		<file>shaders/pp_vert.glsl</file>
+		<file>shaders/pp_pass0.glsl</file>
+		<file>shaders/pp_pass1.glsl</file>
+		<file>shaders/pp_pass2.glsl</file>
+		<file>shaders/pp_pass3.glsl</file>
+	</qresource>
 </RCC>
