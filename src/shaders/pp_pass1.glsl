@@ -2,10 +2,18 @@ uniform sampler2D source;
 
 uniform vec2 pixelStep;
 
+float KERNEL[7];
+
 void main()
 {
+	KERNEL[0] = 0.006;
+	KERNEL[1] = 0.061;
+	KERNEL[2] = 0.242;
+	KERNEL[3] = 0.383;
+	KERNEL[4] = 0.242;
+	KERNEL[5] = 0.061;
+	KERNEL[6] = 0.006;
 	const int KERNEL_SIZE = 7;
-	float[7] KERNEL = float[7](0.006, 0.061, 0.242, 0.383, 0.242, 0.061, 0.006);
 	
 	vec3 color = vec3(0.0, 0.0, 0.0);
 	

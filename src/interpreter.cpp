@@ -762,7 +762,15 @@ int Interpreter::popItem()
 void Interpreter::split()
 {
 	InstructionPointer* t = new InstructionPointer(m_stackModel, *m_ip, m_ipid++);
-	m_ips.prepend(t);
+
+	Q_ASSERT(m_ips.contains(m_ip));
+	for (QList<InstructionPointer*>::iterator it = m_ips.begin(); it != m_ips.end(); ++it) {
+		if (*it == m_ip) {
+			m_ips.insert(it, t);
+			break;
+		}
+	}
+	Q_ASSERT(m_ips.contains(t));
 
 	qSwap(m_ip, t);
 	reverse();
