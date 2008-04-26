@@ -28,7 +28,9 @@ MainWindow::MainWindow(QWidget* parent)
 	m_fungeSpace = new FungeSpace(3);
 	
 	// Setup the GL view
-	m_glView = new GLView(m_fungeSpace, this);
+	QGLFormat format;
+	format.setSampleBuffers(true);
+	m_glView = new GLView(m_fungeSpace, format, this);
 	setCentralWidget(m_glView);
 	m_glView->setFocus(Qt::OtherFocusReason);
 	connect(m_glView, SIGNAL(cursorDirectionChanged(int)), SLOT(cursorDirectionChanged(int)));

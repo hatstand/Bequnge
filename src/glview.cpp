@@ -23,8 +23,8 @@
 QList<Shader*> GLView::s_ppShaders;
 
 
-GLView::GLView(FungeSpace* fungeSpace, QWidget* parent)
-	: QGLWidget(parent),
+GLView::GLView(FungeSpace* fungeSpace, const QGLFormat& format, QWidget* parent)
+	: QGLWidget(format, parent),
 	  m_fungeSpace(fungeSpace),
 	  m_execution(false),
 	  m_displayChanges(false),
@@ -163,6 +163,8 @@ void GLView::initializeGL()
 	// Setup global state
 	glEnable(GL_DEPTH_TEST);
 	glShadeModel(GL_SMOOTH);
+
+	glEnable(GL_MULTISAMPLE_ARB);
 	
 	glPixelStorei( GL_UNPACK_ALIGNMENT, 1 );
 	glTexEnvi( GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_REPLACE );
