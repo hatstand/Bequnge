@@ -15,9 +15,9 @@ Sound::Sound(QObject* parent)
 	
 	// Hehehehehehehehe
 #ifdef Q_OS_DARWIN
-	media_->setCurrentSource(QUrl("http://www.purplehatstands.com/svn/bequnge/src/sounds/shortwhoosh.mp3"));
+	media_->setCurrentSource(QUrl("https://www.purplehatstands.com/svn/bequnge/src/sounds/shortwhoosh.mp3"));
 #else
-	media_->setCurrentSource(QUrl("http://www.purplehatstands.com/svn/bequnge/src/sounds/shortwhoosh.ogg"));
+	media_->setCurrentSource(QUrl("https://www.purplehatstands.com/svn/bequnge/src/sounds/shortwhoosh.ogg"));
 #endif
 }
 
@@ -26,4 +26,5 @@ Sound::~Sound() {
 
 void Sound::play() {
 	media_->play();
+	qDebug() << media_->errorString();
 }
