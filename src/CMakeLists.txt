@@ -74,6 +74,7 @@ IF(${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
 		COMMAND echo ARGS "Building App Bundle for OS X"
 		COMMAND cp ARGS -n "${CMAKE_CURRENT_SOURCE_DIR}/../Info.plist" .
 		COMMAND cp ARGS -f "${CMAKE_CURRENT_SOURCE_DIR}/../src/icons/Bequnge.icns" .
+		COMMAND cp ARGS -f "${CMAKE_CURRENT_SOURCE_DIR}/../qt.conf" .
 		COMMAND "${CMAKE_CURRENT_SOURCE_DIR}/../mkbundle.sh"
 		COMMAND "${CMAKE_MAKE_PROGRAM}" ARGS -f "${CMAKE_CURRENT_SOURCE_DIR}/../mkdmg.make"
 		WORKING_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/..")

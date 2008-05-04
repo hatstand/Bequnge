@@ -45,7 +45,7 @@ $(TEMPLATE_DMG).bz2:
 	@echo
 	@echo --------------------- Generating empty template --------------------
 	mkdir template
-	hdiutil create -size 40m "$(TEMPLATE_DMG)" -srcfolder template -format UDRW -volname "$(NAME)" -quiet
+	hdiutil create -size 50m "$(TEMPLATE_DMG)" -srcfolder template -format UDRW -volname "$(NAME)" -quiet
 	rmdir template
 	bzip2 "$(TEMPLATE_DMG)"
 	@echo
