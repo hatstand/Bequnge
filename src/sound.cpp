@@ -26,5 +26,4 @@ Sound::~Sound() {
 
 void Sound::play() {
 	media_->play();
-	qDebug() << media_->errorString();
 }

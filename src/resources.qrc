@@ -25,6 +25,7 @@
 		<file>sounds/whoosh.ogg</file>
 		<file>sounds/longwhoosh.ogg</file>
 		<file>sounds/shortwhoosh.ogg</file>
+		<file>sounds/shortwhoosh.mp3</file>
 		
 		<file>shaders/pp_vert.glsl</file>
 		<file>shaders/pp_pass0.glsl</file>
