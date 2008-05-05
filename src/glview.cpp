@@ -39,7 +39,8 @@ GLView::GLView(FungeSpace* fungeSpace, const QGLFormat& format, QWidget* parent)
 	  m_rotateDragging(false),
 	  m_enableWhoosh(false),
 	  m_offsetWhoosh(5),
-	  m_sceneFbo(NULL)
+	  m_sceneFbo(NULL),
+	  m_bloom(true)
 {
 	setFocusPolicy(Qt::WheelFocus);
 	
@@ -453,77 +454,85 @@ void GLView::paintGL()
 	m_extraDimensions->updatePositions();
 	
 	// Draw the scene to the scene FBO
-	m_sceneFbo->bind();
-	glViewport(0, 0, size());
+	if (m_bloom)
+	{
+		m_sceneFbo->bind();
+		glViewport(0, 0, size());
+	}
+	
 	drawScene();
-	m_sceneFbo->release();
 	
-	m_blurTargets[0]->bind();
-	glViewport(0, 0, m_blurTargets[0]->size());
-	drawBrightParts();
-	m_blurTargets[0]->release();
-	
-	glDisable(GL_DEPTH_TEST);
-	glDisable(GL_BLEND);
-	
-	// Blur the bright bits
-	blurPass(s_ppShaders[0], m_blurTargets[0], m_blurTargets[0]);
-	blurPass(s_ppShaders[1], m_blurTargets[0], m_blurTargets[0]);
-	blurPass(s_ppShaders[2], m_blurTargets[0], m_blurTargets[0]);
-	blurPass(s_ppShaders[1], m_blurTargets[0], m_blurTargets[0]);
-	blurPass(s_ppShaders[2], m_blurTargets[0], m_blurTargets[0]);
-	blurPass(s_ppShaders[1], m_blurTargets[0], m_blurTargets[0]);
-	blurPass(s_ppShaders[2], m_blurTargets[0], m_blurTargets[0]);
-	blurPass(s_ppShaders[1], m_blurTargets[0], m_blurTargets[0]);
-	blurPass(s_ppShaders[2], m_blurTargets[0], m_blurTargets[0]);
-	blurPass(s_ppShaders[1], m_blurTargets[0], m_blurTargets[0]);
-	
-	// Downsample
-	blurPass(s_ppShaders[2], m_blurTargets[0], m_blurTargets[1]);
-	blurPass(s_ppShaders[1], m_blurTargets[1], m_blurTargets[1]);
-	
-	blurPass(s_ppShaders[2], m_blurTargets[0], m_blurTargets[2]);
-	blurPass(s_ppShaders[1], m_blurTargets[2], m_blurTargets[2]);
-	
-	// Draw back to the screen
-	glViewport(0, 0, size());
-	s_ppShaders[3]->bind();
-	
-	glActiveTexture(GL_TEXTURE0);
-	glEnable(GL_TEXTURE_2D);
-	glBindTexture(GL_TEXTURE_2D, m_sceneFbo->texture());
-	
-	glActiveTexture(GL_TEXTURE1);
-	glEnable(GL_TEXTURE_2D);
-	glBindTexture(GL_TEXTURE_2D, m_blurTargets[0]->texture());
-	
-	glActiveTexture(GL_TEXTURE2);
-	glEnable(GL_TEXTURE_2D);
-	glBindTexture(GL_TEXTURE_2D, m_blurTargets[1]->texture());
-	
-	glActiveTexture(GL_TEXTURE3);
-	glEnable(GL_TEXTURE_2D);
-	glBindTexture(GL_TEXTURE_2D, m_blurTargets[2]->texture());
-	
-	glUniform1i(s_ppShaders[3]->uniformLocation("scene"), 0);
-	glUniform1i(s_ppShaders[3]->uniformLocation("blur1"), 1);
-	glUniform1i(s_ppShaders[3]->uniformLocation("blur2"), 2);
-	glUniform1i(s_ppShaders[3]->uniformLocation("blur3"), 3);
-	
-	drawQuad(float(width()) / m_sceneFbo->width(), float(height()) / m_sceneFbo->height());
-	
-	glDisable(GL_TEXTURE_2D);
-	glActiveTexture(GL_TEXTURE2);
-	glDisable(GL_TEXTURE_2D);
-	glActiveTexture(GL_TEXTURE1);
-	glDisable(GL_TEXTURE_2D);
-	glActiveTexture(GL_TEXTURE0);
-	glDisable(GL_TEXTURE_2D);
-	
-	glEnable(GL_DEPTH_TEST);
-	glEnable(GL_BLEND);
-	
-	Shader::unbind();
+	if (m_bloom)
+	{
+		m_sceneFbo->release();
+		
+		m_blurTargets[0]->bind();
+		glViewport(0, 0, m_blurTargets[0]->size());
+		drawBrightParts();
+		m_blurTargets[0]->release();
+		
+		glDisable(GL_DEPTH_TEST);
+		glDisable(GL_BLEND);
+		
+		// Blur the bright bits
+		blurPass(s_ppShaders[0], m_blurTargets[0], m_blurTargets[0]);
+		blurPass(s_ppShaders[1], m_blurTargets[0], m_blurTargets[0]);
+		blurPass(s_ppShaders[2], m_blurTargets[0], m_blurTargets[0]);
+		blurPass(s_ppShaders[1], m_blurTargets[0], m_blurTargets[0]);
+		blurPass(s_ppShaders[2], m_blurTargets[0], m_blurTargets[0]);
+		blurPass(s_ppShaders[1], m_blurTargets[0], m_blurTargets[0]);
+		blurPass(s_ppShaders[2], m_blurTargets[0], m_blurTargets[0]);
+		blurPass(s_ppShaders[1], m_blurTargets[0], m_blurTargets[0]);
+		blurPass(s_ppShaders[2], m_blurTargets[0], m_blurTargets[0]);
+		blurPass(s_ppShaders[1], m_blurTargets[0], m_blurTargets[0]);
+		
+		// Downsample
+		blurPass(s_ppShaders[2], m_blurTargets[0], m_blurTargets[1]);
+		blurPass(s_ppShaders[1], m_blurTargets[1], m_blurTargets[1]);
+		
+		blurPass(s_ppShaders[2], m_blurTargets[0], m_blurTargets[2]);
+		blurPass(s_ppShaders[1], m_blurTargets[2], m_blurTargets[2]);
+		
+		// Draw back to the screen
+		glViewport(0, 0, size());
+		s_ppShaders[3]->bind();
+		
+		glActiveTexture(GL_TEXTURE0);
+		glEnable(GL_TEXTURE_2D);
+		glBindTexture(GL_TEXTURE_2D, m_sceneFbo->texture());
+		
+		glActiveTexture(GL_TEXTURE1);
+		glEnable(GL_TEXTURE_2D);
+		glBindTexture(GL_TEXTURE_2D, m_blurTargets[0]->texture());
+		
+		glActiveTexture(GL_TEXTURE2);
+		glEnable(GL_TEXTURE_2D);
+		glBindTexture(GL_TEXTURE_2D, m_blurTargets[1]->texture());
+		
+		glActiveTexture(GL_TEXTURE3);
+		glEnable(GL_TEXTURE_2D);
+		glBindTexture(GL_TEXTURE_2D, m_blurTargets[2]->texture());
+		
+		glUniform1i(s_ppShaders[3]->uniformLocation("scene"), 0);
+		glUniform1i(s_ppShaders[3]->uniformLocation("blur1"), 1);
+		glUniform1i(s_ppShaders[3]->uniformLocation("blur2"), 2);
+		glUniform1i(s_ppShaders[3]->uniformLocation("blur3"), 3);
+		
+		drawQuad(float(width()) / m_sceneFbo->width(), float(height()) / m_sceneFbo->height());
+		
+		glDisable(GL_TEXTURE_2D);
+		glActiveTexture(GL_TEXTURE2);
+		glDisable(GL_TEXTURE_2D);
+		glActiveTexture(GL_TEXTURE1);
+		glDisable(GL_TEXTURE_2D);
+		glActiveTexture(GL_TEXTURE0);
+		glDisable(GL_TEXTURE_2D);
+		
+		glEnable(GL_DEPTH_TEST);
+		glEnable(GL_BLEND);
+		
+		Shader::unbind();
+	}
 	
 	
 	drawDepthBoxes();

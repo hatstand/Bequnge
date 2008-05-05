@@ -74,6 +74,8 @@ public slots:
 	void slotCut();
 	void slotPaste();
 	void slotPasteTransparent();
+	
+	void setBloom(bool bloom) { m_bloom = bloom; }
 
 private slots:
 	void spaceDeleted(QObject* space);
@@ -233,6 +235,8 @@ private:
 	static QList<Shader*> s_ppShaders;
 	QGLFramebufferObject* m_sceneFbo;
 	QList<QGLFramebufferObject*> m_blurTargets;
+	
+	bool m_bloom;
 };
 
 #endif

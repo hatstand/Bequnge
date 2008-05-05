@@ -86,6 +86,8 @@ MainWindow::MainWindow(QWidget* parent)
 	connect(m_glView->getUndo(), SIGNAL(canUndoChanged(bool)), m_ui.actionUndo, SLOT(setEnabled(bool)));
 	connect(m_glView->getUndo(), SIGNAL(canRedoChanged(bool)), m_ui.actionRedo, SLOT(setEnabled(bool)));
 	
+	connect(m_ui.actionBloom, SIGNAL(triggered(bool)), m_glView, SLOT(setBloom(bool)));
+	
 	// Setup the stack list
 	
 	// Setup the auto-step timer
