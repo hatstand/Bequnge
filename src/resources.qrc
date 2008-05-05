@@ -32,5 +32,7 @@
 		<file>shaders/pp_pass1.glsl</file>
 		<file>shaders/pp_pass2.glsl</file>
 		<file>shaders/pp_pass3.glsl</file>
+		<file>shaders/char_vert.glsl</file>
+		<file>shaders/char_frag.glsl</file>
 	</qresource>
 </RCC>

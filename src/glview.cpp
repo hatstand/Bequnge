@@ -3,6 +3,7 @@
 #include "extradimensions.h"
 #include "magicnumbers.h"
 #include "shader.h"
+#include "glfont.h"
 
 #include <QTimer>
 #include <QMouseEvent>
@@ -15,6 +16,7 @@
 #include <QUndoStack>
 #include <QBuffer>
 #include <QGLFramebufferObject>
+#include <QFontDatabase>
 
 #include <QDebug>
 
@@ -40,7 +42,7 @@ GLView::GLView(FungeSpace* fungeSpace, const QGLFormat& format, QWidget* parent)
 	  m_enableWhoosh(false),
 	  m_offsetWhoosh(5),
 	  m_sceneFbo(NULL),
-	  m_bloom(true)
+	  m_bloom(false)
 {
 	setFocusPolicy(Qt::WheelFocus);
 	
@@ -55,24 +57,7 @@ GLView::GLView(FungeSpace* fungeSpace, const QGLFormat& format, QWidget* parent)
 	connect(m_fpsCounterTimer, SIGNAL(timeout()), SLOT(updateFPSCounter()));
 	
 	// Load the font
-	QResource fontResource("luximr.ttf");
-	
-	FT_Open_Args args;
-	args.flags = FT_OPEN_MEMORY;
-	args.memory_base = fontResource.data();
-	args.memory_size = fontResource.size();
-	FT_Open_Face(OGLFT::Library::instance(), &args, 0, &m_fontFace);
-	
-	m_font = new OGLFT::Filled(m_fontFace, FONT_SIZE - 5);
-	
-	if ( m_font == 0 || !m_font->isValid() )
-	{
-		QMessageBox::critical(this, "Error loading font", "Font face could not be loaded");
-		QCoreApplication::exit(1);
-		return;
-	}
-	
-	m_font->setForegroundColor(1.0f, 1.0f, 1.0f);
+	int fontId = QFontDatabase::addApplicationFont(":luximr.ttf");
 	
 	m_fontLarge.setPointSize(14);
 	m_fontLarge.setBold(true);
@@ -200,6 +185,7 @@ void GLView::initializeGL()
 	// Shaders
 	for (int i=0 ; i<4 ; ++i)
 		s_ppShaders << new Shader(":shaders/pp_vert.glsl", ":shaders/pp_pass" + QString::number(i) + ".glsl");
+	m_font = new GLFont("Luxi Mono", QPen(Qt::green));
 }
 
 void GLView::resizeGL(int width, int height)
@@ -576,7 +562,7 @@ void GLView::paintGL()
 	if (m_cursorBlinkTime.elapsed() > 500)
 	{
 		m_cursorBlinkTime.start();
-		m_cursorBlinkOn = true;//!m_cursorBlinkOn;
+		m_cursorBlinkOn = !m_cursorBlinkOn;
 	}
 	
 	m_redrawTimer->start(qAbs(m_delayMs - frameTime.elapsed()));
@@ -590,6 +576,8 @@ void GLView::drawFunge(QHash<Coord, QChar> fungeCode)
 	
 	Coord c = cursor();
 	Coord cursorExtraDimensions = c.mid(3);
+	
+	m_font->bind();
 	
 	QHashIterator<Coord, QChar> i(fungeCode);
 	while (i.hasNext())
@@ -663,9 +651,11 @@ void GLView::drawFunge(QHash<Coord, QChar> fungeCode)
 				glRotatef(90.0f, 0.0f, 1.0f, 0.0f);
 				glTranslatef(-FONT_SIZE/2, 0.0f, 0.0f);
 			}
-			m_font->draw(data);
+			m_font->drawChar(data);
 		glPopMatrix();
 	}
+	
+	m_font->release();
 }
 
 void GLView::drawCube(Coord startPos, Coord endPos)

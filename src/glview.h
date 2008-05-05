@@ -21,6 +21,7 @@ using namespace PAPI;
 class QMouseEvent;
 class QKeyEvent;
 class QGLFramebufferObject;
+class GLFont;
 
 class Shader;
 class ExtraDimensions;
@@ -206,8 +207,7 @@ private:
 	ExtraDimensions* m_extraDimensions;
 	
 	// Fonts
-	FT_Face m_fontFace;
-	OGLFT::Face* m_font;
+	GLFont* m_font;
 	QFont m_fontLarge;
 	QFont m_fontSmall;
 	QFontMetrics* m_metricsSmall;
