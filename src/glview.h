@@ -26,7 +26,6 @@ class GLFont;
 class Shader;
 class ExtraDimensions;
 
-#include "OGLFT.h"
 #include "fungespace.h"
 #include "fungecommand.h"
 #include "interpreter.h"
@@ -99,6 +98,7 @@ private:
 	
 	void recreateFbos();
 	int nextPowerOf2(int n);
+	void updateParticles();
 	
 	void updateCamera(int i);
 	float degreesToRadians(float degrees);

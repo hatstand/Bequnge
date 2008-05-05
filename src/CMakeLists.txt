@@ -5,7 +5,6 @@ SET(BEQUNGE-SOURCES
 	interpreter.cpp
 	fungespace.cpp
 	glview.cpp
-	OGLFT.cpp
 	stringmodewidget.cpp
 	fungeconsole.cpp
 	fungecommand.cpp

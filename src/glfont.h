@@ -30,7 +30,7 @@ private:
 	
 	QImage m_image;
 	QPainter m_painter;
-	uchar* m_rgbaStart;
+	uchar* m_data;
 	
 	static const int s_res;
 	static const float s_scale;

@@ -42,7 +42,7 @@ GLView::GLView(FungeSpace* fungeSpace, const QGLFormat& format, QWidget* parent)
 	  m_enableWhoosh(false),
 	  m_offsetWhoosh(5),
 	  m_sceneFbo(NULL),
-	  m_bloom(false)
+	  m_bloom(true)
 {
 	setFocusPolicy(Qt::WheelFocus);
 	
@@ -185,7 +185,7 @@ void GLView::initializeGL()
 	// Shaders
 	for (int i=0 ; i<4 ; ++i)
 		s_ppShaders << new Shader(":shaders/pp_vert.glsl", ":shaders/pp_pass" + QString::number(i) + ".glsl");
-	m_font = new GLFont("Luxi Mono", QPen(Qt::green));
+	m_font = new GLFont("Luxi Mono", QPen(Qt::blue));
 }
 
 void GLView::resizeGL(int width, int height)
@@ -298,8 +298,18 @@ void GLView::drawCursor()
 	
 	// Draw the cursor's particles
 	m_P.CurrentGroup(m_cursorPG);
-	computeParticles(m_cursor, m_cursorDirection, Qt::green);
 	drawParticles();
+}
+
+void GLView::updateParticles()
+{
+	m_P.CurrentGroup(m_cursorPG);
+	computeParticles(m_cursor, m_cursorDirection, Qt::green);
+	
+	m_P.CurrentGroup(m_explosionsPG);
+	m_P.TargetAlpha(0.0f, 0.01f);
+	m_P.KillOld(200.0f);
+	m_P.Move();
 }
 
 void GLView::drawInstructionPointers()
@@ -388,9 +398,6 @@ void GLView::drawAnnotations()
 void GLView::drawExplosionParticles()
 {
 	m_P.CurrentGroup(m_explosionsPG);
-	m_P.TargetAlpha(0.0f, 0.01f);
-	m_P.KillOld(200.0f);
-	m_P.Move();
 	drawParticles();
 }
 
@@ -437,15 +444,14 @@ void GLView::paintGL()
 	updateCamera(0);
 	updateCamera(1);
 	updateCamera(2);
+	updateParticles();
 	m_extraDimensions->updatePositions();
 	
 	// Draw the scene to the scene FBO
 	if (m_bloom)
-	{
 		m_sceneFbo->bind();
-		glViewport(0, 0, size());
-	}
 	
+	glViewport(0, 0, size());
 	drawScene();
 	
 	if (m_bloom)
@@ -553,7 +559,7 @@ void GLView::paintGL()
 			glRotatef(-90.0f, 0.0f, 0.0f, 1.0f);
 			break;
 		}
-		glCallList(m_displayListsBase + ARROW);
+		//glCallList(m_displayListsBase + ARROW);
 	glPopMatrix();
 
 	if(m_enableWhoosh)

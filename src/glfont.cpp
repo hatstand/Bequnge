@@ -4,7 +4,7 @@
 
 #include <QtDebug>
 
-const int GLFont::s_res = 64;
+const int GLFont::s_res = 32;
 const float GLFont::s_scale = 27.0;
 Shader* GLFont::s_shader = NULL;
 uint GLFont::s_texLoc;
@@ -12,7 +12,7 @@ uint GLFont::s_texLoc;
 GLFont::GLFont(const QString& family, const QPen& pen)
 	: m_image(s_res, s_res, QImage::Format_ARGB32),
 	  m_pen(pen),
-	  m_rgbaStart(new uchar[s_res * s_res * 4])
+	  m_data(new uchar[s_res * s_res])
 {
 	if (s_shader == NULL)
 	{
@@ -28,7 +28,7 @@ GLFont::GLFont(const QString& family, const QPen& pen)
 
 GLFont::~GLFont()
 {
-	delete[] m_rgbaStart;
+	delete[] m_data;
 	
 	foreach (uint tex, m_cache)
 		glDeleteTextures(1, &tex);
@@ -118,20 +118,17 @@ uint GLFont::textureForChar(const QChar& c)
 	m_painter.end();
 	
 	// Convert ARGB to RGBA
-	const uchar* rgbaEnd = m_rgbaStart + (s_res * s_res * 4);
-	uchar* rgba = m_rgbaStart;
+	/*const uchar* dataEnd = m_data + (s_res * s_res);
+	uchar* p = m_data;
 	
 	const uchar* argb = m_image.bits();
 	
-	while (rgba != rgbaEnd)
+	while (p != dataEnd)
 	{
-		rgba[0] = argb[1];
-		rgba[1] = argb[2];
-		rgba[2] = argb[3];
-		rgba[3] = argb[0];
-		rgba += 4;
+		p[0] = ;
+		p ++;
 		argb += 4;
-	}
+	}*/
 	
 	// Allocate texture
 	uint tex;
@@ -140,7 +137,7 @@ uint GLFont::textureForChar(const QChar& c)
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 	
-	gluBuild2DMipmaps(GL_TEXTURE_2D, GL_RGBA, s_res, s_res, GL_RGBA, GL_UNSIGNED_BYTE, m_rgbaStart);
+	gluBuild2DMipmaps(GL_TEXTURE_2D, GL_ALPHA, s_res, s_res, GL_BGRA, GL_UNSIGNED_BYTE, m_image.bits());
 	
 	// Add to cache
 	m_cache[c] = tex;
