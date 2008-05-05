@@ -47,6 +47,9 @@ install_name_tool -id @executable_path/../Frameworks/QtXml.Framework/Versions/4.
 cp -R /Library/Frameworks/QtNetwork.framework $FRMDIR
 rm -rf ${FRMDIR}/QtNetwork.framework/Headers/
 install_name_tool -id @executable_path/../Frameworks/QtNetwork.Framework/Versions/4.0/QtNetwork ${FRMDIR}/QtNetwork.framework/Versions/4/QtNetwork
+cp -R /Library/Frameworks/QtDBus.framework $FRMDIR
+rm -rf ${FRMDIR}/QtDBus.framework/Headers/
+install_name_tool -id @executable_path/../Frameworks/QtDBus.Framework/Versions/4.0/QtDBus ${FRMDIR}/QtDBus.framework/Versions/4/QtDBus
 cp -R /Library/Frameworks/phonon.framework $FRMDIR
 rm -rf ${FRMDIR}/phonon.framework/Headers/
 install_name_tool -id @executable_path/../Frameworks/phonon.Framework/Versions/4.0/phonon ${FRMDIR}/phonon.framework/Versions/4/phonon
@@ -69,11 +72,19 @@ install_name_tool -change QtCore.framework/Versions/4/QtCore @executable_path/..
 install_name_tool -change QtCore.framework/Versions/4/QtCore @executable_path/../Frameworks/QtCore.framework/Versions/4.0/QtCore $FRMDIR/QtXml.framework/Versions/4.0/QtXml
 install_name_tool -change QtCore.framework/Versions/4/QtCore @executable_path/../Frameworks/QtCore.framework/Versions/4.0/QtCore $FRMDIR/QtNetwork.framework/Versions/4.0/QtNetwork
 install_name_tool -change QtCore.framework/Versions/4/QtCore @executable_path/../Frameworks/QtCore.framework/Versions/4.0/QtCore $FRMDIR/phonon.framework/Versions/4.0/phonon
+install_name_tool -change QtCore.framework/Versions/4/QtCore @executable_path/../Frameworks/QtCore.framework/Versions/4.0/QtCore $FRMDIR/QtDBus.framework/Versions/4.0/QtDBus
 
 # QtGui
 install_name_tool -change QtGui.framework/Versions/4/QtGui @executable_path/../Frameworks/QtGui.framework/Versions/4.0/QtGui $FRMDIR/QtOpenGL.framework/Versions/4.0/QtOpenGL
 install_name_tool -change QtGui.framework/Versions/4/QtGui @executable_path/../Frameworks/QtGui.framework/Versions/4.0/QtGui $FRMDIR/QtSvg.framework/Versions/4.0/QtSvg
 install_name_tool -change QtGui.framework/Versions/4/QtGui @executable_path/../Frameworks/QtGui.framework/Versions/4.0/QtGui $FRMDIR/phonon.framework/Versions/4.0/phonon
+
+# More phonon
+install_name_tool -change QtXml.framework/Versions/4/QtXml @executable_path/../Frameworks/QtXml.framework/Versions/4.0/QtXml $FRMDIR/phonon.framework/Versions/4.0/phonon
+install_name_tool -change QtDBus.framework/Versions/4/QtDBus @executable_path/../Frameworks/QtDBus.framework/Versions/4.0/QtDBus $FRMDIR/phonon.framework/Versions/4.0/phonon
+
+# QtDBus
+install_name_tool -change QtXml.framework/Versions/4/QtXml @executable_path/../Frameworks/QtXml.framework/Versions/4.0/QtXml $FRMDIR/QtDBus.framework/Versions/4.0/QtDBus
 
 # Fix plugins
 install_name_tool -change QtCore.framework/Versions/4/QtCore @executable_path/../Frameworks/QtCore.framework/Versions/4.0/QtCore $PLUGDIR/imageformats/libqgif.dylib
@@ -95,6 +106,8 @@ install_name_tool -change QtCore.framework/Versions/4/QtCore @executable_path/..
 install_name_tool -change QtGui.framework/Versions/4/QtGui @executable_path/../Frameworks/QtGui.framework/Versions/4.0/QtGui $PLUGDIR/phonon_backend/libphonon_qt7.dylib
 install_name_tool -change QtNetwork.framework/Versions/4/QtNetwork @executable_path/../Frameworks/QtNetwork.framework/Versions/4.0/QtNetwork $PLUGDIR/phonon_backend/libphonon_qt7.dylib
 install_name_tool -change QtOpenGL.framework/Versions/4/QtOpenGL @executable_path/../Frameworks/QtOpenGL.framework/Versions/4.0/QtOpenGL $PLUGDIR/phonon_backend/libphonon_qt7.dylib
+install_name_tool -change QtDBus.framework/Versions/4/QtDBus @executable_path/../Frameworks/QtDBus.framework/Versions/4.0/QtDBus $PLUGDIR/phonon_backend/libphonon_qt7.dylib
+install_name_tool -change QtXml.framework/Versions/4/QtXml @executable_path/../Frameworks/QtXml.framework/Versions/4.0/QtXml $PLUGDIR/phonon_backend/libphonon_qt7.dylib
 install_name_tool -change phonon.framework/Versions/4/phonon @executable_path/../Frameworks/phonon.framework/Versions/4.0/phonon $PLUGDIR/phonon_backend/libphonon_qt7.dylib
 
 # Fix other libraries
