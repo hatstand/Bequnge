@@ -124,11 +124,20 @@ int Stack::count()
 	return childCount();
 }
 
+void Stack::print()
+{
+	for (int i = 0; i < childCount(); ++i)
+	{
+		qDebug() << ((DataCellItem*)child(i))->value();
+	}
+}
+
 DataCellItem::DataCellItem(Stack* parent, int v)
 	: QTreeWidgetItem(0)
 {
 	setValue(v);
-	parent->insertChild(0, this);
+	if (parent)
+		parent->insertChild(0, this);
 }
 
 int DataCellItem::value()

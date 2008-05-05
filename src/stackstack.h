@@ -46,6 +46,7 @@ public:
 	void pushToBottom(int value);
 	void clear();
 	int count();
+	void print();
 };
 
 

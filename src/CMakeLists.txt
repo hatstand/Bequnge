@@ -16,6 +16,7 @@ SET(BEQUNGE-SOURCES
 	sysinfo.cpp
 	shader.cpp
 	opengl.cpp
+	console.cpp
 )
 
 # Header files that have Q_OBJECT in
@@ -27,6 +28,7 @@ SET(BEQUNGE-MOC-HEADERS
 	mainwindow.h
 	sound.h
 	stringmodewidget.h
+	console.h
 )
 
 # UI files

@@ -103,6 +103,7 @@ private:
 	Status compute(QChar);
 	void move(bool skipSpaces = true);
 	void jumpSpaces();
+	Coord getNextInstruction();
 
 
 	// Instructions
@@ -159,6 +160,8 @@ private:
 	void pushNumber(QChar n);
 	void pushVector(Coord c);
 	Coord popVector();
+
+	void loadSemantics();
 
 	void panic(QString message = NULL);
 

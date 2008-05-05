@@ -10,7 +10,7 @@
 
 Interpreter::InstructionPointer::InstructionPointer(StackStackCollectionModel* model, Coord position, Coord direction, Coord storageOffset, int id)
 	:m_pos(position), m_direction(direction), m_storageOffset(storageOffset),
-	m_stringMode(false), m_waitingForInput(NotWaiting), m_id(id),
+	m_stringMode(false), m_commentMode(false), m_waitingForInput(NotWaiting), m_id(id),
 	m_usingSecondStack(false)
 {
 	init();
@@ -111,6 +111,21 @@ void Interpreter::move(bool skipSpaces)
 	emit ipChanged(m_ip);
 }
 
+Coord Interpreter::getNextInstruction()
+{
+	Coord temp = m_ip->m_pos;
+	for (uint i = 0; i < m_space->dimensions(); ++i)
+	{
+		temp[i] += m_ip->m_direction[i];
+		if (m_ip->m_pos[i] > m_space->getPositiveEdge(i))
+			m_ip->m_pos[i] = m_space->getNegativeEdge(i);
+		else if(m_ip->m_pos[i] < m_space->getNegativeEdge(i))
+			m_ip->m_pos[i] = m_space->getPositiveEdge(i);
+	}
+
+	return temp;
+}
+
 Interpreter::Status Interpreter::step()
 {
 	if(m_ip->m_jumpedSpace)
@@ -120,13 +135,13 @@ Interpreter::Status Interpreter::step()
 			pushItem(QChar(' ').unicode());
 	}
 	QChar c = m_space->getChar(m_ip->m_pos);
+	//qDebug() << m_ip->m_pos << c;
 	Interpreter::Status ret = compute(c);
 
 	//qDebug() << "Direction: " << m_direction;
-	if(ret == Success)
+	if(ret == Success || ret == Invalid)
 	{
 		move();
-		return Success;
 	}
 
 	return ret;
@@ -138,7 +153,7 @@ Interpreter::Status Interpreter::stepAll()
 	{
 		m_ip = ip;
 		Interpreter::Status ret = step();
-		if (ret != Success)
+		if (ret != Success || ret != Invalid)
 			return ret;
 	}
 
@@ -147,7 +162,11 @@ Interpreter::Status Interpreter::stepAll()
 
 void Interpreter::run()
 {
-	while(step());
+	Interpreter::Status s;
+	do
+	{
+		s = step();
+	} while (s == Success || s == Invalid);
 }
 
 // Call this with a QChar Array
@@ -269,14 +288,20 @@ Interpreter::Status Interpreter::compute(QChar command)
 		pushItem(14);
 	else if(command == 'f')
 		pushItem(15);
+	else if(command == '(')
+		loadSemantics();
 	else if(command == '@')
 	{
 		if (end())
 			return End;
 	}
 	else
+	{
+		// Reflect on invalid character.
+		reverse();
 		return Invalid;
 		//panic("Don't understand character: " + QString(command));
+	}
 
 	return Success;
 }
@@ -289,7 +314,6 @@ void Interpreter::add()
 
 	int z = y + x;
 
-	qDebug() << x << "+" << y << "=" << z;
 	pushItem(z);
 }
 
@@ -300,7 +324,6 @@ void Interpreter::subtract()
 
 	int z = y - x;
 
-	qDebug() << y << "-" << x << "=" << z;
 	pushItem(z);
 }
 
@@ -311,7 +334,6 @@ void Interpreter::multiply()
 
 	int z = y * x;
 
-	qDebug() << y << "*" << x << "=" << z;
 	pushItem(z);
 }
 
@@ -324,7 +346,6 @@ void Interpreter::divide()
 	if (x != 0)
 		z = y / x;
 
-	qDebug() << y << "/" << x << "=" << z;
 	pushItem(z);
 }
 
@@ -337,7 +358,6 @@ void Interpreter::modulo()
 	if (x != 0)
 		z = y % x;
 
-	qDebug() << y << "%" << x << "=" << z;
 	pushItem(z);
 }
 
@@ -422,14 +442,14 @@ void Interpreter::random()
 	m_ip->m_direction[rand()%m_space->dimensions()] = (rand()%2)?1:-1;
 }
 
-void Interpreter::turnLeft()
+void Interpreter::turnRight()
 {
 	int oldXDirection = m_ip->m_direction[0];
 	m_ip->m_direction[0] = -m_ip->m_direction[1];
 	m_ip->m_direction[1] = oldXDirection;
 }
 
-void Interpreter::turnRight()
+void Interpreter::turnLeft()
 {
 	int oldXDirection = m_ip->m_direction[0];
 	m_ip->m_direction[0] = m_ip->m_direction[1];
@@ -464,7 +484,7 @@ void Interpreter::reverse()
 
 void Interpreter::absolute()
 {
-	for(int i = m_space->dimensions() - 1; i > 0; --i)
+	for(int i = m_space->dimensions() - 1; i >= 0; --i)
 	{
 		m_ip->m_direction[i] = popItem();
 	}
@@ -486,7 +506,7 @@ void Interpreter::comment()
 
 void Interpreter::character()
 {
-	move();
+	move(false);
 	pushItem(m_space->getChar(m_ip->m_pos).unicode());
 }
 
@@ -554,14 +574,12 @@ void Interpreter::compare()
 void Interpreter::printChar()
 {
 	QChar outputChar = QChar(popItem());
-	qDebug() << outputChar;
 	emit(output(outputChar));
 }
 
 void Interpreter::printDec()
 {
-	QString outputStr = QString::number(popItem());
-	qDebug() << outputStr;
+	QString outputStr = QString::number(popItem()) + ' ';
 	emit(output(outputStr));
 }
 
@@ -599,7 +617,16 @@ void Interpreter::provideInput(int i)
 
 void Interpreter::trampoline()
 {
-	move();
+	for(uint i = 0; i < m_space->dimensions(); ++i)
+	{
+		m_ip->m_pos[i] += m_ip->m_direction[i];
+		if(m_ip->m_pos[i] > m_space->getPositiveEdge(i))
+			m_ip->m_pos[i] = m_space->getNegativeEdge(i);
+		else if(m_ip->m_pos[i] < m_space->getNegativeEdge(i))
+			m_ip->m_pos[i] = m_space->getPositiveEdge(i);
+	}
+
+	emit ipChanged(m_ip);
 }
 
 void Interpreter::jump()
@@ -609,13 +636,13 @@ void Interpreter::jump()
 	if(x > 0)
 	{
 		for(int i = 0; i < x; ++i)
-			move();
+			move(false);
 	}
 	else if(x < 0)
 	{
 		reverse();
-		for(int i = x; i > 0; --i)
-			move();
+		for(int i = 0; i < abs(x); ++i)
+			move(false);
 
 		reverse();
 	}
@@ -624,17 +651,27 @@ void Interpreter::jump()
 void Interpreter::iterate()
 {
 	int x = popItem();
-	move();
+	Coord old = m_ip->m_pos;
+	Coord c = getNextInstruction();
 
 	for(int i = 0; i < x; ++i)
-		compute(m_space->getChar(m_ip->m_pos));
+		compute(m_space->getChar(c));
+
+	if (old == m_ip->m_pos)
+		move();
 }
 
 void Interpreter::beginBlock()
 {
+	/*qDebug() << "[";
+	m_ip->stack()->print();
+	qDebug() << "]";*/
 	int n = m_ip->stack()->pop();
 	
 	Stack* newStack = m_ip->m_stackStack->pushEmptyStack();
+	/*qDebug() << "[";
+	m_ip->stack()->print();
+	qDebug() << "]";*/
 	
 	if (n >= 0)
 	{
@@ -656,9 +693,15 @@ void Interpreter::beginBlock()
 		for (int i=0 ; i<n ; i++)
 			m_ip->m_stackStack->secondStack()->push(0);
 	}
+	/*qDebug() << "[";
+	m_ip->stack()->print();
+	qDebug() << "]";*/
 
 	m_ip->m_usingSecondStack = true;
 	pushVector(m_ip->m_storageOffset);
+	/*qDebug() << "[";
+	m_ip->stack()->print();
+	qDebug() << "]";*/
 	m_ip->m_usingSecondStack = false;
 
 	for(uint i = 0; i < m_space->dimensions(); ++i)
@@ -667,9 +710,16 @@ void Interpreter::beginBlock()
 
 void Interpreter::endBlock()
 {
+	/*qDebug() << "[";
+	m_ip->stack()->print();
+	qDebug() << "]";*/
 	int n = popItem();
+
 	
 	m_ip->m_usingSecondStack = true;
+	/*qDebug() << "[";
+	m_ip->stack()->print();
+	qDebug() << "]";*/
 	m_ip->m_storageOffset = popVector();
 	m_ip->m_usingSecondStack = false;
 	
@@ -678,6 +728,7 @@ void Interpreter::endBlock()
 		QStack<int> tempStack;
 		for (int i=0 ; i<n ; i++)
 			tempStack << popItem();
+
 		m_ip->m_stackStack->removeTopStack();
 		while (tempStack.count() > 0)
 			pushItem(tempStack.pop());
@@ -688,6 +739,9 @@ void Interpreter::endBlock()
 		for (int i=0 ; i<abs(n) ; i++)
 			popItem();
 	}
+	/*qDebug() << "[";
+	m_ip->stack()->print();
+	qDebug() << "]";*/
 }
 
 void Interpreter::stackUnderStack()
@@ -698,6 +752,12 @@ void Interpreter::stackUnderStack()
 	int n = popItem();
 	
 	Stack* source = m_ip->m_stackStack->secondStack();
+	if (!source)
+	{
+		reverse();
+		return;
+	}
+
 	Stack* dest = m_ip->m_stackStack->topStack();
 	
 	if (n < 0)
@@ -803,6 +863,12 @@ void Interpreter::panic(QString message)
 	message = "PANIC!: " + message;
 	qDebug() << m_ip->m_pos[0] << m_ip->m_pos[1];
 	qFatal(message.toAscii());
+}
+
+void Interpreter::loadSemantics()
+{
+	// Load Semantics unimplemented... reflect.
+	reverse();
 }
 
 void Interpreter::getSysInfo()

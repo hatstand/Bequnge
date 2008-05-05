@@ -4,6 +4,7 @@
 #include <QDebug>
 #include <QDateTime>
 
+#include "console.h"
 #include "mainwindow.h"
 #include "interpreter.h"
 #include "fungespace.h"
@@ -24,11 +25,16 @@ int main(int argc, char** argv)
 		return app.exec();
 	}
 
-// TODO: Doesn't work without a stackstackmodel
-// 	QFile* f = new QFile(argv[1]);
-// 	FungeSpace s(f);
-// 	Interpreter i(&s);
-// 	i.run();
-// 
-// 	s.save("temp");
+ 	QFile* f = new QFile(argv[1]);
+ 	FungeSpace s(f);
+	StackStackCollectionModel m(0);
+ 	Interpreter i(&m, &s, 0);
+	Console console(&i);
+
+	Interpreter::Status status;
+	do
+	{
+ 		status = i.stepAll();
+	} while (status != Interpreter::End);
+ 	s.save("temp");
 }
