@@ -89,8 +89,31 @@ class FungeSpace : public QObject
 {
 	Q_OBJECT
 
-public:
+#ifdef TESTFUNGESPACE_H
+	friend class TestFungeSpace;
+#endif
+	typedef std::tr1::array<int,2> PlaneCoord;
+	
+	typedef boost::multi_index_container<
+		FungeChar,
+		boost::multi_index::indexed_by<
+			boost::multi_index::ordered_unique<
+				boost::multi_index::member<FungeChar, Coord, &FungeChar::coord>,
+				FrontComparison
+			>,
+			boost::multi_index::ordered_unique<
+				boost::multi_index::member<FungeChar, Coord, &FungeChar::coord>,
+				SideComparison
+			>,
+			boost::multi_index::hashed_unique<
+				boost::multi_index::member<FungeChar, Coord, &FungeChar::coord>
+			>
+		>
+	> Space;
 
+public:
+	typedef boost::multi_index::nth_index<Space, 0>::type CodeByFront;
+	
 	FungeSpace(int dimensions);
 	FungeSpace(QIODevice* dev);
 	FungeSpace(FungeSpace* space);
@@ -102,7 +125,7 @@ public:
 	QChar getChar(Coord) const;
 
 	// Get all the code back out from FungeSpace
-	QHash<Coord, QChar> getCode();
+	CodeByFront& codeByFront();
 	
 	// Get the code edges (only correct if code doesn't shrink)
 	int getPositiveEdge(int dimension) const { return m_positiveEdges[dimension]; }
@@ -131,25 +154,6 @@ signals:
 	void watchpointTriggered(Coord c, QChar oldValue);
 
 private:
-	typedef std::tr1::array<int,2> PlaneCoord;
-	
-	typedef boost::multi_index_container<
-		FungeChar,
-		boost::multi_index::indexed_by<
-			boost::multi_index::ordered_unique<
-				boost::multi_index::member<FungeChar, Coord, &FungeChar::coord>,
-				FrontComparison
-			>,
-			boost::multi_index::ordered_unique<
-				boost::multi_index::member<FungeChar, Coord, &FungeChar::coord>,
-				SideComparison
-			>,
-			boost::multi_index::hashed_unique<
-				boost::multi_index::member<FungeChar, Coord, &FungeChar::coord>
-			>
-		>
-	> Space;
-
 	void parseHeader(QIODevice* dev);
 	void readInAll(QIODevice* dev);
 	void readPlane(QIODevice* dev);

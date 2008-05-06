@@ -223,7 +223,7 @@ void GLView::drawScene()
 	setupCamera();
 	
 	glPushMatrix();
-		drawFunge(m_fungeSpace->getCode());
+		//drawFunge(m_fungeSpace->codeSortedByFront());
 		drawCursor();
 		drawInstructionPointers();
 		drawSelectionCube();
@@ -412,7 +412,7 @@ void GLView::drawDepthBoxes()
 	// Draw bounding boxes in the depth buffer
 	if (m_extraDimensions->ascensionLevel() == 0)
 	{
-		QHashIterator<Coord, QChar> i(m_fungeSpace->getCode());
+		/*QHashIterator<Coord, QChar> i(m_fungeSpace->codeSortedByFront());
 		glColorMask(false, false, false, false);
 		while (i.hasNext())
 		{
@@ -432,7 +432,7 @@ void GLView::drawDepthBoxes()
 				glCallList(m_displayListsBase + CURSOR);
 			glPopMatrix();
 		}
-		glColorMask(true, true, true, true);
+		glColorMask(true, true, true, true);*/
 	}
 }
 
@@ -1301,7 +1301,7 @@ void GLView::selectionToClipboard(bool cut, QClipboard::Mode mode)
 	for (int y=0 ; y<selHeight ; ++y)
 		frontPlaneText += emptyLine;
 	
-	QHash<Coord, QChar> code = m_fungeSpace->getCode();
+	/*QHash<Coord, QChar> code = m_fungeSpace->codeSortedByFront();
 	QHashIterator<Coord, QChar> i(code);
 	ChangeList changes;
 	while (i.hasNext())
@@ -1347,7 +1347,7 @@ void GLView::selectionToClipboard(bool cut, QClipboard::Mode mode)
 	data->setText(frontPlaneText);
 	data->setData("application/x-bequnge", serialisedData);
 	
-	QApplication::clipboard()->setMimeData(data, mode);
+	QApplication::clipboard()->setMimeData(data, mode);*/
 }
 
 void GLView::slotCopy()

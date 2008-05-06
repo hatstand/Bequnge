@@ -174,10 +174,9 @@ FungeSpace::~FungeSpace()
 {
 }
 
-QHash<Coord, QChar> FungeSpace::getCode()
+FungeSpace::CodeByFront& FungeSpace::codeByFront()
 {
-	//return m_space;
-	return QHash<Coord, QChar>();
+	return m_space.get<0>();
 }
 
 void FungeSpace::setChar(Coord pos, QChar c)
@@ -216,8 +215,8 @@ void FungeSpace::setChar(Coord pos, QChar c)
 
 QChar FungeSpace::getChar(Coord pos) const
 {
-	if(m_space.find(pos) != m_space.end())
-		return m_space.find(pos)->data;
+	if(m_space.get<2>().find(pos) != m_space.get<2>().end())
+		return m_space.get<2>().find(pos)->data;
 	else
 		return QChar(' ');
 }
