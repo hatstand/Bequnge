@@ -223,7 +223,10 @@ void GLView::drawScene()
 	setupCamera();
 	
 	glPushMatrix();
-		//drawFunge(m_fungeSpace->codeSortedByFront());
+		if (m_activePlane == 2)
+			drawFunge(m_fungeSpace->codeByFront());
+		else
+			drawFunge(m_fungeSpace->codeBySide());
 		drawCursor();
 		drawInstructionPointers();
 		drawSelectionCube();
@@ -412,13 +415,14 @@ void GLView::drawDepthBoxes()
 	// Draw bounding boxes in the depth buffer
 	if (m_extraDimensions->ascensionLevel() == 0)
 	{
-		/*QHashIterator<Coord, QChar> i(m_fungeSpace->codeSortedByFront());
+		FungeSpace::CodeByFront& code(m_fungeSpace->codeByFront());
+		FungeSpace::CodeByFront::iterator i(code.begin());
+		
 		glColorMask(false, false, false, false);
-		while (i.hasNext())
+		while (i != code.end())
 		{
-			i.next();
-			Coord coords = i.key();
-			QChar data = i.value();
+			Coord coords(i->coord);
+			QChar data(i->data);
 			
 			glPushMatrix();
 				QList<float> coord = fungeSpaceToGl(coords, true);
@@ -431,8 +435,9 @@ void GLView::drawDepthBoxes()
 				}
 				glCallList(m_displayListsBase + CURSOR);
 			glPopMatrix();
+			i++;
 		}
-		glColorMask(true, true, true, true);*/
+		glColorMask(true, true, true, true);
 	}
 }
 
@@ -575,7 +580,8 @@ void GLView::paintGL()
 	m_frameCount++;
 }
 
-void GLView::drawFunge(QHash<Coord, QChar> fungeCode)
+template <typename T>
+void GLView::drawFunge(T& code)
 {
 	Coord selTopLeft = selectionTopLeft();
 	Coord selBottomRight = selectionBottomRight();
@@ -585,37 +591,36 @@ void GLView::drawFunge(QHash<Coord, QChar> fungeCode)
 	
 	m_font->bind();
 	
-	QHashIterator<Coord, QChar> i(fungeCode);
-	while (i.hasNext())
+	typename T::reverse_iterator i(code.rbegin());
+	while (i != code.rend())
 	{
-		i.next();
-		Coord coords = i.key();
-		QChar data = i.value();
+		Coord coords(i->coord);
+		QChar data(i->data);
 		
 		if (m_extraDimensions->ascensionLevel() > 0)
 		{
 			if ((coords[0] >= c[0] + 20) || (coords[0] < c[0] - 20) ||
 				(coords[1] >= c[1] + 20) || (coords[1] < c[1] - 20) ||
 				(coords[2] >= c[2] + 20) || (coords[2] < c[2] - 20))
+			{
+				i++;
 				continue;
+			}
 		}
 		
 		if (cursorExtraDimensions != coords.mid(3))
 		{
 			if (m_extraDimensions->ascensionLevel() != 1)
+			{
+				i++;
 				continue;
+			}
 			
-			int diff = c[3] - coords[3];
-			if (abs(diff) > 2)
+			if (abs(c[3] - coords[3]) > 2 || abs(coords[4] - c[4]) > 2 || abs(coords[5] - c[5]) > 2)
+			{
+				i++;
 				continue;
-			
-			diff = coords[4] - c[4];
-			if (abs(diff) > 2)
-				continue;
-			
-			diff = coords[5] - c[5];
-			if (abs(diff) > 2)
-				continue;
+			}
 		}
 		
 		int diff = abs(coords[m_activePlane] - m_cursor[m_activePlane]);
@@ -659,6 +664,7 @@ void GLView::drawFunge(QHash<Coord, QChar> fungeCode)
 			}
 			m_font->drawChar(data);
 		glPopMatrix();
+		i++;
 	}
 	
 	m_font->release();
@@ -1301,14 +1307,14 @@ void GLView::selectionToClipboard(bool cut, QClipboard::Mode mode)
 	for (int y=0 ; y<selHeight ; ++y)
 		frontPlaneText += emptyLine;
 	
-	/*QHash<Coord, QChar> code = m_fungeSpace->codeSortedByFront();
-	QHashIterator<Coord, QChar> i(code);
+	// There's probably a nicer way to do this with boost limits...
+	FungeSpace::CodeByFront& code(m_fungeSpace->codeByFront());
+	FungeSpace::CodeByFront::iterator i(code.begin());
 	ChangeList changes;
-	while (i.hasNext())
+	while (i != code.end())
 	{
-		i.next();
-		Coord c = i.key();
-		QChar value = i.value();
+		Coord c(i->coord);
+		QChar value(i->data);
 		if ((c[0] >= selTopLeft[0]) && (c[0] <= selBottomRight[0]) &&
 			(c[1] >= selTopLeft[1]) && (c[1] <= selBottomRight[1]) &&
 			(c[2] >= selTopLeft[2]) && (c[2] <= selBottomRight[2]))
@@ -1332,6 +1338,7 @@ void GLView::selectionToClipboard(bool cut, QClipboard::Mode mode)
 				//m_fungeSpace->setChar(c, ' ');
 			}
 		}
+		i++;
 	}
 
 	if(cut)
@@ -1347,7 +1354,7 @@ void GLView::selectionToClipboard(bool cut, QClipboard::Mode mode)
 	data->setText(frontPlaneText);
 	data->setData("application/x-bequnge", serialisedData);
 	
-	QApplication::clipboard()->setMimeData(data, mode);*/
+	QApplication::clipboard()->setMimeData(data, mode);
 }
 
 void GLView::slotCopy()

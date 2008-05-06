@@ -117,7 +117,10 @@ private:
 	void selectionToClipboard(bool cut, QClipboard::Mode mode = QClipboard::Clipboard);
 	void paste(bool transparant);
 	void clearRect(Coord topLeft, Coord bottomRight, ChangeList* changes);
-	void drawFunge(QHash<Coord, QChar> fungeCode);
+	
+	template <typename T>
+	void drawFunge(T& code);
+	
 	void setAscensionLevel(int level);
 	Coord cursor();
 	
