@@ -174,11 +174,6 @@ FungeSpace::~FungeSpace()
 {
 }
 
-FungeSpace::CodeByFront& FungeSpace::codeByFront()
-{
-	return m_space.get<0>();
-}
-
 void FungeSpace::setChar(Coord pos, QChar c)
 {
 	if((uint)pos.count() > m_dimensions)

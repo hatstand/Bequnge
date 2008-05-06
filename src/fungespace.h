@@ -113,6 +113,7 @@ class FungeSpace : public QObject
 
 public:
 	typedef boost::multi_index::nth_index<Space, 0>::type CodeByFront;
+	typedef boost::multi_index::nth_index<Space, 1>::type CodeBySide;
 	
 	FungeSpace(int dimensions);
 	FungeSpace(QIODevice* dev);
@@ -125,7 +126,8 @@ public:
 	QChar getChar(Coord) const;
 
 	// Get all the code back out from FungeSpace
-	CodeByFront& codeByFront();
+	CodeByFront& codeByFront() { return m_space.get<0>(); }
+	CodeBySide& codeBySide() { return m_space.get<1>(); }
 	
 	// Get the code edges (only correct if code doesn't shrink)
 	int getPositiveEdge(int dimension) const { return m_positiveEdges[dimension]; }

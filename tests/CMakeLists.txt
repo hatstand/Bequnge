@@ -5,7 +5,6 @@ SET(FUNGESPACE-SOURCES
 	testfungespace.cpp
 	../src/fungespace.cpp
 	../src/coord.cpp
-	${CMAKE_CURRENT_BINARY_DIR}/../src/moc_fungespace.cxx
 )
 SET(FUNGESPACE-MOC-HEADERS
 	testfungespace.h
