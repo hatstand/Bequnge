@@ -12,6 +12,7 @@
 #include <boost/multi_index/hashed_index.hpp>
 #include <boost/multi_index/member.hpp>
 #include <boost/multi_index/ordered_index.hpp>
+#include <boost/multi_index/tag.hpp>
 
 #include "coord.h"
 
@@ -82,26 +83,34 @@ class FungeSpace : public QObject
 #endif
 	typedef std::tr1::array<int,2> PlaneCoord;
 	
+	struct side {};
+	struct front {};
+	struct hash {};
+
 	typedef boost::multi_index_container<
 		FungeChar,
 		boost::multi_index::indexed_by<
 			boost::multi_index::ordered_non_unique<
+				boost::multi_index::tag<front>,
 				boost::multi_index::member<FungeChar, Coord, &FungeChar::coord>,
 				FrontComparison
 			>,
 			boost::multi_index::ordered_non_unique<
+				boost::multi_index::tag<side>,
 				boost::multi_index::member<FungeChar, Coord, &FungeChar::coord>,
 				SideComparison
 			>,
 			boost::multi_index::hashed_unique<
+				boost::multi_index::tag<hash>,
 				boost::multi_index::member<FungeChar, Coord, &FungeChar::coord>
 			>
 		>
 	> Space;
 
 public:
-	typedef boost::multi_index::nth_index<Space, 0>::type CodeByFront;
-	typedef boost::multi_index::nth_index<Space, 1>::type CodeBySide;
+	typedef Space::index<front>::type CodeByFront;
+	typedef Space::index<side>::type CodeBySide;
+	typedef Space::index<hash>::type CodeByHash;
 	
 	FungeSpace(int dimensions);
 	FungeSpace(QIODevice* dev);

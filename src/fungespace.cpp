@@ -210,8 +210,8 @@ void FungeSpace::setChar(Coord pos, QChar c)
 
 QChar FungeSpace::getChar(Coord pos) const
 {
-	if(m_space.get<2>().find(pos) != m_space.get<2>().end())
-		return m_space.get<2>().find(pos)->data;
+	if(m_space.get<hash>().find(pos) != m_space.get<hash>().end())
+		return m_space.get<hash>().find(pos)->data;
 	else
 		return QChar(' ');
 }
@@ -249,13 +249,14 @@ void FungeSpace::setDimensions(uint dimensions)
 
 void FungeSpace::save(QString filename)
 {
-	/*QFile file(filename);
+	QFile file(filename);
 	if(!file.open(QIODevice::WriteOnly))
 	{
 		qWarning() << "Cannot open file:" << filename << ":-S";
 		return;
 	}
 
+	/*
 	// Maps x,y to a QChar
 	// QMap as indexes in order
 	typedef QMap<PlaneCoord, QChar> Plane;
