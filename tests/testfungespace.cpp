@@ -41,19 +41,19 @@ void TestFungeSpace::insertValues()
 	Coord back2(QVector<int>() << 5 << 0 << 2);
 	
 	// Insert the values checking the size increases each time
-	QCOMPARE(m_space->m_space.size(), (uint)0);
+	QCOMPARE(m_space->m_space.size(), 0UL);
 	m_space->setChar(middle, 'm');
-	QCOMPARE(m_space->m_space.size(), (uint)1);
+	QCOMPARE(m_space->m_space.size(), 1UL);
 	m_space->setChar(back, 'b');
-	QCOMPARE(m_space->m_space.size(), (uint)2);
+	QCOMPARE(m_space->m_space.size(), 2UL);
 	m_space->setChar(front2, 'F');
-	QCOMPARE(m_space->m_space.size(), (uint)3);
+	QCOMPARE(m_space->m_space.size(), 3UL);
 	m_space->setChar(front, 'f');
-	QCOMPARE(m_space->m_space.size(), (uint)4);
+	QCOMPARE(m_space->m_space.size(), 4UL);
 	m_space->setChar(middle2, 'M');
-	QCOMPARE(m_space->m_space.size(), (uint)5);
+	QCOMPARE(m_space->m_space.size(), 5UL);
 	m_space->setChar(back2, 'B');
-	QCOMPARE(m_space->m_space.size(), (uint)6);
+	QCOMPARE(m_space->m_space.size(), 6UL);
 	
 	// Check the values are where we put them
 	QCOMPARE(m_space->getChar(front), QChar('f'));
@@ -96,6 +96,5 @@ void TestFungeSpace::testSideSorting()
 	QCOMPARE(it, bySide.end());
 }
 
-#include "../../bin/src/moc_fungespace.cxx"
 
 
