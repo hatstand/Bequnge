@@ -113,7 +113,3 @@ install_name_tool -change phonon.framework/Versions/4/phonon @executable_path/..
 # Fix other libraries
 fixlibs ${EXEDIR}/Bequnge
 
-# Fix freetype
-freetype=`otool -L ${EXEDIR}/Bequnge | grep libfreetype | sed -e 's#^ *##' | cut -d ' ' -f 1`
-echo $freetype | grep -q "/sw" || cp -f ${freetype} ${FRMDIR} && install_name_tool -id @executable_path/../Frameworks/`basename $freetype` ${FRMDIR}/`basename $freetype`
-install_name_tool -change ${freetype} @executable_path/../Frameworks/`basename $freetype` ${EXEDIR}/Bequnge
