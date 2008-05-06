@@ -24,6 +24,7 @@ private:
 	int zero;
 };
 
-uint qHash(Coord c);
+uint qHash(const Coord& c);
+uint hash_value(const Coord& c);
 
 #endif

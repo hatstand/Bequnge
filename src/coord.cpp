@@ -1,6 +1,6 @@
 #include "coord.h"
 
-uint qHash(Coord c)
+uint qHash(const Coord& c)
 {
 	uint hash = 0;
 
@@ -13,6 +13,11 @@ uint qHash(Coord c)
 	}
 	
 	return hash;
+}
+
+uint hash_value(const Coord& c)
+{
+	return qHash(c);
 }
 
 

@@ -32,7 +32,7 @@ FungeSpace::FungeSpace(FungeSpace* space)
 	m_version = "0";
 	
 	setDimensions(space->dimensions());
-	m_space = space->getCode();
+	m_space = space->m_space;
 	for (uint i=0 ; i<m_dimensions ; ++i)
 	{
 		m_positiveEdges[i] = space->getPositiveEdge(i);
@@ -176,7 +176,8 @@ FungeSpace::~FungeSpace()
 
 QHash<Coord, QChar> FungeSpace::getCode()
 {
-	return m_space;
+	//return m_space;
+	return QHash<Coord, QChar>();
 }
 
 void FungeSpace::setChar(Coord pos, QChar c)
@@ -190,7 +191,7 @@ void FungeSpace::setChar(Coord pos, QChar c)
 
 	if(c != ' ')
 	{
-		m_space.insert(pos, c);
+		m_space.insert(FungeChar(pos, c));
 
 		for(uint i = 0; i < m_dimensions; ++i)
 		{
@@ -199,7 +200,7 @@ void FungeSpace::setChar(Coord pos, QChar c)
 		}
 	}
 	else
-		m_space.remove(pos);
+		m_space.erase(pos);
 	
 	if (m_trackChanges)
 	{
@@ -215,15 +216,15 @@ void FungeSpace::setChar(Coord pos, QChar c)
 
 QChar FungeSpace::getChar(Coord pos) const
 {
-	if(m_space.contains(pos))
-		return m_space[pos];
+	if(m_space.find(pos) != m_space.end())
+		return m_space.find(pos)->data;
 	else
 		return QChar(' ');
 }
 
 void FungeSpace::setDimensions(uint dimensions)
 {
-	if (dimensions == m_dimensions)
+	/*if (dimensions == m_dimensions)
 		return;
 	
 	QHash<Coord, QChar> newSpace;
@@ -249,12 +250,12 @@ void FungeSpace::setDimensions(uint dimensions)
 	while ((uint)m_positiveEdges.count() < m_dimensions)
 		m_positiveEdges.append(0);
 	while ((uint)m_negativeEdges.count() < m_dimensions)
-		m_negativeEdges.append(0);
+		m_negativeEdges.append(0);*/
 }
 
 void FungeSpace::save(QString filename)
 {
-	QFile file(filename);
+	/*QFile file(filename);
 	if(!file.open(QIODevice::WriteOnly))
 	{
 		qWarning() << "Cannot open file:" << filename << ":-S";
@@ -290,7 +291,7 @@ void FungeSpace::save(QString filename)
 
 		// Insert QChar in the correct plane
 		(*current)[pc] = m_space[p];
-	}
+	}*/
 
 	/*for(QHash<Coord,Plane*>::const_iterator it = planes.constBegin(); it != planes.constEnd(); ++it)
 	{
@@ -301,7 +302,7 @@ void FungeSpace::save(QString filename)
 		}
 	}*/
 
-	QTextStream stream(&file);
+	/*QTextStream stream(&file);
 
 	// Write header
 	stream << "Version 1,Dimensions " << m_dimensions << '\n';
@@ -367,7 +368,7 @@ void FungeSpace::save(QString filename)
 		delete i;
 	}
 
-	file.close();
+	file.close();*/
 }
 
 FungeSpace::PlaneCoord FungeSpace::coordToPlaneCoord(Coord c)

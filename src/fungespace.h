@@ -8,6 +8,11 @@
 
 #include <tr1/array>
 
+#include <boost/multi_index_container.hpp>
+#include <boost/multi_index/hashed_index.hpp>
+#include <boost/multi_index/member.hpp>
+#include <boost/multi_index/ordered_index.hpp>
+
 #include "coord.h"
 
 /*
@@ -28,7 +33,7 @@ The pig will help with the understanding of this class.
                  _.-`                       '          .'
                .'                              '- ._.-'
              /`                                    /
-            /                                     |
+            /  multi_index lol                    |
       ._   ;                                 |    |
        )).-|                     |           |    /
       (/`.-|                \    \           /  .;
@@ -44,6 +49,41 @@ The pig will help with the understanding of this class.
 
 */
 
+struct FungeChar
+{
+	FungeChar(const Coord& c, const QChar& d) : coord(c), data(d) {}
+	
+	Coord coord;
+	QChar data;
+};
+
+struct FrontComparison
+{
+	bool operator() (const Coord& first, const Coord& second) const
+	{
+		if (first[2] < second[2])
+			return true;
+		if (first[0] < second[0])
+			return true;
+		if (first[1] < second[1])
+			return true;
+		for (int d=3 ; d<qMax(first.size(), second.size()) ; d++)
+			if (first[d] < second[d])
+				return true;
+		return false;
+	}
+};
+
+struct SideComparison
+{
+	bool operator() (const Coord& first, const Coord& second) const
+	{
+		for (int d=0 ; d<qMax(first.size(), second.size()) ; d++)
+			if (first[d] < second[d])
+				return true;
+		return false;
+	}
+};
 
 class FungeSpace : public QObject
 {
@@ -92,6 +132,23 @@ signals:
 
 private:
 	typedef std::tr1::array<int,2> PlaneCoord;
+	
+	typedef boost::multi_index_container<
+		FungeChar,
+		boost::multi_index::indexed_by<
+			boost::multi_index::ordered_unique<
+				boost::multi_index::member<FungeChar, Coord, &FungeChar::coord>,
+				FrontComparison
+			>,
+			boost::multi_index::ordered_unique<
+				boost::multi_index::member<FungeChar, Coord, &FungeChar::coord>,
+				SideComparison
+			>,
+			boost::multi_index::hashed_unique<
+				boost::multi_index::member<FungeChar, Coord, &FungeChar::coord>
+			>
+		>
+	> Space;
 
 	void parseHeader(QIODevice* dev);
 	void readInAll(QIODevice* dev);
@@ -106,7 +163,8 @@ private:
 	uint m_dimensions;
 
 	//QMap<QList<int>, QChar> m_space;
-	QHash<Coord, QChar> m_space;
+	//QHash<Coord, QChar> m_space;
+	Space m_space;
 	
 	bool m_trackChanges;
 	QHash<Coord, QPair<QChar, QChar> > m_changes;
