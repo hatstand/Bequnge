@@ -210,31 +210,33 @@ void FungeSpace::setChar(Coord pos, QChar c)
 
 QChar FungeSpace::getChar(Coord pos) const
 {
-	if(m_space.get<hash>().find(pos) != m_space.get<hash>().end())
-		return m_space.get<hash>().find(pos)->data;
+	CodeByHash::iterator it = m_space.get<hash>().find(pos);
+	if(it != m_space.get<hash>().end())
+		return it->data;
 	else
 		return QChar(' ');
 }
 
 void FungeSpace::setDimensions(uint dimensions)
 {
-	/*if (dimensions == m_dimensions)
+	if (dimensions == m_dimensions)
 		return;
 	
-	QHash<Coord, QChar> newSpace;
+	Space newSpace;
 	
-	QHashIterator<Coord, QChar> i(m_space);
-	while (i.hasNext())
+	CodeByHash::iterator i(m_space.get<hash>().begin());
+	while (i != m_space.get<hash>().end())
 	{
-		i.next();
-		Coord coord = i.key();
+		Coord coord = i->coord;;
 		
 		while ((uint)coord.count() > dimensions)
 			coord.pop_back();
 		while ((uint)coord.count() < dimensions)
 			coord.append(0);
 		
-		newSpace.insert(coord, i.value());
+		newSpace.insert(FungeChar(coord, i->data));
+
+		++i;
 	}
 	
 	m_space = newSpace;
@@ -244,7 +246,7 @@ void FungeSpace::setDimensions(uint dimensions)
 	while ((uint)m_positiveEdges.count() < m_dimensions)
 		m_positiveEdges.append(0);
 	while ((uint)m_negativeEdges.count() < m_dimensions)
-		m_negativeEdges.append(0);*/
+		m_negativeEdges.append(0);
 }
 
 void FungeSpace::save(QString filename)
@@ -270,7 +272,7 @@ void FungeSpace::save(QString filename)
 	// Receives in z, y, x order
 	while (it != m_space.get<front>().end())
 	{
-		
+		++it;
 	}
 
 	/*
