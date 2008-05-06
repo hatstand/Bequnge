@@ -61,16 +61,7 @@ struct FrontComparison
 {
 	bool operator() (const Coord& first, const Coord& second) const
 	{
-		if (first[2] < second[2])
-			return true;
-		if (first[0] < second[0])
-			return true;
-		if (first[1] < second[1])
-			return true;
-		for (int d=3 ; d<qMax(first.size(), second.size()) ; d++)
-			if (first[d] < second[d])
-				return true;
-		return false;
+		return first[2] < second[2];
 	}
 };
 
@@ -78,10 +69,7 @@ struct SideComparison
 {
 	bool operator() (const Coord& first, const Coord& second) const
 	{
-		for (int d=0 ; d<qMax(first.size(), second.size()) ; d++)
-			if (first[d] < second[d])
-				return true;
-		return false;
+		return first[0] < second[0];
 	}
 };
 
@@ -97,11 +85,11 @@ class FungeSpace : public QObject
 	typedef boost::multi_index_container<
 		FungeChar,
 		boost::multi_index::indexed_by<
-			boost::multi_index::ordered_unique<
+			boost::multi_index::ordered_non_unique<
 				boost::multi_index::member<FungeChar, Coord, &FungeChar::coord>,
 				FrontComparison
 			>,
-			boost::multi_index::ordered_unique<
+			boost::multi_index::ordered_non_unique<
 				boost::multi_index::member<FungeChar, Coord, &FungeChar::coord>,
 				SideComparison
 			>,

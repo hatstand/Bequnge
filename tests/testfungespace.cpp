@@ -62,28 +62,6 @@ void TestFungeSpace::insertValues()
 	QCOMPARE(m_space->getChar(middle2), QChar('M'));
 	QCOMPARE(m_space->getChar(back), QChar('b'));
 	QCOMPARE(m_space->getChar(back2), QChar('B'));
-	
-	// Test the comparison functors
-	FrontComparison f;
-	SideComparison s;
-	
-	QCOMPARE(f(front, middle), true);
-	QCOMPARE(f(front, back), true);
-	QCOMPARE(f(back, front), false);
-	QCOMPARE(f(back, middle), false);
-	QCOMPARE(f(middle, back), true);
-	QCOMPARE(f(front, front), false);
-	
-	QCOMPARE(s(front, front2), true);
-	QCOMPARE(s(front, middle2), true);
-	QCOMPARE(s(front, back2), true);
-	QCOMPARE(s(back, back2), true);
-	QCOMPARE(s(back, middle2), true);
-	QCOMPARE(s(back, front2), true);
-	QCOMPARE(s(middle, middle2), true);
-	QCOMPARE(s(front2, front), false);
-	QCOMPARE(s(back2, back), false);
-	QCOMPARE(s(middle2, middle), false);
 }
 
 void TestFungeSpace::testFrontSorting()
@@ -93,12 +71,12 @@ void TestFungeSpace::testFrontSorting()
 	FungeSpace::CodeByFront& byFront(m_space->codeByFront());
 	
 	FungeSpace::CodeByFront::iterator it(byFront.begin());
-	QCOMPARE(it->data, QChar('f')); it++;
-	QCOMPARE(it->data, QChar('F')); it++;
-	QCOMPARE(it->data, QChar('m')); it++;
-	QCOMPARE(it->data, QChar('M')); it++;
-	QCOMPARE(it->data, QChar('b')); it++;
-	QCOMPARE(it->data, QChar('B')); it++;
+	QCOMPARE(it->data.toLower(), QChar('f')); it++;
+	QCOMPARE(it->data.toLower(), QChar('f')); it++;
+	QCOMPARE(it->data.toLower(), QChar('m')); it++;
+	QCOMPARE(it->data.toLower(), QChar('m')); it++;
+	QCOMPARE(it->data.toLower(), QChar('b')); it++;
+	QCOMPARE(it->data.toLower(), QChar('b')); it++;
 	QCOMPARE(it, byFront.end());
 }
 
@@ -109,18 +87,13 @@ void TestFungeSpace::testSideSorting()
 	FungeSpace::CodeBySide& bySide(m_space->codeBySide());
 	
 	FungeSpace::CodeBySide::iterator it(bySide.begin());
-	while (it != bySide.end())
-	{
-		qDebug() << it->data;
-		it++;
-	}
-	/*QCOMPARE(it->data, QChar('f')); it++;
-	QCOMPARE(it->data, QChar('m')); it++;
-	QCOMPARE(it->data, QChar('b')); it++;
-	QCOMPARE(it->data, QChar('F')); it++;
-	QCOMPARE(it->data, QChar('M')); it++;
-	QCOMPARE(it->data, QChar('B')); it++;
-	QCOMPARE(it, bySide.end());*/
+	QCOMPARE(it->data.isLower(), true); it++;
+	QCOMPARE(it->data.isLower(), true); it++;
+	QCOMPARE(it->data.isLower(), true); it++;
+	QCOMPARE(it->data.isUpper(), true); it++;
+	QCOMPARE(it->data.isUpper(), true); it++;
+	QCOMPARE(it->data.isUpper(), true); it++;
+	QCOMPARE(it, bySide.end());
 }
 
 #include "../../bin/src/moc_fungespace.cxx"
