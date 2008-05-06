@@ -256,6 +256,23 @@ void FungeSpace::save(QString filename)
 		return;
 	}
 
+	QTextStream stream(&file);
+
+	// Iterate through in Z order.
+	CodeByFront::iterator it(m_space.get<front>().begin());
+	if (it == m_space.get<front>().end())
+		return;
+
+	int current_z = it->coord[2];
+	int neg_edge = getNegativeEdge(0);
+	int pos_edge = getPositiveEdge(0);
+	int current_offset = 0;
+	// Receives in z, y, x order
+	while (it != m_space.get<front>().end())
+	{
+		
+	}
+
 	/*
 	// Maps x,y to a QChar
 	// QMap as indexes in order

@@ -62,7 +62,18 @@ struct FrontComparison
 {
 	bool operator() (const Coord& first, const Coord& second) const
 	{
-		return first[2] < second[2];
+		// Order by z first
+		if (first[2] != second[2])
+			return first[2] < second[2];
+
+		// Then by y
+		if (first[1] != second[1])
+			return first[1] < second[1];
+
+		if (first[0] != second[0])
+			return first[0] < second[0];
+
+		return false;
 	}
 };
 
