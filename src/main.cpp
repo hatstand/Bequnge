@@ -31,10 +31,10 @@ int main(int argc, char** argv)
  	Interpreter i(&m, &s, 0);
 	Console console(&i);
 
-	Interpreter::Status status;
+	QList<Interpreter::Status> status;
 	do
 	{
  		status = i.stepAll();
-	} while (status != Interpreter::End);
+	} while (status.count(Interpreter::End) != status.size());
  	s.save("temp");
 }

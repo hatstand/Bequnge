@@ -216,17 +216,23 @@ void MainWindow::slotStep()
 {
 	if (m_interpreter == NULL)
 		return;
-	
-	switch (m_interpreter->stepAll())
+
+	QList<Interpreter::Status> status = m_interpreter->stepAll();
+
+	foreach (Interpreter::Status s, status)
 	{
-	case Interpreter::End:
-	case Interpreter::Invalid:
-		slotStop();
-		break;
-	case Interpreter::SuspendForInput:
-		break;
-	case Interpreter::Success:
-		break;
+		switch (s)
+		{
+			case Interpreter::End:
+				slotStop();
+				break;
+			case Interpreter::Invalid:
+				break;
+			case Interpreter::SuspendForInput:
+				break;
+			case Interpreter::Success:
+				break;
+		}
 	}
 }
 
@@ -364,18 +370,13 @@ void MainWindow::doFullSpeedExecution()
 	int i=0;
 	while (m_fullSpeedExecution)
 	{
-		switch (m_interpreter->stepAll())
+		QList<Interpreter::Status> status = m_interpreter->stepAll();
+		if (status.count(Interpreter::End) == status.size())
 		{
-		case Interpreter::End:
-		case Interpreter::Invalid:
 			slotStop();
 			m_fullSpeedExecution = false;
-			break;
-		case Interpreter::SuspendForInput:
-			return;
-		case Interpreter::Success:
-			break;
 		}
+
 		++i;
 		if (i == 100)
 		{

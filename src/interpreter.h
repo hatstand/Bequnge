@@ -66,7 +66,7 @@ public:
 
 	void run();
 	Status step();
-	Status stepAll();
+	QList<Interpreter::Status> stepAll();
 	
 	void pushItem(int c);
 	int popItem();

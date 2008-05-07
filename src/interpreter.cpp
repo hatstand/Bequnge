@@ -147,17 +147,21 @@ Interpreter::Status Interpreter::step()
 	return ret;
 }
 
-Interpreter::Status Interpreter::stepAll()
+QList<Interpreter::Status> Interpreter::stepAll()
 {
+	QList<Interpreter::Status> status;
 	foreach(InstructionPointer* ip, m_ips)
 	{
 		m_ip = ip;
 		Interpreter::Status ret = step();
-		if (ret != Success || ret != Invalid)
-			return ret;
+
+		if (ret == End)
+			m_ips.removeAll(ip);
+
+		status << ret;
 	}
 
-	return Success;
+	return status;
 }
 
 void Interpreter::run()
@@ -836,7 +840,7 @@ void Interpreter::split()
 	reverse();
 	move();
 	qSwap(m_ip, t);
-	
+
 	emit ipCreated(m_ips.indexOf(t), t);
 }
 
