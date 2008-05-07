@@ -87,8 +87,8 @@ GLView::GLView(FungeSpace* fungeSpace, const QGLFormat& format, QWidget* parent)
 	m_sound = new Sound(this);
 	
 	// Particle groups
-	m_cursorPG = m_P.GenParticleGroups(1, 200);
-	m_explosionsPG = m_P.GenParticleGroups(1, 5000);
+	m_cursorPG = m_P.GenParticleGroups(1, 2000);
+	m_explosionsPG = m_P.GenParticleGroups(1, 50000);
 	
 	m_extraDimensions = new ExtraDimensions(this);
 	
