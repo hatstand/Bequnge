@@ -25,12 +25,14 @@ Coord::Coord()
 	: QVector<int>(),
 	  zero(0)
 {
+	reserve(3);
 }
 
 Coord::Coord(const QVector<int>& other)
 	: QVector<int>(other),
 	  zero(0)
 {
+	reserve(3);
 }
 
 Coord Coord::operator =(const QVector<int>& other)
@@ -47,6 +49,9 @@ const int& Coord::at(int i) const
 
 int& Coord::operator [](int i)
 {
+	if (i > size())
+		resize(i);
+
 	while (i >= count())
 		append(0);
 	return QVector<int>::operator[](i);

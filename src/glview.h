@@ -13,7 +13,11 @@
 #include <pAPI.h>
 #include <Actions.h>
 
+#include <tr1/array>
+
 using namespace PAPI;
+
+typedef std::tr1::array<int,3> float3;
 
 class QMouseEvent;
 class QKeyEvent;
@@ -102,7 +106,7 @@ private:
 	float modulo(float value, float mod);
 	Coord pointToFungeSpace(const QPoint& pos);
 	Coord glToFungeSpace(float x, float y, float z);
-	QList<float> fungeSpaceToGl(Coord c, bool premultiplied);
+	static float3 fungeSpaceToGl(const Coord& c, bool premultiplied);
 	void toggleStringMode();
 	void setCursorDirection(int direction);
 	void setActivePlane(int plane);

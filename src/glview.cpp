@@ -207,7 +207,7 @@ void GLView::updateCamera(int i)
 	else
 		m_actualEyeOffset[i] += diff * m_cameraMoveSpeed;
 	
-	QList<float> c = fungeSpaceToGl(cursor(), false);
+	float3 c = fungeSpaceToGl(cursor(), false);
 	diff = c[i] - m_actualCursorPos[i];
 	if (fabs(diff) < 0.01)
 		m_actualCursorPos[i] = c[i];
@@ -224,7 +224,7 @@ void GLView::drawScene()
 	
 	glPushMatrix();
 		if (m_activePlane == 2)
-			drawFunge(m_fungeSpace->codeByFront());
+			drawFunge(m_fungeSpace->codeByClever());
 		else
 			drawFunge(m_fungeSpace->codeBySide());
 		drawCursor();
@@ -286,7 +286,7 @@ void GLView::drawCursor()
 	{
 		glPushMatrix();
 			Coord coords = m_extraDimensions->nDTo3D(m_cursor);
-			QList<float> coord = fungeSpaceToGl(coords, true);
+			float3 coord = fungeSpaceToGl(coords, true);
 			glTranslatef(coord[0] - 0.01f, coord[1] - 2.5f, coord[2] - 0.01f);
 			if (m_activePlane == 0)
 			{
@@ -323,7 +323,7 @@ void GLView::drawInstructionPointers()
 		{
 			glPushMatrix();
 				Coord coords = m_extraDimensions->nDTo3D(ip->m_pos);
-				QList<float> coord = fungeSpaceToGl(coords, true);
+				float3 coord = fungeSpaceToGl(coords, true);
 				glTranslatef(coord[0] - 0.01f, coord[1] - 2.5f, coord[2] - 0.01f);
 				if (m_activePlane == 0)
 				{
@@ -415,17 +415,17 @@ void GLView::drawDepthBoxes()
 	// Draw bounding boxes in the depth buffer
 	if (m_extraDimensions->ascensionLevel() == 0)
 	{
-		FungeSpace::CodeByFront& code(m_fungeSpace->codeByFront());
-		FungeSpace::CodeByFront::iterator i(code.begin());
+		FungeSpace::CodeByClever& code(m_fungeSpace->codeByClever());
+		FungeSpace::CodeByClever::iterator i(code.begin());
 		
 		glColorMask(false, false, false, false);
 		while (i != code.end())
 		{
-			Coord coords(i->coord);
-			QChar data(i->data);
+			const Coord& coords(i->coord);
+			const QChar& data(i->data);
 			
 			glPushMatrix();
-				QList<float> coord = fungeSpaceToGl(coords, true);
+				float3 coord = fungeSpaceToGl(coords, true);
 				glTranslatef(coord[0], coord[1], coord[2]);
 				if (m_activePlane == 0)
 				{
@@ -595,7 +595,7 @@ void GLView::drawFunge(T& code)
 	while (i != code.rend())
 	{
 		Coord coords(i->coord);
-		QChar data(i->data);
+		const QChar& data(i->data);
 		
 		if (m_extraDimensions->ascensionLevel() > 0)
 		{
@@ -653,7 +653,7 @@ void GLView::drawFunge(T& code)
 			else
 				glColor4f(1.0f, 1.0f, 1.0f, 0.2f);
 			
-			QList<float> coord = fungeSpaceToGl(coords, true);
+			float3 coord = fungeSpaceToGl(coords, true);
 			glTranslatef(coord[0], coord[1], coord[2]);
 			
 			if (m_activePlane == 0)
@@ -672,8 +672,8 @@ void GLView::drawFunge(T& code)
 
 void GLView::drawCube(Coord startPos, Coord endPos)
 {
-	QList<float> cubeStart = fungeSpaceToGl(startPos, true);
-	QList<float> cubeEnd = fungeSpaceToGl(endPos, true);
+	float3 cubeStart = fungeSpaceToGl(startPos, true);
+	float3 cubeEnd = fungeSpaceToGl(endPos, true);
 	
 	float temp = cubeStart[2];
 	cubeStart[2] = cubeEnd[2];
@@ -812,16 +812,16 @@ Coord GLView::glToFungeSpace(float x, float y, float z)
 	return ret;
 }
 
-QList<float> GLView::fungeSpaceToGl(Coord c, bool premultiplied)
+float3 GLView::fungeSpaceToGl(const Coord& c, bool premultiplied)
 {
 	float size = FONT_SIZE;
 	if (!premultiplied)
 		size *= 0.004f;
 	
-	QList<float> ret;
-	ret.append(c[0] * size);
-	ret.append(- c[1] * size);
-	ret.append(- c[2] * size);
+	float3 ret;
+	ret[0] = c[0] * size;
+	ret[1] = - c[1] * size;
+	ret[2] = - c[2] * size;
 	return ret;
 }
 
@@ -1308,8 +1308,8 @@ void GLView::selectionToClipboard(bool cut, QClipboard::Mode mode)
 		frontPlaneText += emptyLine;
 	
 	// There's probably a nicer way to do this with boost limits...
-	FungeSpace::CodeByFront& code(m_fungeSpace->codeByFront());
-	FungeSpace::CodeByFront::iterator i(code.begin());
+	FungeSpace::CodeByClever& code(m_fungeSpace->codeByClever());
+	FungeSpace::CodeByClever::iterator i(code.begin());
 	ChangeList changes;
 	while (i != code.end())
 	{

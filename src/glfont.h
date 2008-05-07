@@ -31,6 +31,8 @@ private:
 	QImage m_image;
 	QPainter m_painter;
 	uchar* m_data;
+
+	uint m_boundTexture;
 	
 	static const int s_res;
 	static const float s_scale;

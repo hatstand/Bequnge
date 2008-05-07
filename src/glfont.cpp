@@ -12,7 +12,8 @@ uint GLFont::s_texLoc;
 GLFont::GLFont(const QString& family, const QPen& pen)
 	: m_image(s_res, s_res, QImage::Format_ARGB32),
 	  m_pen(pen),
-	  m_data(new uchar[s_res * s_res])
+	  m_data(new uchar[s_res * s_res]),
+	  m_boundTexture(0)
 {
 	if (s_shader == NULL)
 	{
@@ -70,6 +71,8 @@ void GLFont::initBuffers()
 
 void GLFont::bind()
 {
+	m_boundTexture = 0;
+
 	glEnableClientState(GL_VERTEX_ARRAY);
 	glEnableClientState(GL_TEXTURE_COORD_ARRAY);
 	glEnable(GL_TEXTURE_2D);
@@ -85,7 +88,10 @@ void GLFont::bind()
 
 void GLFont::drawChar(const QChar& c)
 {
-	glBindTexture(GL_TEXTURE_2D, textureForChar(c));
+	uint texture = textureForChar(c);
+	if (texture != m_boundTexture)
+		glBindTexture(GL_TEXTURE_2D, m_boundTexture = texture);
+
 	glUniform1i(s_texLoc, 0);
 	
 	glDrawArrays(GL_QUADS, 0, 4);

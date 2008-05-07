@@ -85,6 +85,17 @@ struct SideComparison
 	}
 };
 
+struct CleverComparison
+{
+	bool operator() (const FungeChar& first, const FungeChar& second) const
+	{
+		if (first.coord[2] != second.coord[2])
+			return first.coord[2] < second.coord[2];
+
+		return first.data < second.data;
+	}
+};
+
 class FungeSpace : public QObject
 {
 	Q_OBJECT
@@ -96,6 +107,7 @@ class FungeSpace : public QObject
 	
 	struct side {};
 	struct front {};
+	struct clever {};
 	struct hash {};
 
 	typedef boost::multi_index_container<
@@ -114,6 +126,11 @@ class FungeSpace : public QObject
 			boost::multi_index::hashed_unique<
 				boost::multi_index::tag<hash>,
 				boost::multi_index::member<FungeChar, Coord, &FungeChar::coord>
+			>,
+			boost::multi_index::ordered_non_unique<
+				boost::multi_index::tag<clever>,
+				boost::multi_index::identity<FungeChar>,
+				CleverComparison
 			>
 		>
 	> Space;
@@ -121,6 +138,7 @@ class FungeSpace : public QObject
 public:
 	typedef Space::index<front>::type CodeByFront;
 	typedef Space::index<side>::type CodeBySide;
+	typedef Space::index<clever>::type CodeByClever;
 	typedef Space::index<hash>::type CodeByHash;
 	
 	FungeSpace(int dimensions);
@@ -136,6 +154,7 @@ public:
 	// Get all the code back out from FungeSpace
 	CodeByFront& codeByFront() { return m_space.get<front>(); }
 	CodeBySide& codeBySide() { return m_space.get<side>(); }
+	CodeByClever& codeByClever() { return m_space.get<clever>(); }
 	
 	// Get the code edges (only correct if code doesn't shrink)
 	int getPositiveEdge(int dimension) const { return m_positiveEdges[dimension]; }
