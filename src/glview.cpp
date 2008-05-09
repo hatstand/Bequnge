@@ -24,7 +24,6 @@
 
 QList<Shader*> GLView::s_ppShaders;
 
-
 GLView::GLView(FungeSpace* fungeSpace, const QGLFormat& format, QWidget* parent)
 	: QGLWidget(format, parent),
 	  m_fungeSpace(fungeSpace),

@@ -2,12 +2,19 @@
 #include "opengl.h"
 #include "shader.h"
 
+#include <cmath>
 #include <QtDebug>
 
 const int GLFont::s_res = 32;
 const float GLFont::s_scale = 27.0;
 Shader* GLFont::s_shader = NULL;
 uint GLFont::s_texLoc;
+// List of all valid Funge 98 characters.
+const QString GLFont::s_atlas =
+	"abcdefghijklmnopqrstuvwxyz"
+	"ABCDEFGHIJKLMNOPQRSTUVWXYZ"
+	"0123456789"
+	" !\"#$%&'()*+,-./:;<=>?@[\\]^_`{|}~";
 
 GLFont::GLFont(const QString& family, const QPen& pen)
 	: m_image(s_res, s_res, QImage::Format_ARGB32),
@@ -24,6 +31,7 @@ GLFont::GLFont(const QString& family, const QPen& pen)
 	m_font.setFamily(family);
 	m_font.setPixelSize(s_res);
 	
+	genAtlas();
 	initBuffers();
 }
 
@@ -35,6 +43,44 @@ GLFont::~GLFont()
 		glDeleteTextures(1, &tex);
 	
 	glDeleteBuffers(2, m_quadBuffers);
+}
+
+void GLFont::genAtlas()
+{
+	// Number of chars to store in atlas
+	int atlasLength = s_atlas.length();
+
+	int totalPixelsRequired = atlasLength * s_res * s_res;
+	// Width of texture in pixels;
+	int textureWidth = s_res;
+	while (textureWidth * textureWidth < totalPixelsRequired)
+		textureWidth *= 2;
+
+	// Width in chars.
+	int atlasWidth = textureWidth / s_res;
+
+	QImage image(atlasWidth * s_res, atlasWidth * s_res, QImage::Format_ARGB32);
+	image.fill(qRgba(0, 0, 0, 0));
+
+	QPainter p;
+
+	int x = 0;
+	int y = 0;
+	foreach(QChar c, s_atlas)
+	{
+		p.begin(&image);
+		p.setFont(m_font);
+		p.setPen(m_pen);
+		p.drawText(QRect(x*s_res, y*s_res, s_res, s_res), Qt::AlignHCenter | Qt::AlignVCenter, c);
+		p.end();
+
+		++x;
+		if (x == atlasWidth)
+		{
+			x = 0;
+			y++;
+		}
+	}
 }
 
 void GLFont::initBuffers()

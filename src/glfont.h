@@ -21,6 +21,7 @@ public:
 private:
 	void initBuffers();
 	uint textureForChar(const QChar& c);
+	void genAtlas();
 	
 	QMap<QChar, uint> m_cache;
 	QFont m_font;
@@ -33,11 +34,15 @@ private:
 	uchar* m_data;
 
 	uint m_boundTexture;
+
+	uint m_atlasTexture;
 	
 	static const int s_res;
 	static const float s_scale;
 	static Shader* s_shader;
 	static uint s_texLoc;
+
+	static const QString s_atlas;
 };
 
 #endif
