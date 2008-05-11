@@ -326,7 +326,7 @@ void GLView::drawInstructionPointers()
 			glPushMatrix();
 				Coord coords = m_extraDimensions->nDTo3D(ip->m_pos);
 				float3 coord = fungeSpaceToGl(coords);
-				glTranslatef(coord[0] - 0.01f, coord[1] - 2.5f, coord[2] - 0.01f);
+				glTranslatef(coord[0], coord[1], coord[2]);
 				if (m_activePlane == 0)
 				{
 					glTranslatef(FONT_SIZE/2, 0.0f, 0.0f);
@@ -1158,7 +1158,7 @@ void GLView::ipDestroyed(Interpreter::InstructionPointer* ip)
 	
 	m_P.CurrentGroup(m_explosionsPG);
 	m_P.Color(colorToVector(ip->m_color));
-	m_P.Velocity(PDSphere(pVec(0), 10.0f, 5.0f));
+	m_P.Velocity(PDSphere(pVec(0), 0.1f, 0.05f));
 	m_P.Source(300, PDSphere(ipVec, FONT_SIZE/2));
 	
 	m_P.DeleteParticleGroups(ip->m_particleGroup);
