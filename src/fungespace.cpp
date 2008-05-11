@@ -264,32 +264,15 @@ void FungeSpace::save(QString filename)
 		return;
 	}
 
-	QTextStream stream(&file);
-
-	// Iterate through in Z order.
-	CodeByFront::iterator it(m_space.get<front>().begin());
-	if (it == m_space.get<front>().end())
-		return;
-
-	int current_z = it->coord[2];
-	int neg_edge = getNegativeEdge(0);
-	int pos_edge = getPositiveEdge(0);
-	int current_offset = 0;
-	// Receives in z, y, x order
-	while (it != m_space.get<front>().end())
-	{
-		++it;
-	}
-
-	/*
 	// Maps x,y to a QChar
 	// QMap as indexes in order
 	typedef QMap<PlaneCoord, QChar> Plane;
 
 	// Maps a Coord (stripped of x,y) to an x-y plane
 	QHash<Coord, Plane*> planes;
-	foreach(Coord p, m_space.keys())
+	for (CodeByFront::iterator it = codeByFront().begin(); it != codeByFront().end(); ++it)
 	{
+		Coord p = it->coord;
 		// Convert Coord to PlaneCoord and Coord
 		PlaneCoord pc = coordToPlaneCoord(p);
 		Coord pp = p.mid(2);
@@ -310,19 +293,10 @@ void FungeSpace::save(QString filename)
 		}
 
 		// Insert QChar in the correct plane
-		(*current)[pc] = m_space[p];
-	}*/
+		(*current)[pc] = it->data;
+	}
 
-	/*for(QHash<Coord,Plane*>::const_iterator it = planes.constBegin(); it != planes.constEnd(); ++it)
-	{
-		qDebug() << it.key() << it.value()->size();
-		foreach(QChar c, it.value()->values())
-		{
-			qDebug() << c;
-		}
-	}*/
-
-	/*QTextStream stream(&file);
+	QTextStream stream(&file);
 
 	// Write header
 	stream << "Version 1,Dimensions " << m_dimensions << '\n';
@@ -388,7 +362,7 @@ void FungeSpace::save(QString filename)
 		delete i;
 	}
 
-	file.close();*/
+	file.close();
 }
 
 FungeSpace::PlaneCoord FungeSpace::coordToPlaneCoord(Coord c)
