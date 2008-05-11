@@ -207,10 +207,10 @@ void ExtraDimensions::drawGridLines(float offsetX, float offsetY, float offsetZ)
 
 void ExtraDimensions::updatePositions(float timeDelta)
 {
-	m_cameraOffset[0].update(timeDelta);
-	m_cameraOffset[1].update(timeDelta);
-	m_cameraOffset[2].update(timeDelta);
-	m_scaleFactor.update(timeDelta);
+	m_cameraOffset[0].update((int)timeDelta);
+	m_cameraOffset[1].update((int)timeDelta);
+	m_cameraOffset[2].update((int)timeDelta);
+	m_scaleFactor.update((int)timeDelta);
 	
 	QList<int> toBeRemoved;
 	
@@ -221,7 +221,7 @@ void ExtraDimensions::updatePositions(float timeDelta)
 		if (var < 0.0)
 			toBeRemoved << index;
 		else
-			var.update(timeDelta);
+			var.update((int)timeDelta);
 	}
 	
 	foreach (int index, toBeRemoved)
