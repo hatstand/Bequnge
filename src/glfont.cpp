@@ -163,7 +163,6 @@ void GLFont::drawChar(const QChar& c)
 	{
 		texture = textureForChar(c);
 		glUniform3f(s_texOffsetLoc, 0.0, 0.0, 1.0);
-		qDebug() << "Char" << c.toAscii() << c.unicode() << "not from map";
 	}
 	
 	if (texture != m_boundTexture)
