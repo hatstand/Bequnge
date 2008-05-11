@@ -1,6 +1,9 @@
 #ifndef GLFONT_H
 #define GLFONT_H
 
+#include <tr1/array>
+typedef std::tr1::array<float,2> float2;
+
 #include <QChar>
 #include <QMap>
 #include <QPixmap>
@@ -36,6 +39,8 @@ private:
 	uint m_boundTexture;
 
 	uint m_atlasTexture;
+	QMap<QChar, float2> m_atlasMap;
+	uint m_atlasWidth;
 	
 	static const int s_res;
 	static const float s_scale;

@@ -51,15 +51,15 @@ void GLFont::genAtlas()
 	int atlasLength = s_atlas.length();
 
 	int totalPixelsRequired = atlasLength * s_res * s_res;
-	// Width of texture in pixels;
-	int textureWidth = s_res;
-	while (textureWidth * textureWidth < totalPixelsRequired)
-		textureWidth *= 2;
+	// Width of texture in pixels
+	m_atlasWidth = s_res;
+	while (m_atlasWidth * m_atlasWidth < totalPixelsRequired)
+		m_atlasWidth *= 2;
 
 	// Width in chars.
-	int atlasWidth = textureWidth / s_res;
+	int atlasWidth = m_atlasWidth / s_res;
 
-	QImage image(atlasWidth * s_res, atlasWidth * s_res, QImage::Format_ARGB32);
+	QImage image(m_atlasWidth, m_atlasWidth, QImage::Format_ARGB32);
 	image.fill(qRgba(0, 0, 0, 0));
 
 	QPainter p;
@@ -74,6 +74,11 @@ void GLFont::genAtlas()
 		p.drawText(QRect(x*s_res, y*s_res, s_res, s_res), Qt::AlignHCenter | Qt::AlignVCenter, c);
 		p.end();
 
+		float2 pos;
+		pos[0] = x*s_res / m_atlasWidth;
+		pos[1] = y*s_res / m_atlasWidth;
+		m_atlasMap.insert(c, pos);
+
 		++x;
 		if (x == atlasWidth)
 		{
@@ -81,6 +86,13 @@ void GLFont::genAtlas()
 			y++;
 		}
 	}
+
+	glGenTextures(1, &m_atlasTexture);
+	glBindTexture(GL_TEXTURE_2D, m_atlasTexture);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+	
+	gluBuild2DMipmaps(GL_TEXTURE_2D, GL_ALPHA, m_atlasWidth, m_atlasWidth, GL_BGRA, GL_UNSIGNED_BYTE, m_image.bits());
 }
 
 void GLFont::initBuffers()
@@ -134,6 +146,36 @@ void GLFont::bind()
 
 void GLFont::drawChar(const QChar& c)
 {
+/*	if (m_atlasMap.contains(c))
+	{
+		uint texture = m_atlasTexture;
+		if (texture != m_boundTexture)
+			glBindTexture(GL_TEXTURE_2D, m_boundTexture = texture);
+
+		glUniform1i(s_texLoc, 0);
+
+		// Top left
+		float2 pos = *m_atlasMap.find(c);
+		float texCoords[8];
+		// top left
+		texCoords[0] = pos[0];
+		texCoords[1] = pos[1];
+		// top right
+		texCoords[2] = pos[0] + s_res / m_atlasWidth;
+		texCoords[3] = pos[1];
+		// bottom right
+		texCoords[4] = pos[0] + s_res / m_atlasWidth;
+		texCoords[5] = pos[1] + s_res / m_atlasWidth;
+		// bottom left
+		texCoords[6] = pos[0];
+		texCoords[7] = pos[1] + s_res / m_atlasWidth;
+
+		glTexCoordPointer(2, GL_FLOAT, 0, texCoords);
+		glDrawArrays(GL_QUADS, 0, 4);
+
+		return;
+	} */
+
 	uint texture = textureForChar(c);
 	if (texture != m_boundTexture)
 		glBindTexture(GL_TEXTURE_2D, m_boundTexture = texture);
