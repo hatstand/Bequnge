@@ -1,12 +1,13 @@
 #include "glfont.h"
 #include "opengl.h"
 #include "shader.h"
+#include "magicnumbers.h"
 
 #include <cmath>
 #include <QtDebug>
 
 const int GLFont::s_res = 32;
-const float GLFont::s_scale = 27.0;
+const float GLFont::s_scale = FONT_SIZE;
 Shader* GLFont::s_shader = NULL;
 uint GLFont::s_texLoc;
 uint GLFont::s_texOffsetLoc;

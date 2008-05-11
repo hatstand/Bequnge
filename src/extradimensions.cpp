@@ -14,19 +14,13 @@ ExtraDimensions::ExtraDimensions(GLView* glView)
 
 void ExtraDimensions::resetView()
 {
-	m_actualCameraOffset[0] = 0.0f;
-	m_actualCameraOffset[1] = 0.0f;
-	m_actualCameraOffset[2] = 0.0f;
+	m_cameraOffset[0].setValueImmediately(0.0);
+	m_cameraOffset[1].setValueImmediately(0.0);
+	m_cameraOffset[2].setValueImmediately(0.0);
 	
-	m_destinationCameraOffset[0] = m_actualCameraOffset[0];
-	m_destinationCameraOffset[1] = m_actualCameraOffset[1];
-	m_destinationCameraOffset[2] = m_actualCameraOffset[2];
+	m_scaleFactor.setValueImmediately(0.0);
 	
-	m_actualScaleFactor = 1.0f;
-	m_destinationScaleFactor = 1.0f;
-	
-	m_destinationGridAlpha.clear();
-	m_actualGridAlpha.clear();
+	m_gridAlpha.clear();
 	m_ascensionLevel = 0;
 }
 
@@ -76,14 +70,14 @@ void ExtraDimensions::setAscensionLevel(int level)
 
 void ExtraDimensions::updateScaleFactor(float cameraMoveSpeed)
 {
-	m_glView->setCameraMoveSpeed(cameraMoveSpeed);
+	// TODO
+	//m_glView->setCameraMoveSpeed(cameraMoveSpeed);
 	if (m_ascensionLevel == 0)
 		m_glView->resetEye();
 	else
 		m_glView->setEye(6.0f, 30.0f, -30.0f);
 	
-	m_destinationScaleFactor = 10.0f / powf(10.0f, 1 + m_ascensionLevel);
-	m_scaleFactorDiff = 0.001f / powf(10.0f, m_ascensionLevel) - 0.001f / powf(10.0f, 1 + m_ascensionLevel);
+	m_scaleFactor = 10.0f / powf(10.0f, 1 + m_ascensionLevel);
 }
 
 void ExtraDimensions::ascendDimensions()
@@ -92,7 +86,7 @@ void ExtraDimensions::ascendDimensions()
 		return;
 	
 	m_ascensionLevel++;
-	m_destinationGridAlpha[m_ascensionLevel] = 0.75f;
+	m_gridAlpha[m_ascensionLevel] = 0.75;
 	
 	updateScaleFactor(0.07);
 }
@@ -102,7 +96,7 @@ void ExtraDimensions::descendDimensions()
 	if (m_ascensionLevel <= 0)
 		return;
 	
-	m_destinationGridAlpha[m_ascensionLevel] = 0.0f;
+	m_gridAlpha[m_ascensionLevel] = 0.0;
 	m_ascensionLevel--;
 	
 	updateScaleFactor(0.2);
@@ -120,37 +114,22 @@ void ExtraDimensions::move(int x, int y, int z)
 	if (dimension != 0) direction *= -1;
 	
 	// Update the camera offset to follow the text cursor
-	m_destinationCameraOffset[dimension] += direction * gridSize(m_ascensionLevel);
+	m_cameraOffset[dimension] += direction * gridSize(m_ascensionLevel);
 }
 
 void ExtraDimensions::move(Coord pos)
 {
-	m_destinationCameraOffset[0] = 0.0f;
-	m_destinationCameraOffset[1] = 0.0f;
-	m_destinationCameraOffset[2] = 0.0f;
+	m_cameraOffset[0] = 0.0f;
+	m_cameraOffset[1] = 0.0f;
+	m_cameraOffset[2] = 0.0f;
 	
 	for (int i=3 ; i<pos.count() ; ++i)
 	{
 		float sign = 1.0f;
 		if (i%3 != 0) sign = -1.0f;
 		
-		m_destinationCameraOffset[i%3] += sign * pos[i] * gridSize(i/3);
+		m_cameraOffset[i%3] += sign * pos[i] * gridSize(i/3);
 	}
-}
-
-int ExtraDimensions::ascensionLevel() const
-{
-	return m_ascensionLevel;
-}
-
-const float* ExtraDimensions::cameraOffset() const
-{
-	return (const float*) &m_actualCameraOffset;
-}
-
-float ExtraDimensions::scaleFactor() const
-{
-	return m_actualScaleFactor;
 }
 
 int ExtraDimensions::oldPosFromDiff(float diff)
@@ -170,8 +149,8 @@ float ExtraDimensions::gridSize(int ascensionLevel)
 
 void ExtraDimensions::drawGridLines(int i)
 {
-	float xDiff = (m_destinationCameraOffset[0] - m_actualCameraOffset[0]) * m_actualScaleFactor;
-	float yDiff = (m_actualCameraOffset[1] - m_destinationCameraOffset[1]) * m_actualScaleFactor;
+	float xDiff = (m_cameraOffset[0].targetValue() - m_cameraOffset[0]) * m_scaleFactor;
+	float yDiff = (m_cameraOffset[1] - m_cameraOffset[1].targetValue()) * m_scaleFactor;
 	
 	if (xDiff > 6.496f)
 		xDiff = 6.496f;
@@ -199,9 +178,9 @@ void ExtraDimensions::drawGridLines(int i)
 				glTranslatef(x*size, - y*size, 0);
 				
 				if (x == 0 && y == 0)
-					glColor4f(0.0f, 0.5f * alphaMultiplier, 0.0f, m_actualGridAlpha[i] * alphaMultiplier);
+					glColor4f(0.0f, 0.5f * alphaMultiplier, 0.0f, m_gridAlpha[i] * alphaMultiplier);
 				else
-					glColor4f(0.5f * alphaMultiplier, 0.5f * alphaMultiplier, 0.5f * alphaMultiplier, m_actualGridAlpha[i] * alphaMultiplier);
+					glColor4f(0.5f * alphaMultiplier, 0.5f * alphaMultiplier, 0.5f * alphaMultiplier, m_gridAlpha[i] * alphaMultiplier);
 				
 				
 				glScalef(scaleFactor, scaleFactor, scaleFactor);
@@ -211,14 +190,14 @@ void ExtraDimensions::drawGridLines(int i)
 	}
 }
 
-void ExtraDimensions::drawGridLines(const float* offset)
+void ExtraDimensions::drawGridLines(float offsetX, float offsetY, float offsetZ)
 {
 	glPushMatrix();
-		glTranslatef(m_destinationCameraOffset[0] * 250.0f + offset[0] * R_FONT_SCALE_FACTOR,
-		             m_destinationCameraOffset[1] * 250.0f + offset[1] * R_FONT_SCALE_FACTOR,
-		             m_destinationCameraOffset[2] * 250.0f + offset[2] * R_FONT_SCALE_FACTOR);
+		glTranslatef(m_cameraOffset[0].targetValue() * 250.0f + offsetX * R_FONT_SCALE_FACTOR,
+		             m_cameraOffset[1].targetValue() * 250.0f + offsetY * R_FONT_SCALE_FACTOR,
+		             m_cameraOffset[2].targetValue() * 250.0f + offsetZ * R_FONT_SCALE_FACTOR);
 		
-		foreach (int i, m_actualGridAlpha.keys())
+		foreach (int i, m_gridAlpha.keys())
 		{
 			if (i >= m_ascensionLevel - 2)
 				drawGridLines(i);
@@ -226,44 +205,27 @@ void ExtraDimensions::drawGridLines(const float* offset)
 	glPopMatrix();
 }
 
-void ExtraDimensions::updatePositions()
+void ExtraDimensions::updatePositions(float timeDelta)
 {
-	float diff = m_destinationScaleFactor - m_actualScaleFactor;
+	m_cameraOffset[0].update(timeDelta);
+	m_cameraOffset[1].update(timeDelta);
+	m_cameraOffset[2].update(timeDelta);
+	m_scaleFactor.update(timeDelta);
 	
-	if (isnan(diff) || fabs(diff) < m_scaleFactorDiff)
-		m_actualScaleFactor = m_destinationScaleFactor;
-	else
-	{
-		float normalisedDiff = fabs((diff / m_scaleFactorDiff) / 10000.0f);
-		if (isnan(normalisedDiff) || normalisedDiff < 1.0f)
-			normalisedDiff = 1.0f;
-		m_actualScaleFactor += diff * normalisedDiff * 0.05;
-	}
+	QList<int> toBeRemoved;
 	
-	for (int i=0 ; i<3 ; ++i)
+	foreach (int index, m_gridAlpha.keys())
 	{
-		diff = m_destinationCameraOffset[i] - m_actualCameraOffset[i];
-		if (fabs(diff) < 0.01)
-			m_actualCameraOffset[i] = m_destinationCameraOffset[i];
+		SmoothVar<float>& var = m_gridAlpha[index];
+		
+		if (var < 0.0)
+			toBeRemoved << index;
 		else
-			m_actualCameraOffset[i] += diff * 0.2;
+			var.update(timeDelta);
 	}
 	
-	foreach (int index, m_destinationGridAlpha.keys())
-	{
-		diff = m_destinationGridAlpha[index] - m_actualGridAlpha[index];
-		if (fabs(diff) < 0.001)
-		{
-			m_actualGridAlpha[index] = m_destinationGridAlpha[index];
-			if (m_actualGridAlpha[index] == 0.0f)
-			{
-				m_actualGridAlpha.remove(index);
-				m_destinationGridAlpha.remove(index);
-			}
-		}
-		else
-			m_actualGridAlpha[index] += diff * 0.05;
-	}
+	foreach (int index, toBeRemoved)
+		m_gridAlpha.remove(index);
 }
 
 Coord ExtraDimensions::nDTo3D(const Coord& c) const

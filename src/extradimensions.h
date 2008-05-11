@@ -3,6 +3,8 @@
 
 #include <QMap>
 
+#include "smoothvar.h"
+
 class GLView;
 class Coord;
 
@@ -21,12 +23,12 @@ public:
 	void move(int x, int y, int z);
 	void move(Coord pos);
 	
-	int ascensionLevel() const;
-	const float* cameraOffset() const;
-	float scaleFactor() const;
+	int ascensionLevel() const { return m_ascensionLevel; }
+	float scaleFactor() const { return m_scaleFactor; }
+	const SmoothVar<float>* cameraOffset() const { return m_cameraOffset; }
 	
-	void drawGridLines(const float* offset);
-	void updatePositions();
+	void drawGridLines(float offsetX, float offsetY, float offsetZ);
+	void updatePositions(float timeDelta);
 	
 	Coord nDTo3D(const Coord& c) const;
 
@@ -43,15 +45,10 @@ private:
 	
 	int m_ascensionLevel;
 	
-	QMap<int, float> m_actualGridAlpha;
-	QMap<int, float> m_destinationGridAlpha;
+	QMap<int, SmoothVar<float> > m_gridAlpha;
 	
-	float m_actualCameraOffset[3];
-	float m_destinationCameraOffset[3];
-	
-	float m_actualScaleFactor;
-	float m_destinationScaleFactor;
-	float m_scaleFactorDiff;
+	SmoothVar<float> m_cameraOffset[3];
+	SmoothVar<float> m_scaleFactor;
 };
 
 #endif

@@ -9,6 +9,7 @@
 #include <QTextCursor>
 #include <QUndoGroup>
 #include <QClipboard>
+#include <QTime>
 
 #include <pAPI.h>
 #include <Actions.h>
@@ -17,7 +18,7 @@
 
 using namespace PAPI;
 
-typedef std::tr1::array<int,3> float3;
+typedef std::tr1::array<float, 3> float3;
 
 class QMouseEvent;
 class QKeyEvent;
@@ -31,6 +32,7 @@ class ExtraDimensions;
 #include "fungecommand.h"
 #include "interpreter.h"
 #include "sound.h"
+#include "smoothvar.h"
 
 // TODO: Put these in a utils class or namespace
 void glViewport(const QRect& rect);
@@ -58,7 +60,6 @@ public:
 
 	QUndoGroup* getUndo() { return &m_undoGroup; }
 	
-	void setCameraMoveSpeed(float cameraMoveSpeed) { m_cameraMoveSpeed = cameraMoveSpeed; }
 	void setEye(float radius, float vert, float horiz);
 	void resetEye();
 
@@ -101,12 +102,12 @@ private:
 	int nextPowerOf2(int n);
 	void updateParticles();
 	
-	void updateCamera(int i);
+	void updateCamera(int timeDelta);
 	float degreesToRadians(float degrees);
 	float modulo(float value, float mod);
 	Coord pointToFungeSpace(const QPoint& pos);
 	Coord glToFungeSpace(float x, float y, float z);
-	static float3 fungeSpaceToGl(const Coord& c, bool premultiplied);
+	static float3 fungeSpaceToGl(const Coord& c);
 	void toggleStringMode();
 	void setCursorDirection(int direction);
 	void setActivePlane(int plane);
@@ -174,7 +175,7 @@ private:
 	bool m_cursorBlinkOn;
 	int m_cursorDirection;
 	int m_activePlane;
-	float m_actualCursorPos[3];
+	float m_cursorPos[3];
 	
 	bool m_mouseHoveringOverChar;
 	Coord m_mouseHover;
@@ -186,6 +187,7 @@ private:
 	// Frame updates
 	QTimer* m_redrawTimer;
 	int m_delayMs;
+	QTime m_frameTime;
 	float m_fpsCounter;
 	int m_frameCount;
 	QTimer* m_fpsCounterTimer;
@@ -193,18 +195,15 @@ private:
 	bool m_stringMode;
 	
 	// Eye offset
-	float m_actualEyeOffset[3];
-	float m_destinationEyeOffset[3];
+	SmoothVar<float> m_eyeOffset[3];
 	float m_zoomLevel;
 	
 	// Camera offset
-	float m_actualCameraOffset[3];
+	SmoothVar<float> m_cameraOffset[3];
 	bool m_moveDragging;
-	float m_destinationCameraOffset[3];
 	
 	// Camera rotation
 	bool m_rotateDragging;
-	float m_cameraMoveSpeed;
 	QPoint m_preDragMousePosition;
 	
 	// Extra dimensions

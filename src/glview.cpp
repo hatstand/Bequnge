@@ -172,10 +172,10 @@ void GLView::initializeGL()
 	
 	glNewList(m_displayListsBase + CURSOR, GL_COMPILE);
 		glBegin(GL_QUADS);
-			glVertex3f(FONT_SIZE - 5.0f, FONT_SIZE, 0.0f);
-			glVertex3f(0.0f, FONT_SIZE, 0.0f);
-			glVertex3f(0.0f, 0.0f, 0.0f);
-			glVertex3f(FONT_SIZE - 5.0f, 0.0f, 0.0f);
+			glVertex3f(FONT_SIZE, FONT_SIZE, 0.0f);
+			glVertex3f(0.0, FONT_SIZE, 0.0f);
+			glVertex3f(0.0, 0.0, 0.0f);
+			glVertex3f(FONT_SIZE, 0.0f, 0.0f);
 		glEnd();
 	glEndList();
 	
@@ -192,26 +192,29 @@ void GLView::resizeGL(int width, int height)
 	recreateFbos();
 }
 
-void GLView::updateCamera(int i)
+void GLView::updateCamera(int timeDelta)
 {
-	float diff = m_destinationCameraOffset[i] - m_actualCameraOffset[i];
-	if (fabs(diff) < 0.01)
-		m_actualCameraOffset[i] = m_destinationCameraOffset[i];
-	else
-		m_actualCameraOffset[i] += diff * m_cameraMoveSpeed;
+	m_cameraOffset[0].update(timeDelta);
+	m_cameraOffset[1].update(timeDelta);
+	m_cameraOffset[2].update(timeDelta);
 	
-	diff = m_destinationEyeOffset[i] - m_actualEyeOffset[i];
-	if (fabs(diff) < 0.01)
-		m_actualEyeOffset[i] = m_destinationEyeOffset[i];
-	else
-		m_actualEyeOffset[i] += diff * m_cameraMoveSpeed;
+	m_eyeOffset[0].update(timeDelta);
+	m_eyeOffset[1].update(timeDelta);
+	m_eyeOffset[2].update(timeDelta);
 	
-	float3 c = fungeSpaceToGl(cursor(), false);
-	diff = c[i] - m_actualCursorPos[i];
-	if (fabs(diff) < 0.01)
-		m_actualCursorPos[i] = c[i];
-	else
-		m_actualCursorPos[i] += diff * m_cameraMoveSpeed;
+	m_extraDimensions->updatePositions(timeDelta);
+	
+	// TODO: Put this in a SmoothVar
+	float3 c = fungeSpaceToGl(cursor());
+	
+	for (int i=0 ; i<3 ; ++i)
+	{
+		float diff = c[i] - m_cursorPos[i];
+		if (fabs(diff) < 0.01)
+			m_cursorPos[i] = c[i];
+		else
+			m_cursorPos[i] += diff * 0.1;
+	}
 }
 
 void GLView::drawScene()
@@ -230,7 +233,7 @@ void GLView::drawScene()
 		drawInstructionPointers();
 		drawSelectionCube();
 		drawAnnotations();
-		m_extraDimensions->drawGridLines(m_actualCursorPos);
+		m_extraDimensions->drawGridLines(m_cursorPos[0], m_cursorPos[1], m_cursorPos[2]);
 		drawExplosionParticles();
 	glPopMatrix();
 }
@@ -254,7 +257,7 @@ void GLView::setupMatrices()
 {
 	glMatrixMode(GL_PROJECTION);
 	glLoadIdentity();
-	gluPerspective(50.0f, float(width())/height(), 0.1f, 1000000.0f); // Ugh
+	gluPerspective(50.0f, float(width())/height(), 0.1f, 100.0f); // Ugh
 	
 	glMatrixMode(GL_MODELVIEW);
 	glLoadIdentity();
@@ -262,20 +265,20 @@ void GLView::setupMatrices()
 
 void GLView::setupCamera()
 {
-	const float* extraDimensionsOffset = m_extraDimensions->cameraOffset();
-	float scaleFactor = m_extraDimensions->scaleFactor();
+	//const SmoothVar<float>* extraDimensionsOffset = m_extraDimensions->cameraOffset();
+	//float scaleFactor = m_extraDimensions->scaleFactor();
 	
-	gluLookAt(m_actualEyeOffset[0] + m_actualCursorPos[0] * scaleFactor + m_actualCameraOffset[0] + extraDimensionsOffset[0] * scaleFactor,
-	          m_actualEyeOffset[1] + m_actualCursorPos[1] * scaleFactor + m_actualCameraOffset[1] + extraDimensionsOffset[1] * scaleFactor,
-	          m_actualEyeOffset[2] + m_actualCursorPos[2] * scaleFactor + m_actualCameraOffset[2] + extraDimensionsOffset[2] * scaleFactor,
-	          m_actualCursorPos[0] * scaleFactor + m_actualCameraOffset[0] + extraDimensionsOffset[0] * scaleFactor,
-	          m_actualCursorPos[1] * scaleFactor + m_actualCameraOffset[1] + extraDimensionsOffset[1] * scaleFactor,
-	          m_actualCursorPos[2] * scaleFactor + m_actualCameraOffset[2] + extraDimensionsOffset[2] * scaleFactor,
+	gluLookAt(m_eyeOffset[0] + m_cursorPos[0] /** scaleFactor*/ + m_cameraOffset[0],// + extraDimensionsOffset[0] * scaleFactor,
+	          m_eyeOffset[1] + m_cursorPos[1] /** scaleFactor*/ + m_cameraOffset[1],// + extraDimensionsOffset[1] * scaleFactor,
+	          m_eyeOffset[2] + m_cursorPos[2] /** scaleFactor*/ + m_cameraOffset[2],// + extraDimensionsOffset[2] * scaleFactor,
+	          m_cursorPos[0] /** scaleFactor*/ + m_cameraOffset[0],// + extraDimensionsOffset[0] * scaleFactor,
+	          m_cursorPos[1] /** scaleFactor*/ + m_cameraOffset[1],// + extraDimensionsOffset[1] * scaleFactor,
+	          m_cursorPos[2] /** scaleFactor*/ + m_cameraOffset[2],// + extraDimensionsOffset[2] * scaleFactor,
 	          0.0f,
 	          1.0f,
 	          0.0f);
 	
-	glScalef(FONT_SCALE_FACTOR * scaleFactor, FONT_SCALE_FACTOR * scaleFactor, FONT_SCALE_FACTOR * scaleFactor);
+	//glScalef(FONT_SCALE_FACTOR * scaleFactor, FONT_SCALE_FACTOR * scaleFactor, FONT_SCALE_FACTOR * scaleFactor);
 }
 
 void GLView::drawCursor()
@@ -285,8 +288,8 @@ void GLView::drawCursor()
 	{
 		glPushMatrix();
 			Coord coords = m_extraDimensions->nDTo3D(m_cursor);
-			float3 coord = fungeSpaceToGl(coords, true);
-			glTranslatef(coord[0] - 0.01f, coord[1] - 2.5f, coord[2] - 0.01f);
+			float3 coord = fungeSpaceToGl(coords);
+			glTranslatef(coord[0], coord[1], coord[2]);
 			if (m_activePlane == 0)
 			{
 				glTranslatef(FONT_SIZE/2, 0.0f, 0.0f);
@@ -322,7 +325,7 @@ void GLView::drawInstructionPointers()
 		{
 			glPushMatrix();
 				Coord coords = m_extraDimensions->nDTo3D(ip->m_pos);
-				float3 coord = fungeSpaceToGl(coords, true);
+				float3 coord = fungeSpaceToGl(coords);
 				glTranslatef(coord[0] - 0.01f, coord[1] - 2.5f, coord[2] - 0.01f);
 				if (m_activePlane == 0)
 				{
@@ -424,7 +427,7 @@ void GLView::drawDepthBoxes()
 			const QChar& data(i->data);
 			
 			glPushMatrix();
-				float3 coord = fungeSpaceToGl(coords, true);
+				float3 coord = fungeSpaceToGl(coords);
 				glTranslatef(coord[0], coord[1], coord[2]);
 				if (m_activePlane == 0)
 				{
@@ -442,14 +445,10 @@ void GLView::drawDepthBoxes()
 
 void GLView::paintGL()
 {
-	QTime frameTime;
-	frameTime.start();
-	
-	updateCamera(0);
-	updateCamera(1);
-	updateCamera(2);
+	updateCamera(m_frameTime.elapsed());
 	updateParticles();
-	m_extraDimensions->updatePositions();
+	
+	m_frameTime.start();
 	
 	// Draw the scene to the scene FBO
 	if (m_bloom)
@@ -575,7 +574,7 @@ void GLView::paintGL()
 		m_cursorBlinkOn = !m_cursorBlinkOn;
 	}
 	
-	m_redrawTimer->start(qAbs(m_delayMs - frameTime.elapsed()));
+	m_redrawTimer->start(qAbs(m_delayMs - m_frameTime.elapsed()));
 	m_frameCount++;
 }
 
@@ -652,7 +651,7 @@ void GLView::drawFunge(T& code)
 			else
 				glColor4f(1.0f, 1.0f, 1.0f, 0.2f);
 			
-			float3 coord = fungeSpaceToGl(coords, true);
+			float3 coord = fungeSpaceToGl(coords);
 			glTranslatef(coord[0], coord[1], coord[2]);
 			
 			if (m_activePlane == 0)
@@ -671,8 +670,8 @@ void GLView::drawFunge(T& code)
 
 void GLView::drawCube(Coord startPos, Coord endPos)
 {
-	float3 cubeStart = fungeSpaceToGl(startPos, true);
-	float3 cubeEnd = fungeSpaceToGl(endPos, true);
+	float3 cubeStart = fungeSpaceToGl(startPos);
+	float3 cubeEnd = fungeSpaceToGl(endPos);
 	
 	float temp = cubeStart[2];
 	cubeStart[2] = cubeEnd[2];
@@ -756,11 +755,11 @@ void GLView::mouseMoveEvent(QMouseEvent* event)
 		float yOffset = event->pos().y() - m_preDragMousePosition.y();
 		
 		if (m_activePlane == 2)
-			m_destinationCameraOffset[0] = - xOffset / 135.0f;
+			m_cameraOffset[0] = - xOffset / 135.0f;
 		else
-			m_destinationCameraOffset[2] = xOffset / 135.0f;
+			m_cameraOffset[2] = xOffset / 135.0f;
 		
-		m_destinationCameraOffset[1] = yOffset / 135.0f;
+		m_cameraOffset[1] = yOffset / 135.0f;
 	}
 	else if (m_rotateDragging)
 	{
@@ -811,16 +810,14 @@ Coord GLView::glToFungeSpace(float x, float y, float z)
 	return ret;
 }
 
-float3 GLView::fungeSpaceToGl(const Coord& c, bool premultiplied)
+float3 GLView::fungeSpaceToGl(const Coord& c)
 {
 	float size = FONT_SIZE;
-	if (!premultiplied)
-		size *= 0.004f;
 	
 	float3 ret;
-	ret[0] = c[0] * size;
-	ret[1] = - c[1] * size;
-	ret[2] = - c[2] * size;
+	ret[0] = float(c[0]) * size;
+	ret[1] = - float(c[1]) * size;
+	ret[2] = - float(c[2]) * size;
 	return ret;
 }
 
@@ -917,9 +914,9 @@ void GLView::mouseReleaseEvent(QMouseEvent* event)
 		
 	case Qt::LeftButton:
 		m_moveDragging = false;
-		m_destinationCameraOffset[0] = 0.0f;
-		m_destinationCameraOffset[1] = 0.0f;
-		m_destinationCameraOffset[2] = 0.0f;
+		m_cameraOffset[0] = 0.0f;
+		m_cameraOffset[1] = 0.0f;
+		m_cameraOffset[2] = 0.0f;
 		
 		if (m_selectDragging)
 			setCursor(m_selectionEnd, QTextCursor::KeepAnchor);
@@ -1075,9 +1072,9 @@ void GLView::setEye(float radius, float vert, float horiz)
 	v = degreesToRadians(v);
 	h = degreesToRadians(h);
 	
-	m_destinationEyeOffset[m_activePlane] = radius * cos(v) * cos(h);
-	m_destinationEyeOffset[1] = radius * sin(v);
-	m_destinationEyeOffset[otherPlane()] = radius * sin(h);
+	m_eyeOffset[m_activePlane] = radius * cos(v) * cos(h);
+	m_eyeOffset[1] = radius * sin(v);
+	m_eyeOffset[otherPlane()] = radius * sin(h);
 }
 
 int GLView::cursorDirection()
@@ -1109,27 +1106,19 @@ void GLView::resetView()
 	
 	m_selectionAnchor = m_selectionEnd = m_cursor;
 	
-	m_destinationCameraOffset[0] = 0.0f;
-	m_destinationCameraOffset[1] = 0.0f;
-	m_destinationCameraOffset[2] = 0.0f;
+	m_cameraOffset[0].setValueImmediately(0.0f);
+	m_cameraOffset[1].setValueImmediately(0.0f);
+	m_cameraOffset[2].setValueImmediately(0.0f);
+	m_eyeOffset[0].setValueImmediately(0.0f);
+	m_eyeOffset[1].setValueImmediately(0.0f);
+	m_eyeOffset[2].setValueImmediately(0.0f);
+	m_cursorPos[0] = 0.0f;
+	m_cursorPos[1] = 0.0f;
+	m_cursorPos[2] = 0.0f;
 	
 	setCursorDirection(1);
 	
-	m_actualEyeOffset[0] = m_destinationEyeOffset[0];
-	m_actualEyeOffset[1] = m_destinationEyeOffset[1];
-	m_actualEyeOffset[2] = m_destinationEyeOffset[2];
-	
-	m_actualCameraOffset[0] = m_destinationCameraOffset[0];
-	m_actualCameraOffset[1] = m_destinationCameraOffset[1];
-	m_actualCameraOffset[2] = m_destinationCameraOffset[2];
-	
-	m_actualCursorPos[0] = 0.0f;
-	m_actualCursorPos[1] = 0.0f;
-	m_actualCursorPos[2] = 0.0f;
-	
 	m_extraDimensions->resetView();
-	
-	m_cameraMoveSpeed = 0.2;
 	
 	m_activePlane = 2;
 	
@@ -1532,7 +1521,7 @@ void GLView::computeParticles(const Coord& point, int direction, const QColor& c
 	m_P.Velocity(pVec(0));
 	m_P.Color(colorToVector(color));
 	m_P.Source(1, PDSphere(cursorVec, FONT_SIZE/2));
-	m_P.RandomAccel(PDCone(pVec(0.0f, 0.0f, 0.0f), directionVec, 0.5f));
+	m_P.RandomAccel(PDCone(pVec(0.0f, 0.0f, 0.0f), directionVec * 0.02, 0.01f));
 	m_P.TargetAlpha(0.0f, 0.02f);
 	m_P.KillOld(100.0f);
 	m_P.Move(true, false);

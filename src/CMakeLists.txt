@@ -17,6 +17,7 @@ SET(BEQUNGE-SOURCES
 	opengl.cpp
 	console.cpp
 	glfont.cpp
+	smoothvar.cpp
 )
 
 # Header files that have Q_OBJECT in
