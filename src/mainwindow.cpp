@@ -126,7 +126,14 @@ void MainWindow::cursorDirectionChanged(int direction)
 
 void MainWindow::slotOpen()
 {
-	QString fileName = QFileDialog::getOpenFileName(this, "Open file", m_settings.value("filedir").toString(), "BeQunge source (*.beq)");
+	QString filter;
+	QString fileName = QFileDialog::getOpenFileName(
+		this,
+		"Open file",
+		m_settings.value("filedir").toString(),
+		"BeQunge source (*.beq);;Befunge '98 source (*.b98);;Befunge '93 source (*.bf)",
+		&filter);
+
 	if (fileName.isNull())
 		return;
 	
@@ -135,8 +142,18 @@ void MainWindow::slotOpen()
 	QFile file(fileName);
 	QDir dir(fileName);
 	m_settings.setValue("filedir", dir.absolutePath());
+
+	FungeSpace::SourceType type;
+	if (filter.contains("beq"))
+		type = FungeSpace::Bequnge;
+	else if (filter.contains("b98"))
+		type = FungeSpace::Befunge98;
+	else if (filter.contains("bf"))
+		type = FungeSpace::Befunge93;
+	else
+		Q_ASSERT(0);
 	
-	FungeSpace* space = new FungeSpace(&file);
+	FungeSpace* space = new FungeSpace(&file, type);
 	if (space->dimensions() < 3)
 		space->setDimensions(3);
 	

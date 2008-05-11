@@ -140,9 +140,15 @@ public:
 	typedef Space::index<side>::type CodeBySide;
 	typedef Space::index<clever>::type CodeByClever;
 	typedef Space::index<hash>::type CodeByHash;
+
+	enum SourceType {
+		Bequnge = 0,
+		Befunge98,
+		Befunge93
+	};
 	
 	FungeSpace(int dimensions);
-	FungeSpace(QIODevice* dev);
+	FungeSpace(QIODevice* dev, SourceType type = Bequnge);
 	FungeSpace(FungeSpace* space);
 	~FungeSpace();
 

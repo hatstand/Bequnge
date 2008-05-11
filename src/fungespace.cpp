@@ -13,14 +13,20 @@ FungeSpace::FungeSpace(int dimensions)
 	m_version = "0";
 }
 
-FungeSpace::FungeSpace(QIODevice* dev)
+FungeSpace::FungeSpace(QIODevice* dev, SourceType type)
 	: m_dimensions(0),
 	  m_trackChanges(false)
 {
 	m_version = "0";
 
 	dev->open(QIODevice::ReadOnly);
-	parseHeader(dev);
+
+	// Bequnge files (*.beq) have a one line header.
+	if (type == Bequnge)
+		parseHeader(dev);
+	else
+		setDimensions(2); // All other files are Befunge
+
 	readInAll(dev);
 	dev->close();
 }
