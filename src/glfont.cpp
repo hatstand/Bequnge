@@ -92,7 +92,7 @@ void GLFont::genAtlas()
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 	
-	gluBuild2DMipmaps(GL_TEXTURE_2D, GL_ALPHA, m_atlasWidth, m_atlasWidth, GL_BGRA, GL_UNSIGNED_BYTE, m_image.bits());
+	gluBuild2DMipmaps(GL_TEXTURE_2D, GL_ALPHA, m_atlasWidth, m_atlasWidth, GL_BGRA, GL_UNSIGNED_BYTE, image.bits());
 }
 
 void GLFont::initBuffers()
