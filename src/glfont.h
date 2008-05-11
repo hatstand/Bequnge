@@ -41,11 +41,13 @@ private:
 	uint m_atlasTexture;
 	QMap<QChar, float2> m_atlasMap;
 	uint m_atlasWidth;
+	float m_atlasCharWidth;
 	
 	static const int s_res;
 	static const float s_scale;
 	static Shader* s_shader;
 	static uint s_texLoc;
+	static uint s_texOffsetLoc;
 
 	static const QString s_atlas;
 };

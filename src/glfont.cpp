@@ -9,12 +9,15 @@ const int GLFont::s_res = 32;
 const float GLFont::s_scale = 27.0;
 Shader* GLFont::s_shader = NULL;
 uint GLFont::s_texLoc;
+uint GLFont::s_texOffsetLoc;
+
 // List of all valid Funge 98 characters.
 const QString GLFont::s_atlas =
 	"abcdefghijklmnopqrstuvwxyz"
 	"ABCDEFGHIJKLMNOPQRSTUVWXYZ"
 	"0123456789"
-	" !\"#$%&'()*+,-./:;<=>?@[\\]^_`{|}~";
+	" !\"#$%&'()*+,-./:;<=>?@[\\]^_`{|}~"
+	"\x09\xC4";
 
 GLFont::GLFont(const QString& family, const QPen& pen)
 	: m_image(s_res, s_res, QImage::Format_ARGB32),
@@ -26,6 +29,7 @@ GLFont::GLFont(const QString& family, const QPen& pen)
 	{
 		s_shader = new Shader(":shaders/char_vert.glsl", ":shaders/char_frag.glsl");
 		s_texLoc = s_shader->uniformLocation("tex");
+		s_texOffsetLoc = s_shader->uniformLocation("texOffset");
 	}
 	
 	m_font.setFamily(family);
@@ -58,25 +62,25 @@ void GLFont::genAtlas()
 
 	// Width in chars.
 	int atlasWidth = m_atlasWidth / s_res;
+	
+	m_atlasCharWidth = float(s_res) / m_atlasWidth;
 
 	QImage image(m_atlasWidth, m_atlasWidth, QImage::Format_ARGB32);
 	image.fill(qRgba(0, 0, 0, 0));
 
-	QPainter p;
+	QPainter p(&image);
+	p.setFont(m_font);
+	p.setPen(m_pen);
 
 	int x = 0;
 	int y = 0;
 	foreach(QChar c, s_atlas)
 	{
-		p.begin(&image);
-		p.setFont(m_font);
-		p.setPen(m_pen);
 		p.drawText(QRect(x*s_res, y*s_res, s_res, s_res), Qt::AlignHCenter | Qt::AlignVCenter, c);
-		p.end();
 
 		float2 pos;
-		pos[0] = x*s_res / m_atlasWidth;
-		pos[1] = y*s_res / m_atlasWidth;
+		pos[0] = float(x*s_res) / m_atlasWidth;
+		pos[1] = float(y*s_res) / m_atlasWidth;
 		m_atlasMap.insert(c, pos);
 
 		++x;
@@ -86,6 +90,7 @@ void GLFont::genAtlas()
 			y++;
 		}
 	}
+	p.end();
 
 	glGenTextures(1, &m_atlasTexture);
 	glBindTexture(GL_TEXTURE_2D, m_atlasTexture);
@@ -146,41 +151,26 @@ void GLFont::bind()
 
 void GLFont::drawChar(const QChar& c)
 {
-/*	if (m_atlasMap.contains(c))
+	uint texture;
+	
+	if (m_atlasMap.contains(c))
 	{
-		uint texture = m_atlasTexture;
-		if (texture != m_boundTexture)
-			glBindTexture(GL_TEXTURE_2D, m_boundTexture = texture);
-
-		glUniform1i(s_texLoc, 0);
-
-		// Top left
-		float2 pos = *m_atlasMap.find(c);
-		float texCoords[8];
-		// top left
-		texCoords[0] = pos[0];
-		texCoords[1] = pos[1];
-		// top right
-		texCoords[2] = pos[0] + s_res / m_atlasWidth;
-		texCoords[3] = pos[1];
-		// bottom right
-		texCoords[4] = pos[0] + s_res / m_atlasWidth;
-		texCoords[5] = pos[1] + s_res / m_atlasWidth;
-		// bottom left
-		texCoords[6] = pos[0];
-		texCoords[7] = pos[1] + s_res / m_atlasWidth;
-
-		glTexCoordPointer(2, GL_FLOAT, 0, texCoords);
-		glDrawArrays(GL_QUADS, 0, 4);
-
-		return;
-	} */
-
-	uint texture = textureForChar(c);
+		texture = m_atlasTexture;
+		float2 pos(m_atlasMap[c]);
+		glUniform3f(s_texOffsetLoc, pos[0], pos[1], m_atlasCharWidth);
+	}
+	else
+	{
+		texture = textureForChar(c);
+		glUniform3f(s_texOffsetLoc, 0.0, 0.0, 1.0);
+		qDebug() << "Char" << c.toAscii() << c.unicode() << "not from map";
+	}
+	
 	if (texture != m_boundTexture)
+	{
 		glBindTexture(GL_TEXTURE_2D, m_boundTexture = texture);
-
-	glUniform1i(s_texLoc, 0);
+		glUniform1i(s_texLoc, 0);
+	}
 	
 	glDrawArrays(GL_QUADS, 0, 4);
 }
@@ -210,19 +200,6 @@ uint GLFont::textureForChar(const QChar& c)
 	m_painter.setPen(m_pen);
 	m_painter.drawText(QRect(0, 0, s_res, s_res), Qt::AlignHCenter | Qt::AlignVCenter, c);
 	m_painter.end();
-	
-	// Convert ARGB to RGBA
-	/*const uchar* dataEnd = m_data + (s_res * s_res);
-	uchar* p = m_data;
-	
-	const uchar* argb = m_image.bits();
-	
-	while (p != dataEnd)
-	{
-		p[0] = ;
-		p ++;
-		argb += 4;
-	}*/
 	
 	// Allocate texture
 	uint tex;
