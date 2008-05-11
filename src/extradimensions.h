@@ -28,7 +28,7 @@ public:
 	const SmoothVar<float>* cameraOffset() const { return m_cameraOffset; }
 	
 	void drawGridLines(float offsetX, float offsetY, float offsetZ);
-	void updatePositions(float timeDelta);
+	void updatePositions(int timeDelta);
 	
 	Coord nDTo3D(const Coord& c) const;
 

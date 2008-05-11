@@ -205,12 +205,12 @@ void ExtraDimensions::drawGridLines(float offsetX, float offsetY, float offsetZ)
 	glPopMatrix();
 }
 
-void ExtraDimensions::updatePositions(float timeDelta)
+void ExtraDimensions::updatePositions(int timeDelta)
 {
-	m_cameraOffset[0].update((int)timeDelta);
-	m_cameraOffset[1].update((int)timeDelta);
-	m_cameraOffset[2].update((int)timeDelta);
-	m_scaleFactor.update((int)timeDelta);
+	m_cameraOffset[0].update(timeDelta);
+	m_cameraOffset[1].update(timeDelta);
+	m_cameraOffset[2].update(timeDelta);
+	m_scaleFactor.update(timeDelta);
 	
 	QList<int> toBeRemoved;
 	
@@ -221,7 +221,7 @@ void ExtraDimensions::updatePositions(float timeDelta)
 		if (var < 0.0)
 			toBeRemoved << index;
 		else
-			var.update((int)timeDelta);
+			var.update(timeDelta);
 	}
 	
 	foreach (int index, toBeRemoved)
