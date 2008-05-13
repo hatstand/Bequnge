@@ -10,6 +10,7 @@ ExtraDimensions::ExtraDimensions(GLView* glView)
 	: m_ascensionLevel(0),
 	  m_glView(glView)
 {
+	m_scaleFactor.setSpeed(0.002);
 }
 
 void ExtraDimensions::resetView()
@@ -18,7 +19,7 @@ void ExtraDimensions::resetView()
 	m_cameraOffset[1].setValueImmediately(0.0);
 	m_cameraOffset[2].setValueImmediately(0.0);
 	
-	m_scaleFactor.setValueImmediately(0.0);
+	m_scaleFactor.setValueImmediately(1.0);
 	
 	m_gridAlpha.clear();
 	m_ascensionLevel = 0;
@@ -68,10 +69,9 @@ void ExtraDimensions::setAscensionLevel(int level)
 		descendDimensions();
 }
 
-void ExtraDimensions::updateScaleFactor(float cameraMoveSpeed)
+void ExtraDimensions::updateScaleFactor(bool slow)
 {
-	// TODO
-	//m_glView->setCameraMoveSpeed(cameraMoveSpeed);
+	m_glView->setSlowEye(slow);
 	if (m_ascensionLevel == 0)
 		m_glView->resetEye();
 	else
@@ -88,7 +88,7 @@ void ExtraDimensions::ascendDimensions()
 	m_ascensionLevel++;
 	m_gridAlpha[m_ascensionLevel] = 0.75;
 	
-	updateScaleFactor(0.07);
+	updateScaleFactor(true);
 }
 
 void ExtraDimensions::descendDimensions()
@@ -99,7 +99,7 @@ void ExtraDimensions::descendDimensions()
 	m_gridAlpha[m_ascensionLevel] = 0.0;
 	m_ascensionLevel--;
 	
-	updateScaleFactor(0.2);
+	updateScaleFactor(false);
 }
 
 void ExtraDimensions::move(int x, int y, int z)
@@ -114,7 +114,7 @@ void ExtraDimensions::move(int x, int y, int z)
 	if (dimension != 0) direction *= -1;
 	
 	// Update the camera offset to follow the text cursor
-	m_cameraOffset[dimension] += direction * gridSize(m_ascensionLevel);
+	m_cameraOffset[dimension] += direction * gridSize(m_ascensionLevel) * 250;
 }
 
 void ExtraDimensions::move(Coord pos)
@@ -128,7 +128,7 @@ void ExtraDimensions::move(Coord pos)
 		float sign = 1.0f;
 		if (i%3 != 0) sign = -1.0f;
 		
-		m_cameraOffset[i%3] += sign * pos[i] * gridSize(i/3);
+		m_cameraOffset[i%3] += sign * pos[i] * gridSize(i/3) * 250;
 	}
 }
 
@@ -193,9 +193,9 @@ void ExtraDimensions::drawGridLines(int i)
 void ExtraDimensions::drawGridLines(float offsetX, float offsetY, float offsetZ)
 {
 	glPushMatrix();
-		glTranslatef(m_cameraOffset[0].targetValue() * 250.0f + offsetX * R_FONT_SCALE_FACTOR,
-		             m_cameraOffset[1].targetValue() * 250.0f + offsetY * R_FONT_SCALE_FACTOR,
-		             m_cameraOffset[2].targetValue() * 250.0f + offsetZ * R_FONT_SCALE_FACTOR);
+		glTranslatef(m_cameraOffset[0].targetValue() + offsetX,
+		             m_cameraOffset[1].targetValue() + offsetY,
+		             m_cameraOffset[2].targetValue() + offsetZ);
 		
 		foreach (int i, m_gridAlpha.keys())
 		{
@@ -217,6 +217,7 @@ void ExtraDimensions::updatePositions(int timeDelta)
 	foreach (int index, m_gridAlpha.keys())
 	{
 		SmoothVar<float>& var = m_gridAlpha[index];
+		var.setSpeed(0.002);
 		
 		if (var < 0.0)
 			toBeRemoved << index;

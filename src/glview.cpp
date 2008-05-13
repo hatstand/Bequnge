@@ -263,22 +263,29 @@ void GLView::setupMatrices()
 	glLoadIdentity();
 }
 
+void GLView::setSlowEye(bool slow)
+{
+	m_eyeOffset[0].setSpeed(slow ? 0.002 : 0.006);
+	m_eyeOffset[1].setSpeed(slow ? 0.002 : 0.006);
+	m_eyeOffset[2].setSpeed(slow ? 0.002 : 0.006);
+}
+
 void GLView::setupCamera()
 {
-	//const SmoothVar<float>* extraDimensionsOffset = m_extraDimensions->cameraOffset();
-	//float scaleFactor = m_extraDimensions->scaleFactor();
+	const SmoothVar<float>* extraDimensionsOffset = m_extraDimensions->cameraOffset();
+	float scaleFactor = m_extraDimensions->scaleFactor();
 	
-	gluLookAt(m_eyeOffset[0] + m_cursorPos[0] /** scaleFactor*/ + m_cameraOffset[0],// + extraDimensionsOffset[0] * scaleFactor,
-	          m_eyeOffset[1] + m_cursorPos[1] /** scaleFactor*/ + m_cameraOffset[1],// + extraDimensionsOffset[1] * scaleFactor,
-	          m_eyeOffset[2] + m_cursorPos[2] /** scaleFactor*/ + m_cameraOffset[2],// + extraDimensionsOffset[2] * scaleFactor,
-	          m_cursorPos[0] /** scaleFactor*/ + m_cameraOffset[0],// + extraDimensionsOffset[0] * scaleFactor,
-	          m_cursorPos[1] /** scaleFactor*/ + m_cameraOffset[1],// + extraDimensionsOffset[1] * scaleFactor,
-	          m_cursorPos[2] /** scaleFactor*/ + m_cameraOffset[2],// + extraDimensionsOffset[2] * scaleFactor,
+	gluLookAt(m_eyeOffset[0] + m_cursorPos[0] * scaleFactor + m_cameraOffset[0] + extraDimensionsOffset[0] * scaleFactor,
+	          m_eyeOffset[1] + m_cursorPos[1] * scaleFactor + m_cameraOffset[1] + extraDimensionsOffset[1] * scaleFactor,
+	          m_eyeOffset[2] + m_cursorPos[2] * scaleFactor + m_cameraOffset[2] + extraDimensionsOffset[2] * scaleFactor,
+	          m_cursorPos[0] * scaleFactor + m_cameraOffset[0] + extraDimensionsOffset[0] * scaleFactor,
+	          m_cursorPos[1] * scaleFactor + m_cameraOffset[1] + extraDimensionsOffset[1] * scaleFactor,
+	          m_cursorPos[2] * scaleFactor + m_cameraOffset[2] + extraDimensionsOffset[2] * scaleFactor,
 	          0.0f,
 	          1.0f,
 	          0.0f);
 	
-	//glScalef(FONT_SCALE_FACTOR * scaleFactor, FONT_SCALE_FACTOR * scaleFactor, FONT_SCALE_FACTOR * scaleFactor);
+	glScalef(scaleFactor, scaleFactor, scaleFactor);
 }
 
 void GLView::drawCursor()

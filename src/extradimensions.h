@@ -36,7 +36,7 @@ private:
 	float gridSize(int ascensionLevel);
 	int oldPosFromDiff(float diff);
 	void drawGridLines(int i);
-	void updateScaleFactor(float cameraMoveSpeed);
+	void updateScaleFactor(bool slow);
 	
 private:
 	GLView* m_glView;

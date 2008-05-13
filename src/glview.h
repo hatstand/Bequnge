@@ -62,6 +62,7 @@ public:
 	
 	void setEye(float radius, float vert, float horiz);
 	void resetEye();
+	void setSlowEye(bool slow);
 
 public slots:
 	void setStringMode(bool enabled);
