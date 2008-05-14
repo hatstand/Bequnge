@@ -27,6 +27,7 @@ OPTION(TESTS_ENABLED "Build the unit tests." OFF)
 
 # Subdirectories
 ADD_SUBDIRECTORY(ParticleLib)
+ADD_SUBDIRECTORY(libcommongl)
 ADD_SUBDIRECTORY(src)
 IF (TESTS_ENABLED)
 	ADD_SUBDIRECTORY(tests)
