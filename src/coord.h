@@ -1,27 +1,27 @@
 #ifndef COORD_H
 #define COORD_H
 
-#include <QVector>
+#include <QList>
 
-class Coord : public QVector<int>
+class Coord : public QList<int>
 {
 public:
 	Coord();
-	Coord(const QVector<int>& other);
+	Coord(const QList<int>& other);
 	
-	QVector<int> mid(int pos, int length = -1) const;
+	QList<int> mid(int pos, int length = -1) const;
 	
-	Coord operator =(const QVector<int>& other);
+	Coord operator =(const QList<int>& other);
 	const int& at(int i) const;
 	int& operator [](int i);
 	const int& operator [](int i) const;
-	bool operator ==(const QVector<int>& other) const;
+	bool operator ==(const QList<int>& other) const;
 	bool operator ==(const Coord& other) const;
-	bool operator !=(const QVector<int>& other) const;
+	bool operator !=(const QList<int>& other) const;
 	bool operator !=(const Coord& other) const;
-	
+
 private:
-	int zero;
+	static int s_zero;
 };
 
 uint qHash(const Coord& c);
