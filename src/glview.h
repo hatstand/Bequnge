@@ -33,6 +33,7 @@ class ExtraDimensions;
 #include "interpreter.h"
 #include "sound.h"
 #include "smoothvar.h"
+#include "frustum.h"
 
 // TODO: Put these in a utils class or namespace
 void glViewport(const QRect& rect);
@@ -239,6 +240,8 @@ private:
 	static QList<Shader*> s_ppShaders;
 	QGLFramebufferObject* m_sceneFbo;
 	QList<QGLFramebufferObject*> m_blurTargets;
+	
+	Frustum m_frustum;
 	
 	bool m_bloom;
 };

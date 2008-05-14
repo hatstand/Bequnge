@@ -224,6 +224,8 @@ void GLView::drawScene()
 	setupMatrices();
 	setupCamera();
 	
+	m_frustum.getPlaneEquations();
+	
 	glPushMatrix();
 		if (m_activePlane == 2)
 			drawFunge(m_fungeSpace->codeByClever());
@@ -432,9 +434,14 @@ void GLView::drawDepthBoxes()
 		{
 			const Coord& coords(i->coord);
 			const QChar& data(i->data);
+			i++;
+			
+			float3 coord = fungeSpaceToGl(coords);
+			
+			if (!m_frustum.testSphere(Vec3(coord[0], coord[1], coord[2]), FONT_SIZE))
+				continue;
 			
 			glPushMatrix();
-				float3 coord = fungeSpaceToGl(coords);
 				glTranslatef(coord[0], coord[1], coord[2]);
 				if (m_activePlane == 0)
 				{
@@ -444,7 +451,7 @@ void GLView::drawDepthBoxes()
 				}
 				glCallList(m_displayListsBase + CURSOR);
 			glPopMatrix();
-			i++;
+			
 		}
 		glColorMask(true, true, true, true);
 	}
@@ -601,31 +608,26 @@ void GLView::drawFunge(T& code)
 	{
 		Coord coords(i->coord);
 		const QChar& data(i->data);
+		i++;
+		
+		float3 coord = fungeSpaceToGl(coords);
+		
+		if (!m_frustum.testSphere(Vec3(coord[0], coord[1], coord[2]), FONT_SIZE))
+			continue;
 		
 		if (m_extraDimensions->ascensionLevel() > 0)
-		{
 			if ((coords[0] >= c[0] + 20) || (coords[0] < c[0] - 20) ||
 				(coords[1] >= c[1] + 20) || (coords[1] < c[1] - 20) ||
 				(coords[2] >= c[2] + 20) || (coords[2] < c[2] - 20))
-			{
-				i++;
 				continue;
-			}
-		}
 		
 		if (cursorExtraDimensions != coords.mid(3))
 		{
 			if (m_extraDimensions->ascensionLevel() != 1)
-			{
-				i++;
 				continue;
-			}
 			
 			if (abs(c[3] - coords[3]) > 2 || abs(coords[4] - c[4]) > 2 || abs(coords[5] - c[5]) > 2)
-			{
-				i++;
 				continue;
-			}
 		}
 		
 		int diff = abs(coords[m_activePlane] - m_cursor[m_activePlane]);
@@ -658,7 +660,6 @@ void GLView::drawFunge(T& code)
 			else
 				glColor4f(1.0f, 1.0f, 1.0f, 0.2f);
 			
-			float3 coord = fungeSpaceToGl(coords);
 			glTranslatef(coord[0], coord[1], coord[2]);
 			
 			if (m_activePlane == 0)
@@ -669,7 +670,6 @@ void GLView::drawFunge(T& code)
 			}
 			m_font->drawChar(data);
 		glPopMatrix();
-		i++;
 	}
 	
 	m_font->release();
@@ -684,19 +684,17 @@ void GLView::drawCube(Coord startPos, Coord endPos)
 	cubeStart[2] = cubeEnd[2];
 	cubeEnd[2] = temp;
 	
-	cubeStart[0] -= 2.4f;
-	cubeStart[1] += FONT_SIZE - 0.1f;
-	cubeStart[2] -= FONT_SIZE/2 - 2.4f;
+	cubeStart[1] += FONT_SIZE;
+	cubeStart[2] -= FONT_SIZE/2;
 	
-	cubeEnd[0] += FONT_SIZE - 2.6f;
-	cubeEnd[1] += 0.1f;
-	cubeEnd[2] += FONT_SIZE/2 - 0.1f;
+	cubeEnd[0] += FONT_SIZE;
+	cubeEnd[2] += FONT_SIZE/2;
 	
 	cubeEnd[0] -= cubeStart[0];
 	cubeEnd[1] -= cubeStart[1];
 	cubeEnd[2] -= cubeStart[2];
 	
-	glTranslatef(cubeStart[0], cubeStart[1] - 2.5f, cubeStart[2]);
+	glTranslatef(cubeStart[0], cubeStart[1], cubeStart[2]);
 	// draw a cube (6 quadrilaterals)
 	glBegin(GL_QUADS);				// start drawing the cube.
 		// top of cube
