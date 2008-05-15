@@ -100,6 +100,7 @@ class FungeSpace : public QObject
 #endif
 	typedef std::tr1::array<int,2> PlaneCoord;
 	
+	// Tags for multi_index indices.
 	struct side {};
 	struct front {};
 	struct clever {};

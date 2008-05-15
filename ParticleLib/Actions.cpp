@@ -13,6 +13,7 @@
 #include <algorithm>
 // For dumping errors
 #include <sstream>
+#include <typeinfo>
 
 namespace PAPI {
 

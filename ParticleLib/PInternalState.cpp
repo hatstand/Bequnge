@@ -15,6 +15,7 @@
 #include "pAPI.h"
 
 #include <iostream>
+#include <typeinfo>
 
 namespace PAPI {
 
