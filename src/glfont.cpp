@@ -183,7 +183,7 @@ void GLFont::release()
 	
 	glBindBuffer(GL_ARRAY_BUFFER, 0);
 	
-	s_shader->unbind();
+	Shader::release();
 }
 
 uint GLFont::textureForChar(const QChar& c)

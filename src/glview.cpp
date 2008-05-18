@@ -540,7 +540,7 @@ void GLView::paintGL()
 		glEnable(GL_DEPTH_TEST);
 		glEnable(GL_BLEND);
 		
-		Shader::unbind();
+		Shader::release();
 	}
 	
 	
