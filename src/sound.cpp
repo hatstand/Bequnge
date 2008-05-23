@@ -1,6 +1,7 @@
 #include "sound.h"
-#include <phonon/phonon>
+#include <phonon/backendcapabilities.h>
 #include <QDebug>
+#include <QStringList>
 #include <QUrl>
 
 Sound::Sound(QObject* parent)

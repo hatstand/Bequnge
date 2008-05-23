@@ -18,7 +18,7 @@ void TestFungeSpace::cleanup()
 
 void TestFungeSpace::testStore()
 {
-	Coord coord(QVector<int>() << 1 << 2 << 3);
+	Coord coord(QList<int>() << 1 << 2 << 3);
 	
 	m_space->setChar(coord, 'o');
 	QCOMPARE(m_space->getChar(coord), QChar('o'));
@@ -26,22 +26,22 @@ void TestFungeSpace::testStore()
 
 void TestFungeSpace::testEmpty()
 {
-	Coord coord(QVector<int>() << 1 << 2 << 3);
+	Coord coord(QList<int>() << 1 << 2 << 3);
 	
 	QCOMPARE(m_space->getChar(coord), QChar(' '));
 }
 
 void TestFungeSpace::insertValues()
 {
-	Coord front(QVector<int>() << 0 << 0 << 0);
-	Coord middle(QVector<int>() << 0 << 0 << 1);
-	Coord back(QVector<int>() << 0 << 0 << 2);
-	Coord front2(QVector<int>() << 5 << 0 << 0);
-	Coord middle2(QVector<int>() << 5 << 0 << 1);
-	Coord back2(QVector<int>() << 5 << 0 << 2);
+	Coord front(QList<int>() << 0 << 0 << 0);
+	Coord middle(QList<int>() << 0 << 0 << 1);
+	Coord back(QList<int>() << 0 << 0 << 2);
+	Coord front2(QList<int>() << 5 << 0 << 0);
+	Coord middle2(QList<int>() << 5 << 0 << 1);
+	Coord back2(QList<int>() << 5 << 0 << 2);
 
-	Coord fronty(QVector<int>() << 5 << 1 << 2);
-	Coord frontx(QVector<int>() << 4 << 1 << 2);
+	Coord fronty(QList<int>() << 5 << 1 << 2);
+	Coord frontx(QList<int>() << 4 << 1 << 2);
 
 	// Make sure FrontComparison sorts correctly
 	FrontComparison f;

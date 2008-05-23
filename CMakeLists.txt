@@ -1,3 +1,5 @@
+cmake_minimum_required(VERSION 2.6)
+
 INCLUDE(UsePkgConfig)
 
 # Include our custom cmake modules
@@ -11,6 +13,9 @@ IF (NOT Boost_FOUND)
 ENDIF (NOT Boost_FOUND)
 
 FIND_PACKAGE(Qt4 REQUIRED)
+SET(QT_USE_QTOPENGL 1)
+SET(QT_USE_PHONON 1)
+
 FIND_PACKAGE(OpenGL REQUIRED)
 
 # Fail if Qt doesn't have OpenGL support
@@ -18,10 +23,15 @@ IF (NOT QT_QTOPENGL_FOUND)
 	MESSAGE(FATAL_ERROR "Qt OpenGL libraries were not found.")
 ENDIF (NOT QT_QTOPENGL_FOUND)
 
+IF (NOT QT_PHONON_FOUND)
+	MESSAGE(FATAL_ERROR "Qt Phonon libraries were not found.")
+ENDIF (NOT QT_PHONON_FOUND)
+
 # Set up definitions and paths
 ADD_DEFINITIONS(${QT_DEFINITIONS})
-LINK_DIRECTORIES(${QT_LIBRARY_DIR} ${Boost_LIBRARY_DIRS} ${PHONON_LIBRARY})
-INCLUDE_DIRECTORIES(${QT_INCLUDES} ${Boost_INCLUDE_DIRS})
+LINK_DIRECTORIES(${Boost_LIBRARY_DIRS})
+INCLUDE(${QT_USE_FILE})
+INCLUDE_DIRECTORIES(${Boost_INCLUDE_DIRS})
 
 OPTION(TESTS_ENABLED "Build the unit tests." OFF)
 
