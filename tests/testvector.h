@@ -8,6 +8,8 @@ class TestVector : public QObject
 	Q_OBJECT
 
 private slots:
+	void testConstructors();
+	void testAssignment();
 	void testOperators();
 };
 
