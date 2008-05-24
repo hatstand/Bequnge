@@ -93,3 +93,8 @@ void TestVector::testOperators()
 	muted = v1;
 	QVERIFY((muted %= v2) == (v1 % v2));
 }
+
+void TestVector::testDotProduct() {
+	Vector<int,2> v1(2,3);
+	QVERIFY(v1.dot(v1) == 13);
+}

@@ -1,8 +1,8 @@
 #ifndef GLFONT_H
 #define GLFONT_H
 
-#include <tr1/array>
-typedef std::tr1::array<float,2> float2;
+#include "vector.h"
+typedef Vector<float,2> float2;
 
 #include <QChar>
 #include <QMap>

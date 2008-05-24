@@ -18,7 +18,8 @@
 
 using namespace PAPI;
 
-typedef std::tr1::array<float, 3> float3;
+#include "vector.h"
+typedef Vector<float, 3> float3;
 
 class QMouseEvent;
 class QKeyEvent;

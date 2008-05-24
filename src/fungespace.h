@@ -6,8 +6,6 @@
 #include <QDebug>
 #include <QIODevice>
 
-#include <tr1/array>
-
 #include <boost/multi_index_container.hpp>
 #include <boost/multi_index/hashed_index.hpp>
 #include <boost/multi_index/member.hpp>
@@ -15,6 +13,7 @@
 #include <boost/multi_index/tag.hpp>
 
 #include "coord.h"
+#include "vector.h"
 
 /*
 
@@ -98,7 +97,7 @@ class FungeSpace : public QObject
 #ifdef TESTFUNGESPACE_H
 	friend class TestFungeSpace;
 #endif
-	typedef std::tr1::array<int,2> PlaneCoord;
+	typedef Vector<int,2> PlaneCoord;
 	
 	// Tags for multi_index indices.
 	struct side {};

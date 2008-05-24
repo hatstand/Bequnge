@@ -11,6 +11,7 @@ private slots:
 	void testConstructors();
 	void testAssignment();
 	void testOperators();
+	void testDotProduct();
 };
 
 #endif
