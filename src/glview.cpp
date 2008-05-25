@@ -1593,18 +1593,3 @@ void GLView::drawQuad(float width, float height)
 	glEnd();
 }
 
-void glViewport(const QRect& rect)
-{
-	glViewport(rect.x(), rect.y(), rect.width(), rect.height());
-}
-
-void glViewport(const QPoint& pos, const QSize& size)
-{
-	glViewport(pos.x(), pos.y(), size.width(), size.height());
-}
-
-void glViewport(int x, int y, const QSize& size)
-{
-	glViewport(x, y, size.width(), size.height());
-}
-

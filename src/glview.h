@@ -14,8 +14,6 @@
 #include <pAPI.h>
 #include <Actions.h>
 
-#include <tr1/array>
-
 using namespace PAPI;
 
 #include "vector.h"
@@ -29,17 +27,13 @@ class GLFont;
 class Shader;
 class ExtraDimensions;
 
+#include "commonutils.h"
 #include "fungespace.h"
 #include "fungecommand.h"
 #include "interpreter.h"
 #include "sound.h"
 #include "smoothvar.h"
 #include "frustum.h"
-
-// TODO: Put these in a utils class or namespace
-void glViewport(const QRect& rect);
-void glViewport(const QPoint& pos, const QSize& size);
-void glViewport(int x, int y, const QSize& size);
 
 class GLView : public QGLWidget
 {
