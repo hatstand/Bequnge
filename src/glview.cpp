@@ -4,6 +4,7 @@
 #include "magicnumbers.h"
 #include "shader.h"
 #include "glfont.h"
+#include "vector.h"
 
 #include <QTimer>
 #include <QMouseEvent>
@@ -438,7 +439,7 @@ void GLView::drawDepthBoxes()
 			
 			float3 coord = fungeSpaceToGl(coords);
 			
-			if (!m_frustum.testSphere(Vec3(coord[0], coord[1], coord[2]), FONT_SIZE))
+			if (!m_frustum.testSphere(vec3(coord[0], coord[1], coord[2]), FONT_SIZE))
 				continue;
 			
 			glPushMatrix();
@@ -612,7 +613,7 @@ void GLView::drawFunge(T& code)
 		
 		float3 coord = fungeSpaceToGl(coords);
 		
-		if (!m_frustum.testSphere(Vec3(coord[0], coord[1], coord[2]), FONT_SIZE))
+		if (!m_frustum.testSphere(vec3(coord[0], coord[1], coord[2]), FONT_SIZE))
 			continue;
 		
 		if (m_extraDimensions->ascensionLevel() > 0)

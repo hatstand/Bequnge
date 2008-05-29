@@ -98,3 +98,15 @@ void TestVector::testDotProduct() {
 	Vector<int,2> v1(2,3);
 	QVERIFY(v1.dot(v1) == 13);
 }
+
+void TestVector::testLen() {
+	Vector<int,2> v1(3,4);
+	QVERIFY(v1.len() == 5);
+}
+
+void TestVector::testNormalise() {
+	Vector<float,2> v1(3.0f, 4.0f);
+	v1.normalise();
+	QVERIFY(v1.x == 3.0f / 5.0f);
+	QVERIFY(v1.y == 4.0f / 5.0f);
+}
