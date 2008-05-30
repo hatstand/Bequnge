@@ -76,6 +76,12 @@ void TestVector::testOperators()
 	Vector<int,2> expected_mod(0, 2);
 	QVERIFY(v2 % v1 == expected_mod);
 
+	QVERIFY(v1 * 2 == (Vector<int,2>(4,6)));
+	QVERIFY(v1 / 2 == (Vector<int,2>(1,1)));
+	QVERIFY(v1 - 2 == (Vector<int,2>(0,1)));
+	QVERIFY(v1 % 2 == (Vector<int,2>(0,1)));
+	QVERIFY(v1 + 2 == (Vector<int,2>(4,5)));
+
 	Vector<int,2> muted = v1;
 	QVERIFY((muted *= 2) == (v1 * 2));
 	muted = v1;
@@ -97,6 +103,9 @@ void TestVector::testOperators()
 void TestVector::testDotProduct() {
 	Vector<int,2> v1(2,3);
 	QVERIFY(v1.dot(v1) == 13);
+
+	Vector<float,3> v2(1.0f,2.0f,3.0f);
+	QVERIFY(v2.dot(v2) == 14.0f);
 }
 
 void TestVector::testLen() {

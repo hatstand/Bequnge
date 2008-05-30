@@ -12,6 +12,7 @@ private slots:
 	void testAssignment();
 	void testOperators();
 	void testTranspose();
+	void testGl();
 };
 
 #endif
