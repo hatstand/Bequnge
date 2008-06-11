@@ -97,8 +97,6 @@ private:
 	int nextPowerOf2(int n);
 	void updateParticles();
 	
-	void foo() {}
-	
 	void updateCamera(int timeDelta);
 	float degreesToRadians(float degrees);
 	float modulo(float value, float mod);
