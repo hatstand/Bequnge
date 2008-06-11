@@ -8,13 +8,13 @@ void TestVector::testConstructors()
 	Vector<int,2> v1(2,3);
 	QVERIFY(v1.x == 2);
 	QVERIFY(v1.x == v1.r);
-	QVERIFY(v1.x == v1.u);
-	QVERIFY(v1.r == v1.u);
+	QVERIFY(v1.x == v1.s);
+	QVERIFY(v1.r == v1.s);
 	QVERIFY(v1.y == 3);
 	QVERIFY(v1.r == 2);
 	QVERIFY(v1.g == 3);
-	QVERIFY(v1.u == 2);
-	QVERIFY(v1.v == 3);
+	QVERIFY(v1.s == 2);
+	QVERIFY(v1.t == 3);
 	QVERIFY(v1[0] == 2);
 	QVERIFY(v1[1] == 3);
 
