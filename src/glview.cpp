@@ -5,6 +5,7 @@
 #include "shader.h"
 #include "glfont.h"
 #include "vector.h"
+#include "postprocessing.h"
 
 #include <QTimer>
 #include <QMouseEvent>
@@ -23,8 +24,6 @@
 
 #include <math.h>
 
-QList<Shader*> GLView::s_ppShaders;
-
 GLView::GLView(FungeSpace* fungeSpace, const QGLFormat& format, QWidget* parent)
 	: QGLWidget(format, parent),
 	  m_fungeSpace(fungeSpace),
@@ -41,7 +40,6 @@ GLView::GLView(FungeSpace* fungeSpace, const QGLFormat& format, QWidget* parent)
 	  m_rotateDragging(false),
 	  m_enableWhoosh(false),
 	  m_offsetWhoosh(5),
-	  m_sceneFbo(NULL),
 	  m_bloom(true)
 {
 	setFocusPolicy(Qt::WheelFocus);
@@ -92,6 +90,9 @@ GLView::GLView(FungeSpace* fungeSpace, const QGLFormat& format, QWidget* parent)
 	
 	m_extraDimensions = new ExtraDimensions(this);
 	
+	m_postProcessing = new PostProcessing();
+	m_postProcessing->setBloomCallback(boost::bind(boost::mem_fn(&GLView::drawBrightParts), this));
+	
 	// Reset the view
 	resetView();
 }
@@ -101,39 +102,7 @@ GLView::~GLView()
 {
 	delete m_font;
 	delete m_metricsSmall;
-}
-
-void GLView::recreateFbos()
-{
-	delete m_sceneFbo;
-	m_sceneFbo = new QGLFramebufferObject(nextPowerOf2(width()), nextPowerOf2(height()), QGLFramebufferObject::Depth);
-	glBindTexture(GL_TEXTURE_2D, m_sceneFbo->texture());
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-	
-	m_sceneFbo->bind();
-	glClear(GL_COLOR_BUFFER_BIT);
-	m_sceneFbo->release();
-	
-	qDeleteAll(m_blurTargets);
-	m_blurTargets.clear();
-	
-	QSize size(m_sceneFbo->size() / 2);
-	for (int i=0 ; i<3 ; ++i)
-	{
-		size /= 2;
-		
-		QGLFramebufferObject* fbo = new QGLFramebufferObject(size, QGLFramebufferObject::Depth);
-		glBindTexture(GL_TEXTURE_2D, fbo->texture());
-		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-		
-		fbo->bind();
-		glClear(GL_COLOR_BUFFER_BIT);
-		fbo->release();
-		
-		m_blurTargets << fbo;
-	}
+	delete m_postProcessing;
 }
 
 int GLView::nextPowerOf2(int n)
@@ -182,15 +151,14 @@ void GLView::initializeGL()
 	
 	m_extraDimensions->prepareCallList(m_displayListsBase + GRID);
 	
-	// Shaders
-	for (int i=0 ; i<4 ; ++i)
-		s_ppShaders << new Shader(":shaders/pp_vert.glsl", ":shaders/pp_pass" + QString::number(i) + ".glsl");
 	m_font = new GLFont("Luxi Mono", QPen(Qt::blue));
+	
+	m_postProcessing->init();
 }
 
 void GLView::resizeGL(int width, int height)
 {
-	recreateFbos();
+	m_postProcessing->windowResized(width, height);
 }
 
 void GLView::updateCamera(int timeDelta)
@@ -467,83 +435,12 @@ void GLView::paintGL()
 	
 	// Draw the scene to the scene FBO
 	if (m_bloom)
-		m_sceneFbo->bind();
+		m_postProcessing->prepareBuffers();
 	
-	glViewport(0, 0, size());
 	drawScene();
 	
 	if (m_bloom)
-	{
-		m_sceneFbo->release();
-		
-		m_blurTargets[0]->bind();
-		glViewport(0, 0, m_blurTargets[0]->size());
-		drawBrightParts();
-		m_blurTargets[0]->release();
-		
-		glDisable(GL_DEPTH_TEST);
-		glDisable(GL_BLEND);
-		
-		// Blur the bright bits
-		blurPass(s_ppShaders[0], m_blurTargets[0], m_blurTargets[0]);
-		blurPass(s_ppShaders[1], m_blurTargets[0], m_blurTargets[0]);
-		blurPass(s_ppShaders[2], m_blurTargets[0], m_blurTargets[0]);
-		blurPass(s_ppShaders[1], m_blurTargets[0], m_blurTargets[0]);
-		blurPass(s_ppShaders[2], m_blurTargets[0], m_blurTargets[0]);
-		blurPass(s_ppShaders[1], m_blurTargets[0], m_blurTargets[0]);
-		blurPass(s_ppShaders[2], m_blurTargets[0], m_blurTargets[0]);
-		blurPass(s_ppShaders[1], m_blurTargets[0], m_blurTargets[0]);
-		blurPass(s_ppShaders[2], m_blurTargets[0], m_blurTargets[0]);
-		blurPass(s_ppShaders[1], m_blurTargets[0], m_blurTargets[0]);
-		
-		// Downsample
-		blurPass(s_ppShaders[2], m_blurTargets[0], m_blurTargets[1]);
-		blurPass(s_ppShaders[1], m_blurTargets[1], m_blurTargets[1]);
-		
-		blurPass(s_ppShaders[2], m_blurTargets[0], m_blurTargets[2]);
-		blurPass(s_ppShaders[1], m_blurTargets[2], m_blurTargets[2]);
-		
-		// Draw back to the screen
-		glViewport(0, 0, size());
-		s_ppShaders[3]->bind();
-		
-		glActiveTexture(GL_TEXTURE0);
-		glEnable(GL_TEXTURE_2D);
-		glBindTexture(GL_TEXTURE_2D, m_sceneFbo->texture());
-		
-		glActiveTexture(GL_TEXTURE1);
-		glEnable(GL_TEXTURE_2D);
-		glBindTexture(GL_TEXTURE_2D, m_blurTargets[0]->texture());
-		
-		glActiveTexture(GL_TEXTURE2);
-		glEnable(GL_TEXTURE_2D);
-		glBindTexture(GL_TEXTURE_2D, m_blurTargets[1]->texture());
-		
-		glActiveTexture(GL_TEXTURE3);
-		glEnable(GL_TEXTURE_2D);
-		glBindTexture(GL_TEXTURE_2D, m_blurTargets[2]->texture());
-		
-		glUniform1i(s_ppShaders[3]->uniformLocation("scene"), 0);
-		glUniform1i(s_ppShaders[3]->uniformLocation("blur1"), 1);
-		glUniform1i(s_ppShaders[3]->uniformLocation("blur2"), 2);
-		glUniform1i(s_ppShaders[3]->uniformLocation("blur3"), 3);
-		
-		drawQuad(float(width()) / m_sceneFbo->width(), float(height()) / m_sceneFbo->height());
-		
-		glDisable(GL_TEXTURE_2D);
-		glActiveTexture(GL_TEXTURE2);
-		glDisable(GL_TEXTURE_2D);
-		glActiveTexture(GL_TEXTURE1);
-		glDisable(GL_TEXTURE_2D);
-		glActiveTexture(GL_TEXTURE0);
-		glDisable(GL_TEXTURE_2D);
-		
-		glEnable(GL_DEPTH_TEST);
-		glEnable(GL_BLEND);
-		
-		Shader::release();
-	}
-	
+		m_postProcessing->run();
 	
 	drawDepthBoxes();
 	
@@ -852,8 +749,10 @@ Coord GLView::pointToFungeSpace(const QPoint& pos)
 		
 	//Read the window z co-ordinate 
 	//(the z value on that point in unit cube)          
-	glReadPixels( (GLint)x, (GLint)(viewport[3]-y), 1, 1,
-			GL_DEPTH_COMPONENT, GL_FLOAT, &z );
+	/*if (m_bloom)
+		m_postProcessing->sceneReadPixels(x, viewport[3]-y, 1, 1, GL_DEPTH_COMPONENT, GL_FLOAT, &z);
+	else*/
+	glReadPixels(x, viewport[3]-y, 1, 1, GL_DEPTH_COMPONENT, GL_FLOAT, &z);
 	
 	//Unproject the window co-ordinates to 
 	//find the world co-ordinates.
@@ -1554,43 +1453,5 @@ void GLView::drawParticles()
 	glDrawArrays(GL_POINTS, 0, (GLsizei)cnt);
 	glDisableClientState(GL_VERTEX_ARRAY);
 	glDisableClientState(GL_COLOR_ARRAY);
-}
-
-void GLView::blurPass(Shader* shader, QGLFramebufferObject* source, QGLFramebufferObject* target)
-{
-	glViewport(0, 0, target->size());
-	target->bind();
-	
-	shader->bind();
-	glActiveTexture(GL_TEXTURE0);
-	glEnable(GL_TEXTURE_2D);
-	glBindTexture(GL_TEXTURE_2D, source->texture());
-	glUniform1i(shader->uniformLocation("source"), 0);
-	glUniform2f(shader->uniformLocation("pixelStep"), 1.0 / target->width(), 1.0 / target->height());
-	drawQuad(1.0, 1.0);
-	glDisable(GL_TEXTURE_2D);
-	
-	target->release();
-}
-
-void GLView::drawQuad(float width, float height)
-{
-	glBegin(GL_QUADS);
-		glMultiTexCoord2f(GL_TEXTURE0, 0.0, height);
-		glMultiTexCoord2f(GL_TEXTURE1, 0.0, 1.0);
-		glVertex2f(-1.0, 1.0);
-		
-		glMultiTexCoord2f(GL_TEXTURE0, width, height);
-		glMultiTexCoord2f(GL_TEXTURE1, 1.0, 1.0);
-		glVertex2f(1.0, 1.0);
-		
-		glMultiTexCoord2f(GL_TEXTURE0, width, 0.0);
-		glMultiTexCoord2f(GL_TEXTURE1, 1.0, 0.0);
-		glVertex2f(1.0, -1.0);
-		
-		glMultiTexCoord2f(GL_TEXTURE0, 0.0, 0.0);
-		glMultiTexCoord2f(GL_TEXTURE1, 0.0, 0.0);
-		glVertex2f(-1.0, -1.0);
-	glEnd();
 }
 

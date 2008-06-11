@@ -14,7 +14,7 @@ int main(int argc, char** argv)
 	QApplication app(argc, argv);
 
 	qsrand(QDateTime::currentDateTime().toTime_t());
-
+	Q_INIT_RESOURCE(commonshaders);
 	app.setApplicationName("Bequnge");
 
 	if (app.arguments().count() < 2 || app.arguments().at(1) == "--gui")

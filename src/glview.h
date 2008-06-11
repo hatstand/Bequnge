@@ -21,11 +21,10 @@ typedef Vector<float, 3> float3;
 
 class QMouseEvent;
 class QKeyEvent;
-class QGLFramebufferObject;
 class GLFont;
 
-class Shader;
 class ExtraDimensions;
+class PostProcessing;
 
 #include "commonutils.h"
 #include "fungespace.h"
@@ -95,9 +94,10 @@ private:
 	void keyPressEvent(QKeyEvent* event);
 	bool focusNextPrevChild(bool next);
 	
-	void recreateFbos();
 	int nextPowerOf2(int n);
 	void updateParticles();
+	
+	void foo() {}
 	
 	void updateCamera(int timeDelta);
 	float degreesToRadians(float degrees);
@@ -136,9 +136,6 @@ private:
 	void drawAnnotations();
 	void drawExplosionParticles();
 	void drawDepthBoxes();
-	
-	void blurPass(Shader* shader, QGLFramebufferObject* source, QGLFramebufferObject* target);
-	void drawQuad(float width, float height);
 	
 	void computeParticles(const Coord& point, int direction, const QColor& color);
 	void drawParticles();
@@ -232,13 +229,10 @@ private:
 	QFont m_fontWhoosh;
 	int m_offsetWhoosh;
 	
-	static QList<Shader*> s_ppShaders;
-	QGLFramebufferObject* m_sceneFbo;
-	QList<QGLFramebufferObject*> m_blurTargets;
-	
 	Frustum m_frustum;
 	
 	bool m_bloom;
+	PostProcessing* m_postProcessing;
 };
 
 #endif
