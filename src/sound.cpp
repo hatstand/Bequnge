@@ -1,6 +1,7 @@
 #include "sound.h"
 #include <phonon/backendcapabilities.h>
 #include <QDebug>
+#include <QFile>
 #include <QStringList>
 #include <QUrl>
 
@@ -14,17 +15,14 @@ Sound::Sound(QObject* parent)
 	
 	createPath(media_, output_);
 	
-	// Hehehehehehehehe
-#ifdef Q_OS_DARWIN
-	//media_->setCurrentSource(QUrl("https://www.purplehatstands.com/svn/bequnge/src/sounds/shortwhoosh.mp3"));
-#else
-	//media_->setCurrentSource(QUrl("https://www.purplehatstands.com/svn/bequnge/src/sounds/shortwhoosh.ogg"));
-#endif
+	media_->setCurrentSource(MediaSource(QString(":/sounds/shortwhoosh.mp3")));
 }
 
 Sound::~Sound() {
 }
 
 void Sound::play() {
+	Q_ASSERT(QFile::exists(":/sounds/shortwhoosh.mp3"));
+	media_->stop();
 	media_->play();
 }
