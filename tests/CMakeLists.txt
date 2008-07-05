@@ -57,12 +57,52 @@ QT4_WRAP_CPP(MATRIX-SOURCES-MOC ${MATRIX-MOC-HEADERS})
 ADD_EXECUTABLE(testmatrix ${MATRIX-SOURCES} ${MATRIX-SOURCES-MOC})
 TARGET_LINK_LIBRARIES(testmatrix ${QT_LIBRARIES} ${OPENGL_gl_LIBRARY} -lcommongl)
 
+SET(STACK-SOURCES
+	../src/stackstack.cpp
+	../src/interpreter.cpp
+	../src/sysinfo.cpp
+	../src/coord.cpp
+	../src/fungespace.cpp
+	teststackstack.cpp
+)
+
+SET(STACK-MOC-HEADERS
+	../src/interpreter.h
+	../src/fungespace.h
+	teststackstack.h
+)
+
+QT4_WRAP_CPP(STACK-SOURCES-MOC ${STACK-MOC-HEADERS})
+ADD_EXECUTABLE(teststackstack ${STACK-SOURCES} ${STACK-SOURCES-MOC})
+TARGET_LINK_LIBRARIES(teststackstack ${QT_LIBRARIES})
+
+SET(INTERPRETER-SOURCES
+	../src/fungespace.cpp
+	../src/interpreter.cpp
+	../src/stackstack.cpp
+	../src/sysinfo.cpp
+	../src/coord.cpp
+	testinterpreter.cpp
+)
+
+SET(INTERPRETER-MOC-HEADERS
+	../src/fungespace.h
+	../src/interpreter.h
+	testinterpreter.h
+)
+
+QT4_WRAP_CPP(INTERPRETER-SOURCES-MOC ${INTERPRETER-MOC-HEADERS})
+ADD_EXECUTABLE(testinterpreter ${INTERPRETER-SOURCES} ${INTERPRETER-SOURCES-MOC})
+TARGET_LINK_LIBRARIES(testinterpreter ${QT_LIBRARIES})
+
 ADD_CUSTOM_TARGET(test
 	./testcoord
 	COMMAND ./testfungespace
 	COMMAND ./testvector
 	COMMAND ./testmatrix
+	COMMAND ./teststackstack
+	COMMAND ./testinterpreter
 	WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/..
-	DEPENDS testcoord testfungespace testvector testmatrix)
+	DEPENDS testcoord testfungespace testvector testmatrix teststackstack testinterpreter)
 
 SET (EXECUTABLE_OUTPUT_PATH ..)

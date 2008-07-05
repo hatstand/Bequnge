@@ -43,7 +43,6 @@ void Interpreter::InstructionPointer::init()
 
 Interpreter::InstructionPointer::~InstructionPointer()
 {
-	delete m_stackStack;
 }
 
 Stack* Interpreter::InstructionPointer::stack()

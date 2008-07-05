@@ -15,6 +15,10 @@ class Interpreter: public QObject
 {
 	Q_OBJECT
 
+#ifdef TESTINTERPRETER_H
+	friend class TestInterpreter;
+#endif
+
 public:
 	enum Status
 	{
