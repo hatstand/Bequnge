@@ -62,3 +62,69 @@ void TestInterpreter::testDivide()
 	QVERIFY(m_interpreter->ip()->stack()->count() == 1);
 	QVERIFY(m_interpreter->ip()->stack()->peek() == 2);
 }
+
+void TestInterpreter::testModulo()
+{
+	m_interpreter->ip()->stack()->push(3);
+	m_interpreter->ip()->stack()->push(2);
+	m_interpreter->modulo();
+	QVERIFY(m_interpreter->ip()->stack()->count() == 1);
+	QVERIFY(m_interpreter->ip()->stack()->peek() == 1);
+}
+
+void TestInterpreter::testGreaterThan()
+{
+	m_interpreter->ip()->stack()->push(2);
+	m_interpreter->ip()->stack()->push(1);
+	m_interpreter->greaterThan();
+	QVERIFY(m_interpreter->ip()->stack()->count() == 1);
+	QVERIFY(m_interpreter->ip()->stack()->peek() == 1);
+}
+
+void TestInterpreter::testNotf()
+{
+	m_interpreter->ip()->stack()->push(1);
+	m_interpreter->notf();
+	QVERIFY(m_interpreter->ip()->stack()->count() == 1);
+	QVERIFY(m_interpreter->ip()->stack()->peek() == 0);
+}
+
+void TestInterpreter::testUp()
+{
+	Coord expected;
+	expected[0] = 0;
+	expected[1] = -1;
+
+	m_interpreter->up();
+	QVERIFY(m_interpreter->ip()->m_direction == expected);
+}
+
+void TestInterpreter::testDown()
+{
+	Coord expected;
+	expected[0] = 0;
+	expected[1] = 1;
+
+	m_interpreter->down();
+	QVERIFY(m_interpreter->ip()->m_direction == expected);
+}
+
+void TestInterpreter::testLeft()
+{
+	Coord expected;
+	expected[0] = -1;
+	expected[1] = 0;
+
+	m_interpreter->left();
+	QVERIFY(m_interpreter->ip()->m_direction == expected);
+}
+
+void TestInterpreter::testRight()
+{
+	Coord expected;
+	expected[0] = 1;
+	expected[1] = 0;
+
+	m_interpreter->right();
+	QVERIFY(m_interpreter->ip()->m_direction == expected);
+}

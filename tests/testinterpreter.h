@@ -20,6 +20,13 @@ private slots:
 	void testSubtract();
 	void testMultiply();
 	void testDivide();
+	void testModulo();
+	void testGreaterThan();
+	void testNotf();
+	void testUp();
+	void testDown();
+	void testLeft();
+	void testRight();
 
 private:
 	StackStackCollectionModel* m_model;
