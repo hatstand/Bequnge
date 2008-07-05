@@ -28,35 +28,29 @@ cp Info.plist Bequnge.app/Contents
 cp qt.conf ${RESDIR}
 cp Bequnge.icns ${RESDIR}
 
+copyqtlib()
+{
+	cp -R /Library/Frameworks/${1}.framework ${FRMDIR}
+	rm -rf ${FRMDIR}/${1}.framework/Headers/
+	rm -f ${FRMDIR}/${1}.framework/Versions/4/${1}_debug
+	install_name_tool -id @executable_path/../Frameworks/${1}.framework/Versions/4.0/${1} ${FRMDIR}/${1}.framework/Versions/4/${1}
+}
+
 # Copy in Qt frameworks
-cp -R /Library/Frameworks/QtCore.framework $FRMDIR
-rm -rf ${FRMDIR}/QtCore.framework/Headers/
-install_name_tool -id @executable_path/../Frameworks/QtCore.Framework/Versions/4.0/QtCore ${FRMDIR}/QtCore.framework/Versions/4/QtCore
-cp -R /Library/Frameworks/QtGui.framework $FRMDIR
-rm -rf ${FRMDIR}/QtGui.framework/Headers/
-install_name_tool -id @executable_path/../Frameworks/QtGui.Framework/Versions/4.0/QtGui ${FRMDIR}/QtGui.framework/Versions/4/QtGui
-cp -R /Library/Frameworks/QtOpenGL.framework $FRMDIR
-rm -rf ${FRMDIR}/QtOpenGL.framework/Headers/
-install_name_tool -id @executable_path/../Frameworks/QtOpenGL.Framework/Versions/4.0/QtOpenGL ${FRMDIR}/QtOpenGL.framework/Versions/4/QtOpenGL
-cp -R /Library/Frameworks/QtSvg.framework $FRMDIR
-rm -rf ${FRMDIR}/QtSvg.framework/Headers/
-install_name_tool -id @executable_path/../Frameworks/QtSvg.Framework/Versions/4.0/QtSvg ${FRMDIR}/QtSvg.framework/Versions/4/QtSvg
-cp -R /Library/Frameworks/QtXml.framework $FRMDIR
-rm -rf ${FRMDIR}/QtXml.framework/Headers/
-install_name_tool -id @executable_path/../Frameworks/QtXml.Framework/Versions/4.0/QtXml ${FRMDIR}/QtXml.framework/Versions/4/QtXml
-cp -R /Library/Frameworks/QtNetwork.framework $FRMDIR
-rm -rf ${FRMDIR}/QtNetwork.framework/Headers/
-install_name_tool -id @executable_path/../Frameworks/QtNetwork.Framework/Versions/4.0/QtNetwork ${FRMDIR}/QtNetwork.framework/Versions/4/QtNetwork
-cp -R /Library/Frameworks/QtDBus.framework $FRMDIR
-rm -rf ${FRMDIR}/QtDBus.framework/Headers/
-install_name_tool -id @executable_path/../Frameworks/QtDBus.Framework/Versions/4.0/QtDBus ${FRMDIR}/QtDBus.framework/Versions/4/QtDBus
-cp -R /Library/Frameworks/phonon.framework $FRMDIR
-rm -rf ${FRMDIR}/phonon.framework/Headers/
-install_name_tool -id @executable_path/../Frameworks/phonon.Framework/Versions/4.0/phonon ${FRMDIR}/phonon.framework/Versions/4/phonon
+copyqtlib QtCore
+copyqtlib QtGui
+copyqtlib QtOpenGL
+copyqtlib QtSvg
+copyqtlib QtXml
+copyqtlib QtDBus
+copyqtlib QtNetwork
+copyqtlib phonon
 
 # Copy in plugins
 cp -R /Developer/Applications/Qt/plugins/imageformats $PLUGDIR
 cp -R /Developer/Applications/Qt/plugins/phonon_backend $PLUGDIR
+rm -f ${PLUGDIR}/imageformats/*_debug.dylib
+rm -f ${PLUGDIR}/phonon_backend/*_debug.dylib
 
 # Fix path names to Qt in bequnge
 install_name_tool -change QtCore.framework/Versions/4/QtCore @executable_path/../Frameworks/QtCore.framework/Versions/4.0/QtCore $EXEDIR/bequnge
