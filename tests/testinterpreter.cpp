@@ -128,3 +128,111 @@ void TestInterpreter::testRight()
 	m_interpreter->right();
 	QVERIFY(m_interpreter->ip()->m_direction == expected);
 }
+
+void TestInterpreter::testTurnLeft()
+{
+	Coord expected;
+	expected[0] = 0;
+	expected[1] = -1;
+
+	m_interpreter->turnLeft();
+	QVERIFY(m_interpreter->ip()->m_direction == expected);
+
+	expected[0] = -1;
+	expected[1] = 0;
+	m_interpreter->turnLeft();
+	QVERIFY(m_interpreter->ip()->m_direction == expected);
+}
+
+void TestInterpreter::testTurnRight()
+{
+	Coord expected;
+	expected[0] = 0;
+	expected[1] = 1;
+
+	m_interpreter->turnRight();
+	QVERIFY(m_interpreter->ip()->m_direction == expected);
+
+	expected[0] = -1;
+	expected[1] = 0;
+	m_interpreter->turnRight();
+	QVERIFY(m_interpreter->ip()->m_direction == expected);
+}
+
+void TestInterpreter::testHigher()
+{
+	Coord expected;
+	expected[0] = 0;
+	expected[1] = 0;
+	expected[2] = 1;
+
+	m_interpreter->higher();
+	QVERIFY(m_interpreter->ip()->m_direction == expected);
+}
+
+void TestInterpreter::testLower()
+{
+	Coord expected;
+	expected[0] = 0;
+	expected[1] = 0;
+	expected[2] = -1;
+
+	m_interpreter->lower();
+	QVERIFY(m_interpreter->ip()->m_direction == expected);
+}
+
+void TestInterpreter::testSimpleBeginBlock()
+{
+	m_interpreter->pushItem(0);
+	Stack* temp = m_interpreter->ip()->stack();
+	m_interpreter->beginBlock();
+	QVERIFY(m_interpreter->ip()->stack());
+	QVERIFY(m_interpreter->ip()->stack() != temp);
+	QVERIFY(m_interpreter->ip()->m_stackStack->secondStack() == temp);
+	QVERIFY(temp->count() == 2);
+	QVERIFY(m_interpreter->ip()->stack()->count() == 0);
+}
+
+void TestInterpreter::testCopyItemsBeginBlock()
+{
+	m_interpreter->pushItem(42);
+	m_interpreter->pushItem(43);
+	m_interpreter->pushItem(2);
+	Stack* temp = m_interpreter->ip()->stack();
+
+	m_interpreter->beginBlock();
+	QVERIFY(m_interpreter->ip()->stack());
+	QVERIFY(m_interpreter->ip()->stack()->count() == 2);
+	QVERIFY(m_interpreter->ip()->stack()->pop() == 43);
+	QVERIFY(m_interpreter->ip()->stack()->pop() == 42);
+
+	QVERIFY(temp->count() == 4);
+	QVERIFY(temp->pop() == 0);
+	QVERIFY(temp->pop() == 0);
+}
+
+void TestInterpreter::testEmptyBlockDoesNothing()
+{
+	Stack* temp = m_interpreter->ip()->stack();
+
+	m_interpreter->pushItem(0);
+	m_interpreter->beginBlock();
+	m_interpreter->endBlock();
+
+	QVERIFY(m_interpreter->ip()->stack() == temp);
+	QVERIFY(temp->count() == 0);
+}
+
+void TestInterpreter::testCopyItemsEndBlock()
+{
+	m_interpreter->pushItem(0);
+	m_interpreter->beginBlock();
+	m_interpreter->pushItem(42);
+	m_interpreter->pushItem(43);
+	m_interpreter->pushItem(2);
+	m_interpreter->endBlock();
+
+	QVERIFY(m_interpreter->ip()->stack()->count() == 2);
+	QVERIFY(m_interpreter->ip()->stack()->pop() == 43);
+	QVERIFY(m_interpreter->ip()->stack()->pop() == 42);
+}

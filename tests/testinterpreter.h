@@ -27,6 +27,14 @@ private slots:
 	void testDown();
 	void testLeft();
 	void testRight();
+	void testTurnLeft();
+	void testTurnRight();
+	void testHigher();
+	void testLower();
+	void testSimpleBeginBlock();
+	void testCopyItemsBeginBlock();
+	void testEmptyBlockDoesNothing();
+	void testCopyItemsEndBlock();
 
 private:
 	StackStackCollectionModel* m_model;
