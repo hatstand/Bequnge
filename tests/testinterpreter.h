@@ -18,6 +18,8 @@ private slots:
 	void testPushItem();
 	void testAdd();
 	void testSubtract();
+	void testMultiply();
+	void testDivide();
 
 private:
 	StackStackCollectionModel* m_model;

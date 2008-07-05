@@ -44,3 +44,21 @@ void TestInterpreter::testSubtract()
 	QVERIFY(m_interpreter->ip()->stack()->count() == 1);
 	QVERIFY(m_interpreter->ip()->stack()->peek() == 1);
 }
+
+void TestInterpreter::testMultiply()
+{
+	m_interpreter->ip()->stack()->push(2);
+	m_interpreter->ip()->stack()->push(3);
+	m_interpreter->multiply();
+	QVERIFY(m_interpreter->ip()->stack()->count() == 1);
+	QVERIFY(m_interpreter->ip()->stack()->peek() == 6);
+}
+
+void TestInterpreter::testDivide()
+{
+	m_interpreter->ip()->stack()->push(4);
+	m_interpreter->ip()->stack()->push(2);
+	m_interpreter->divide();
+	QVERIFY(m_interpreter->ip()->stack()->count() == 1);
+	QVERIFY(m_interpreter->ip()->stack()->peek() == 2);
+}
