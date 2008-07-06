@@ -236,3 +236,28 @@ void TestInterpreter::testCopyItemsEndBlock()
 	QVERIFY(m_interpreter->ip()->stack()->pop() == 43);
 	QVERIFY(m_interpreter->ip()->stack()->pop() == 42);
 }
+
+void TestInterpreter::testCopyZeroesBeginBlock()
+{
+	m_interpreter->pushItem(-2);
+	m_interpreter->beginBlock();
+	
+	QVERIFY(m_interpreter->ip()->stack()->count() == 0);
+	// Two zeroes copied as well as the 0,0 storage offset.
+	QVERIFY(m_interpreter->ip()->m_stackStack->secondStack()->count() == 4);
+	QVERIFY(m_interpreter->ip()->m_stackStack->secondStack()->pop() == 0);
+	QVERIFY(m_interpreter->ip()->m_stackStack->secondStack()->pop() == 0);
+	QVERIFY(m_interpreter->ip()->m_stackStack->secondStack()->pop() == 0);
+	QVERIFY(m_interpreter->ip()->m_stackStack->secondStack()->pop() == 0);
+}
+
+void TestInterpreter::testCopyTooManyItemsBeginBlock()
+{
+	m_interpreter->pushItem(42);
+	m_interpreter->pushItem(2);
+	m_interpreter->beginBlock();
+
+	QVERIFY(m_interpreter->ip()->stack()->count() == 2);
+	QVERIFY(m_interpreter->ip()->stack()->pop() == 42);
+	QVERIFY(m_interpreter->ip()->stack()->pop() == 0);
+}

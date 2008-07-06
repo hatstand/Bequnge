@@ -681,7 +681,7 @@ void Interpreter::beginBlock()
 		int max = m_ip->m_stackStack->secondStack()->childCount();
 		for (int i=0 ; i<n ; i++)
 		{
-			if (i > max)
+			if (i >= max)
 				newStack->pushToBottom(0);
 			else
 			{
