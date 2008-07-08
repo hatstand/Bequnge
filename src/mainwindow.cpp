@@ -201,7 +201,7 @@ void MainWindow::slotDebug()
 	connect(m_interpreter, SIGNAL(ipCreated(int, Interpreter::InstructionPointer*)), SLOT(slotIpCreated(int, Interpreter::InstructionPointer*)));
 	connect(m_interpreter, SIGNAL(ipChanged(Interpreter::InstructionPointer*)), SLOT(slotIpChanged(Interpreter::InstructionPointer*)));
 	connect(m_interpreter, SIGNAL(ipDestroyed(Interpreter::InstructionPointer*)), SLOT(slotIpDestroyed(Interpreter::InstructionPointer*)));
-	connect(m_executionFungeSpace, SIGNAL(watchpointTriggered(Coord, QChar)), SLOT(slotWatchpointTriggered(Coord, QChar)), Qt::DirectConnection);
+	connect(m_executionFungeSpace, SIGNAL(watchpointTriggered(Coord, int)), SLOT(slotWatchpointTriggered(Coord, int)), Qt::DirectConnection);
 	connect(m_interpreter, SIGNAL(output(QChar)), SLOT(slotOutput(QChar)));
 	connect(m_interpreter, SIGNAL(output(QString)), SLOT(slotOutput(QString)));
 	connect(m_interpreter, SIGNAL(input(Interpreter::WaitingForInput)), m_ui.consoleBox, SLOT(getInput(Interpreter::WaitingForInput)));
@@ -469,7 +469,7 @@ void MainWindow::slotClearAllWatchpoints()
 		m_executionFungeSpace->clearAllWatchpoints();
 }
 
-void MainWindow::slotWatchpointTriggered(Coord, QChar)
+void MainWindow::slotWatchpointTriggered(Coord, int)
 {
 	if (!m_ui.pauseButton->isChecked())
 		m_ui.pauseButton->click();

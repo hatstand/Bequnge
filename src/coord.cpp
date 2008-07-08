@@ -13,7 +13,8 @@ std::size_t hash_value(Coord const& c)
 	std::size_t seed = 0;
 	for (int i = 0; i < c.size(); ++i)
 	{
-		boost::hash_combine(seed, c.at(i));
+		if (c.at(i) != 0)
+			boost::hash_combine(seed, c.at(i));
 	}
 
 	return seed;

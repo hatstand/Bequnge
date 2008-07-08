@@ -228,7 +228,7 @@ int FungeSpace::getChar(Coord pos) const
 	if(it != m_space.get<hash>().end())
 		return it->data;
 	else
-		return ' ';
+		return QChar(' ').unicode();
 }
 
 void FungeSpace::setDimensions(uint dimensions)

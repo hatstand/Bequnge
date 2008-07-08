@@ -3,6 +3,7 @@
 FungeCommand::FungeCommand(FungeSpace* space, Coord p, int newChar, QUndoCommand* parent)
 	:QUndoCommand(parent), m_space(space), m_p(p), m_newChar(newChar), m_type(Single)
 {
+	m_oldChar = space->getChar(p);
 }
 
 FungeCommand::FungeCommand(FungeSpace* space, ChangeList changes, QUndoCommand* parent)

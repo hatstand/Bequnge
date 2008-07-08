@@ -62,7 +62,10 @@ Interpreter::Interpreter(StackStackCollectionModel* stackModel, FungeSpace* spac
 
 	Coord direction;
 	direction[0] = 1;
-	m_ip = new InstructionPointer(m_stackModel, Coord(), direction, Coord(), m_ipid++);
+	Coord pos;
+	pos[0] = 0;
+	pos[1] = 0;
+	m_ip = new InstructionPointer(m_stackModel, pos, direction, Coord(), m_ipid++);
 
 	m_ip->m_stringMode = false;
 	m_ip->m_commentMode = false;
@@ -133,7 +136,7 @@ Interpreter::Status Interpreter::step()
 		if(m_ip->m_stringMode)
 			pushItem(QChar(' ').unicode());
 	}
-	QChar c = m_space->getChar(m_ip->m_pos);
+	QChar c(m_space->getChar(m_ip->m_pos));
 	//qDebug() << m_ip->m_pos << c;
 	Interpreter::Status ret = compute(c);
 
@@ -902,6 +905,17 @@ void Interpreter::getSysInfo()
 		pushBytesPerCell(m_ip->stack());
 		pushFlags(m_ip->stack());
 	}
+	else if (t > 20)
+	{
+		qDebug() << __PRETTY_FUNCTION__ << t << m_ip->stack()->count();
+		if (t-20 > m_ip->stack()->count())
+		{
+			reverse();
+			return;
+		}
+
+		pushItem(((DataCellItem*)m_ip->stack()->child(t-20))->value());
+	}
 	else
 	{
 		switch(t)
@@ -965,9 +979,6 @@ void Interpreter::getSysInfo()
 				break;
 			case 20:
 				pushEnvVariables(m_ip->stack());
-				break;
-			default:
-				qWarning("Invalid value for system information");
 				break;
 		}
 	}

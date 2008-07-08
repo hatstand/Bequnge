@@ -53,7 +53,7 @@ private slots:
 	void provideInput(QChar c);
 	void provideInput(int i);
 	void doFullSpeedExecution();
-	void slotWatchpointTriggered(Coord, QChar);
+	void slotWatchpointTriggered(Coord, int);
 	
 	void speedSliderMoved(int value);
 	void pauseButtonClicked(bool checked);
