@@ -11,10 +11,18 @@ uint qHash(const Coord& c)
 std::size_t hash_value(Coord const& c)
 {
 	std::size_t seed = 0;
-	for (int i = 0; i < c.size(); ++i)
+	bool zeros = true;
+	for (int i = c.size(); i > 0; --i)
 	{
-		if (c.at(i) != 0)
-			boost::hash_combine(seed, c.at(i));
+		if (zeros)
+		{
+			if (c.at(i-1) != 0)
+				zeros = false;
+			else
+				continue;
+		}
+
+		boost::hash_combine(seed, c.at(i-1));
 	}
 
 	return seed;
