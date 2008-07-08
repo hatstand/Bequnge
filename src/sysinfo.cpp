@@ -24,6 +24,7 @@ void SysInfo::pushCommandLineArgs(Stack* stack)
 	// Command line arguments
 	// TODO
 	stack->push(0);
+	stack->push(0);
 }
 
 void SysInfo::pushStackSizes(Stack* stack, StackStack* stackStack, int currentStackSize)
@@ -64,46 +65,36 @@ void SysInfo::pushDate(Stack* stack)
 void SysInfo::pushGreatestPoint(Stack* stack, const FungeSpace& space)
 {
 	// Greatest point
-	for(uint i = space.dimensions()-1; i > -1; --i)
-	{
+	for(uint i = 0; i < space.dimensions(); ++i)
 		stack->push(space.getPositiveEdge(i) - space.getNegativeEdge(i));
-	}
 }
 
 void SysInfo::pushLeastPoint(Stack* stack, const FungeSpace& space)
 {
 	// Least point
-	for(uint i = space.dimensions()-1; i > -1; --i)
-	{
+	for(uint i = 0; i < space.dimensions(); ++i)
 		stack->push(space.getNegativeEdge(i));
-	}
 }
 
 void SysInfo::pushStorageOffset(Stack* stack, const Interpreter::InstructionPointer& ip)
 {
 	// Storage Offset
-	for(uint i = ip.m_storageOffset.count() - 1; i > -1; ++i)
-	{
-		stack->push(ip.m_storageOffset[i]);
-	}
+	for (uint i = 0; i < ip.m_storageOffset.count(); ++i)
+		stack->push(ip.m_storageOffset.at(i));
 }
 
 void SysInfo::pushDirection(Stack* stack, const Interpreter::InstructionPointer& ip)
 {
 	// IP Delta
-	for(uint i = ip.m_direction.count() - 1; i > -1; ++i)
-	{
-		stack->push(ip.m_direction[i]);
-	}
+	for (uint i = 0; i < ip.m_direction.count(); ++i)
+		stack->push(ip.m_direction.at(i));
 }
 
 void SysInfo::pushPosition(Stack* stack, const Interpreter::InstructionPointer& ip)
 {
 	// IP position
-	for(uint i = ip.m_pos.count() - 1; i > -1; ++i)
-	{
-		stack->push(ip.m_pos[i]);
-	}
+	for (uint i = 0; i < ip.m_pos.count(); ++i)
+		stack->push(ip.m_pos.at(i));
 }
 
 void SysInfo::pushTeam(Stack* stack, const Interpreter::InstructionPointer& ip)

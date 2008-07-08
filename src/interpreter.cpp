@@ -701,6 +701,12 @@ void Interpreter::beginBlock()
 
 void Interpreter::endBlock()
 {
+	if (m_ip->m_stackStack->count() == 1)
+	{
+		reverse();
+		return;
+	}
+
 	int n = popItem();
 	
 	m_ip->m_usingSecondStack = true;
@@ -728,7 +734,10 @@ void Interpreter::endBlock()
 void Interpreter::stackUnderStack()
 {
 	if(m_ip->m_stackStack->count() == 1)
+	{
 		reverse();
+		return;
+	}
 
 	int n = popItem();
 	
