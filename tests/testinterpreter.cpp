@@ -206,7 +206,7 @@ void TestInterpreter::testCopyItemsBeginBlock()
 	QVERIFY(m_interpreter->ip()->stack()->pop() == 43);
 	QVERIFY(m_interpreter->ip()->stack()->pop() == 42);
 
-	QVERIFY(temp->count() == 4);
+	QVERIFY(temp->count() == 2);
 	QVERIFY(temp->pop() == 0);
 	QVERIFY(temp->pop() == 0);
 }
@@ -260,6 +260,30 @@ void TestInterpreter::testCopyTooManyItemsBeginBlock()
 	QVERIFY(m_interpreter->ip()->stack()->count() == 2);
 	QVERIFY(m_interpreter->ip()->stack()->pop() == 42);
 	QVERIFY(m_interpreter->ip()->stack()->pop() == 0);
+	QVERIFY(m_interpreter->ip()->m_stackStack->secondStack()->count() == 2);
+}
+
+void TestInterpreter::testMultiBeginEndBlock()
+{
+	m_interpreter->pushItem(1);
+	m_interpreter->pushItem(2);
+	m_interpreter->pushItem(3);
+	m_interpreter->pushItem(4);
+	m_interpreter->pushItem(5);
+	m_interpreter->pushItem(5);
+
+	m_interpreter->beginBlock();
+	QVERIFY(m_interpreter->ip()->stack()->count() == 5);
+	QVERIFY(m_interpreter->ip()->stack()->peek() == 5);
+
+	QVERIFY(m_interpreter->ip()->m_stackStack->secondStack()->count() == 2);
+	QVERIFY(m_interpreter->ip()->m_stackStack->secondStack()->peek() == 0);
+
+	m_interpreter->pushItem(2);
+	m_interpreter->endBlock();
+	QVERIFY(m_interpreter->ip()->stack()->count() == 2);
+	QVERIFY(m_interpreter->ip()->stack()->pop() == 5);
+	QVERIFY(m_interpreter->ip()->stack()->pop() == 4);
 }
 
 void TestInterpreter::testPut()

@@ -666,29 +666,23 @@ void Interpreter::iterate()
 
 void Interpreter::beginBlock()
 {
-	/*qDebug() << "[";
-	m_ip->stack()->print();
-	qDebug() << "]";*/
 	int n = m_ip->stack()->pop();
 	
 	Stack* newStack = m_ip->m_stackStack->pushEmptyStack();
-	/*qDebug() << "[";
-	m_ip->stack()->print();
-	qDebug() << "]";*/
 	
 	if (n >= 0)
 	{
 		int max = m_ip->m_stackStack->secondStack()->childCount();
+		QStack<int> temp;
 		for (int i=0 ; i<n ; i++)
 		{
 			if (i >= max)
 				newStack->pushToBottom(0);
 			else
-			{
-				DataCellItem* item = (DataCellItem*) m_ip->m_stackStack->secondStack()->child(i);
-				newStack->pushToBottom(item->value());
-			}
+				temp.push(m_ip->m_stackStack->secondStack()->pop());
 		}
+		while (!temp.isEmpty())
+			newStack->push(temp.pop());
 	}
 	else
 	{
@@ -696,15 +690,9 @@ void Interpreter::beginBlock()
 		for (int i=0 ; i<n ; i++)
 			m_ip->m_stackStack->secondStack()->push(0);
 	}
-	/*qDebug() << "[";
-	m_ip->stack()->print();
-	qDebug() << "]";*/
 
 	m_ip->m_usingSecondStack = true;
 	pushVector(m_ip->m_storageOffset);
-	/*qDebug() << "[";
-	m_ip->stack()->print();
-	qDebug() << "]";*/
 	m_ip->m_usingSecondStack = false;
 
 	for(uint i = 0; i < m_space->dimensions(); ++i)
@@ -713,16 +701,9 @@ void Interpreter::beginBlock()
 
 void Interpreter::endBlock()
 {
-	/*qDebug() << "[";
-	m_ip->stack()->print();
-	qDebug() << "]";*/
 	int n = popItem();
-
 	
 	m_ip->m_usingSecondStack = true;
-	/*qDebug() << "[";
-	m_ip->stack()->print();
-	qDebug() << "]";*/
 	m_ip->m_storageOffset = popVector();
 	m_ip->m_usingSecondStack = false;
 	
@@ -742,9 +723,6 @@ void Interpreter::endBlock()
 		for (int i=0 ; i<abs(n) ; i++)
 			popItem();
 	}
-	/*qDebug() << "[";
-	m_ip->stack()->print();
-	qDebug() << "]";*/
 }
 
 void Interpreter::stackUnderStack()

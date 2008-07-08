@@ -37,6 +37,7 @@ private slots:
 	void testCopyItemsEndBlock();
 	void testCopyZeroesBeginBlock();
 	void testCopyTooManyItemsBeginBlock();
+	void testMultiBeginEndBlock();
 	void testPut();
 	void testGet();
 
