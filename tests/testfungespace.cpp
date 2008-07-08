@@ -20,15 +20,27 @@ void TestFungeSpace::testStore()
 {
 	Coord coord(QList<int>() << 1 << 2 << 3);
 	
-	m_space->setChar(coord, 'o');
-	QCOMPARE(m_space->getChar(coord), QChar('o'));
+	m_space->setChar(coord, QChar('o').unicode());
+	QCOMPARE(QChar(m_space->getChar(coord)), QChar('o'));
 }
 
 void TestFungeSpace::testEmpty()
 {
 	Coord coord(QList<int>() << 1 << 2 << 3);
 	
-	QCOMPARE(m_space->getChar(coord), QChar(' '));
+	QCOMPARE(QChar(m_space->getChar(coord)), QChar(' '));
+} 
+
+void TestFungeSpace::testMultiStore()
+{
+	Coord coord(QList<int>() << 1 << 2 << 3);
+	m_space->setChar(coord, 1);
+	qDebug() << "Inserted 1";
+	QCOMPARE(m_space->getChar(coord), 1);
+	qDebug() << "Got 1";
+	m_space->setChar(coord, 2);
+	qDebug() << "Inserted 2";
+	QCOMPARE(m_space->getChar(coord), 2);
 }
 
 void TestFungeSpace::insertValues()
@@ -96,14 +108,14 @@ void TestFungeSpace::insertValues()
 	QCOMPARE((ulong)m_space->m_space.size(), 8UL);
 	
 	// Check the values are where we put them
-	QCOMPARE(m_space->getChar(front), QChar('f'));
-	QCOMPARE(m_space->getChar(front2), QChar('F'));
-	QCOMPARE(m_space->getChar(middle), QChar('m'));
-	QCOMPARE(m_space->getChar(middle2), QChar('M'));
-	QCOMPARE(m_space->getChar(back), QChar('b'));
-	QCOMPARE(m_space->getChar(back2), QChar('B'));
-	QCOMPARE(m_space->getChar(frontx), QChar('X'));
-	QCOMPARE(m_space->getChar(fronty), QChar('Y'));
+	QCOMPARE(QChar(m_space->getChar(front)), QChar('f'));
+	QCOMPARE(QChar(m_space->getChar(front2)), QChar('F'));
+	QCOMPARE(QChar(m_space->getChar(middle)), QChar('m'));
+	QCOMPARE(QChar(m_space->getChar(middle2)), QChar('M'));
+	QCOMPARE(QChar(m_space->getChar(back)), QChar('b'));
+	QCOMPARE(QChar(m_space->getChar(back2)), QChar('B'));
+	QCOMPARE(QChar(m_space->getChar(frontx)), QChar('X'));
+	QCOMPARE(QChar(m_space->getChar(fronty)), QChar('Y'));
 }
 
 void TestFungeSpace::testFrontSorting()
@@ -113,14 +125,14 @@ void TestFungeSpace::testFrontSorting()
 	FungeSpace::CodeByFront& byFront(m_space->codeByFront());
 	
 	FungeSpace::CodeByFront::iterator it(byFront.begin());
-	QCOMPARE(it->data.toLower(), QChar('f')); it++;
-	QCOMPARE(it->data.toLower(), QChar('f')); it++;
-	QCOMPARE(it->data.toLower(), QChar('m')); it++;
-	QCOMPARE(it->data.toLower(), QChar('m')); it++;
-	QCOMPARE(it->data.toLower(), QChar('b')); it++;
-	QCOMPARE(it->data.toLower(), QChar('b')); it++;
-	QCOMPARE(it->data.toLower(), QChar('x')); it++;
-	QCOMPARE(it->data.toLower(), QChar('y')); it++;
+	QCOMPARE(QChar(it->data).toLower(), QChar('f')); it++;
+	QCOMPARE(QChar(it->data).toLower(), QChar('f')); it++;
+	QCOMPARE(QChar(it->data).toLower(), QChar('m')); it++;
+	QCOMPARE(QChar(it->data).toLower(), QChar('m')); it++;
+	QCOMPARE(QChar(it->data).toLower(), QChar('b')); it++;
+	QCOMPARE(QChar(it->data).toLower(), QChar('b')); it++;
+	QCOMPARE(QChar(it->data).toLower(), QChar('x')); it++;
+	QCOMPARE(QChar(it->data).toLower(), QChar('y')); it++;
 	QCOMPARE(it, byFront.end());
 }
 
@@ -131,14 +143,14 @@ void TestFungeSpace::testSideSorting()
 	FungeSpace::CodeBySide& bySide(m_space->codeBySide());
 	
 	FungeSpace::CodeBySide::iterator it(bySide.begin());
-	QCOMPARE(it->data.isUpper(), true); it++;
-	QCOMPARE(it->data.isUpper(), true); it++;
-	QCOMPARE(it->data.isUpper(), true); it++;
-	QCOMPARE(it->data.isUpper(), true); it++;
-	QCOMPARE(it->data.isUpper(), true); it++;
-	QCOMPARE(it->data.isLower(), true); it++;
-	QCOMPARE(it->data.isLower(), true); it++;
-	QCOMPARE(it->data.isLower(), true); it++;
+	QCOMPARE(QChar(it->data).isUpper(), true); it++;
+	QCOMPARE(QChar(it->data).isUpper(), true); it++;
+	QCOMPARE(QChar(it->data).isUpper(), true); it++;
+	QCOMPARE(QChar(it->data).isUpper(), true); it++;
+	QCOMPARE(QChar(it->data).isUpper(), true); it++;
+	QCOMPARE(QChar(it->data).isLower(), true); it++;
+	QCOMPARE(QChar(it->data).isLower(), true); it++;
+	QCOMPARE(QChar(it->data).isLower(), true); it++;
 	QCOMPARE(it, bySide.end());
 }
 

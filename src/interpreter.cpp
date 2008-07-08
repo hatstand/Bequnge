@@ -510,7 +510,7 @@ void Interpreter::comment()
 void Interpreter::character()
 {
 	move(false);
-	pushItem(m_space->getChar(m_ip->m_pos).unicode());
+	pushItem(m_space->getChar(m_ip->m_pos));
 }
 
 void Interpreter::storeCharacter()
@@ -780,7 +780,9 @@ void Interpreter::getFunge()
 	for(uint i = 0; i < m_space->dimensions(); ++i)
 		c[i] += m_ip->m_storageOffset[i];
 
-	pushItem(m_space->getChar(c).unicode());
+	int fetched_char = m_space->getChar(c);
+
+	pushItem(fetched_char);
 }
 
 void Interpreter::putFunge()
@@ -789,7 +791,9 @@ void Interpreter::putFunge()
 	for(uint i = 0; i < m_space->dimensions(); ++i)
 		c[i] += m_ip->m_storageOffset[i];
 
-	m_space->setChar(c, popItem());
+	int popped = popItem();
+
+	m_space->setChar(c, popped);
 }
 
 void Interpreter::pushNumber(QChar n)

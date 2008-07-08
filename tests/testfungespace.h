@@ -16,6 +16,7 @@ private slots:
 	// Basic tests
 	void testStore();
 	void testEmpty();
+	void testMultiStore();
 	
 	// Sorting tests
 	void testFrontSorting();

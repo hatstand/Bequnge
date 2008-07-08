@@ -1,23 +1,22 @@
 #include "coord.h"
 
+#include <boost/functional/hash.hpp>
+#include <QtDebug>
+
 uint qHash(const Coord& c)
 {
-	uint hash = 0;
-
-	if(c.isEmpty())
-		return hash;
-
-	foreach(int i, c)
-	{
-		hash ^= i;
-	}
-	
-	return hash;
+	return hash_value(c);
 }
 
-uint hash_value(const Coord& c)
+std::size_t hash_value(Coord const& c)
 {
-	return qHash(c);
+	std::size_t seed = 0;
+	for (int i = 0; i < c.size(); ++i)
+	{
+		boost::hash_combine(seed, c.at(i));
+	}
+
+	return seed;
 }
 
 int Coord::s_zero = 0;
@@ -100,5 +99,16 @@ QList<int> Coord::mid(int pos, int length) const
 	if (pos < count())
 		return QList<int>::mid(pos, length);
 	return Coord();
+}
+
+bool Coord::operator <(const Coord& other) const
+{
+	for (int i = qMax(size(), other.size()) - 1; i >= 0; --i)
+	{
+		if (at(i) != other.at(i))
+			return at(i) < other.at(i);
+	}
+
+	return false;
 }
 

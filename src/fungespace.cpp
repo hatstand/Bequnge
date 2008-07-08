@@ -3,6 +3,10 @@
 #include <QStringList>
 #include <QFile>
 
+bool FungeChar::operator <(const FungeChar& other) const
+{
+	return coord < other.coord;
+}
 
 FungeSpace::FungeSpace(int dimensions)
 	: m_dimensions(0),
@@ -115,7 +119,7 @@ void FungeSpace::readInAll(QIODevice* dev)
 
 				pos[0] = i;
 				//qDebug() << "Putting:" << line[i] << "in:" << pos[0] << pos[1];
-				setChar(pos, line[i]);
+				setChar(pos, line[i].unicode());
 			}
 	
 			++pos[1];
@@ -171,7 +175,7 @@ void FungeSpace::readPlane(QIODevice* dev)
 			for(uint z = 2; z < m_dimensions; ++z)
 				p[z] = pos[z-2];
 
-			setChar(p, line[j]);
+			setChar(p, line[j].unicode());
 		}
 	}
 }
@@ -180,18 +184,22 @@ FungeSpace::~FungeSpace()
 {
 }
 
-void FungeSpace::setChar(Coord pos, QChar c)
+void FungeSpace::setChar(Coord pos, int c)
 {
 	if((uint)pos.count() > m_dimensions)
 		setDimensions(pos.count());
 
-	QChar oldValue;
+	int oldValue;
 	if (m_trackChanges)
 		oldValue = getChar(pos);
 
-	if(c != ' ')
+	if(QChar(c) != QChar(' '))
 	{
-		m_space.insert(FungeChar(pos, c));
+		CodeByHash::iterator it = m_space.get<hash>().find(pos);
+		if (it == m_space.get<hash>().end())
+			m_space.insert(FungeChar(pos, c));
+		else
+			m_space.replace(it, FungeChar(pos, c));
 
 		for(uint i = 0; i < m_dimensions; ++i)
 		{
@@ -200,27 +208,27 @@ void FungeSpace::setChar(Coord pos, QChar c)
 		}
 	}
 	else
-		m_space.erase(pos);
+		m_space.get<hash>().erase(pos);
 	
 	if (m_trackChanges)
 	{
 		if (m_changes.contains(pos))
 			m_changes[pos].second = c;
 		else
-			m_changes.insert(pos, QPair<QChar, QChar>(oldValue, c));
+			m_changes.insert(pos, QPair<int, int>(oldValue, c));
 	}
 	
 	if (isWatchpoint(pos))
 		emit watchpointTriggered(pos, oldValue);
 }
 
-QChar FungeSpace::getChar(Coord pos) const
+int FungeSpace::getChar(Coord pos) const
 {
 	CodeByHash::iterator it = m_space.get<hash>().find(pos);
 	if(it != m_space.get<hash>().end())
 		return it->data;
 	else
-		return QChar(' ');
+		return ' ';
 }
 
 void FungeSpace::setDimensions(uint dimensions)
@@ -264,9 +272,9 @@ void FungeSpace::save(QString filename)
 		return;
 	}
 
-	// Maps x,y to a QChar
+	// Maps x,y to a int 
 	// QMap as indexes in order
-	typedef QMap<PlaneCoord, QChar> Plane;
+	typedef QMap<PlaneCoord, int> Plane;
 
 	// Maps a Coord (stripped of x,y) to an x-y plane
 	QHash<Coord, Plane*> planes;
@@ -292,7 +300,7 @@ void FungeSpace::save(QString filename)
 			planes[pp] = current;
 		}
 
-		// Insert QChar in the correct plane
+		// Insert int in the correct plane
 		(*current)[pc] = it->data;
 	}
 

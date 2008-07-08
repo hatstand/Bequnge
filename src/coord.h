@@ -19,12 +19,13 @@ public:
 	bool operator ==(const Coord& other) const;
 	bool operator !=(const QList<int>& other) const;
 	bool operator !=(const Coord& other) const;
+	bool operator <(const Coord& other) const;
 
 private:
 	static int s_zero;
 };
 
 uint qHash(const Coord& c);
-uint hash_value(const Coord& c);
+std::size_t hash_value(const Coord& c);
 
 #endif

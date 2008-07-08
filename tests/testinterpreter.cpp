@@ -261,3 +261,31 @@ void TestInterpreter::testCopyTooManyItemsBeginBlock()
 	QVERIFY(m_interpreter->ip()->stack()->pop() == 42);
 	QVERIFY(m_interpreter->ip()->stack()->pop() == 0);
 }
+
+void TestInterpreter::testPut()
+{
+	m_interpreter->pushItem(42);
+	m_interpreter->pushItem(1);
+	m_interpreter->pushItem(1);
+
+	m_interpreter->putFunge();
+	QVERIFY(m_interpreter->ip()->stack()->count() == 0);
+	Coord c;
+	c[0] = 1;
+	c[1] = 1;
+	QVERIFY(m_interpreter->m_space->getChar(c) == 42);
+}
+
+void TestInterpreter::testGet()
+{
+	m_interpreter->pushItem(1);
+	m_interpreter->pushItem(1);
+	Coord c;
+	c[0] = 1;
+	c[1] = 1;
+	m_interpreter->m_space->setChar(c, 42);
+
+	m_interpreter->getFunge();
+	QVERIFY(m_interpreter->ip()->stack()->count() == 1);
+	QVERIFY(m_interpreter->ip()->stack()->peek() == 42);
+}

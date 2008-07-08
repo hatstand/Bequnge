@@ -1,6 +1,6 @@
 #include "fungecommand.h"
 
-FungeCommand::FungeCommand(FungeSpace* space, Coord p, QChar newChar, QUndoCommand* parent)
+FungeCommand::FungeCommand(FungeSpace* space, Coord p, int newChar, QUndoCommand* parent)
 	:QUndoCommand(parent), m_space(space), m_p(p), m_newChar(newChar), m_type(Single)
 {
 }

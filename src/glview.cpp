@@ -350,7 +350,7 @@ void GLView::drawAnnotations()
 	if (m_displayChanges)
 	{
 		glColor4f(1.0f, 0.5f, 0.5f, 0.3f);
-		QHash<Coord, QPair<QChar, QChar> > changes = m_fungeSpace->changes();
+		QHash<Coord, QPair<int, int> > changes = m_fungeSpace->changes();
 		QList<Coord> changeCoords = changes.keys();
 		foreach (Coord c, changeCoords)
 		{
@@ -1173,7 +1173,7 @@ void GLView::setCursor(Coord c, QTextCursor::MoveMode mode)
 
 void GLView::setChar(Coord p, QChar newchar)
 {
-	FungeCommand* f = new FungeCommand(m_fungeSpace, p, newchar);
+	FungeCommand* f = new FungeCommand(m_fungeSpace, p, newchar.unicode());
 	m_undoGroup.activeStack()->push(f);
 }
 
@@ -1227,7 +1227,7 @@ void GLView::selectionToClipboard(bool cut, QClipboard::Mode mode)
 			
 			if (cut)
 			{
-				changes.insert(c, QPair<QChar, QChar>(m_fungeSpace->getChar(c), ' '));
+				changes.insert(c, QPair<int, int>(m_fungeSpace->getChar(c), QChar(' ').unicode()));
 				//m_fungeSpace->setChar(c, ' ');
 			}
 		}
@@ -1307,7 +1307,7 @@ void GLView::paste(bool transparant)
 			c[2] += m_cursor[2];
 			QChar value = i.value();
 			
-			changes.insert(c, QPair<QChar, QChar>(m_fungeSpace->getChar(c), value));
+			changes.insert(c, QPair<int, int>(m_fungeSpace->getChar(c), value.unicode()));
 			//m_fungeSpace->setChar(c, value);
 		}
 	}
@@ -1327,7 +1327,7 @@ void GLView::paste(bool transparant)
 			{
 				if ((!transparant) || (line[x] != ' '))
 				{
-					changes.insert(c, QPair<QChar, QChar>(m_fungeSpace->getChar(c), line[x]));
+					changes.insert(c, QPair<int, int>(m_fungeSpace->getChar(c), line[x].unicode()));
 					//m_fungeSpace->setChar(c, line[x]);
 				}
 				c[0]++;
@@ -1350,7 +1350,7 @@ void GLView::clearRect(Coord topLeft, Coord bottomRight, ChangeList* changes)
 		{
 			for (c[2]=topLeft[2] ; c[2]<=bottomRight[2] ; ++c[2])
 			{
-				changes->insert(c, QPair<QChar, QChar>(m_fungeSpace->getChar(c), ' '));
+				changes->insert(c, QPair<int, int>(m_fungeSpace->getChar(c), QChar(' ').unicode()));
 				//m_fungeSpace->setChar(c, ' ');
 			}
 		}

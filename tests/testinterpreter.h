@@ -37,6 +37,8 @@ private slots:
 	void testCopyItemsEndBlock();
 	void testCopyZeroesBeginBlock();
 	void testCopyTooManyItemsBeginBlock();
+	void testPut();
+	void testGet();
 
 private:
 	StackStackCollectionModel* m_model;

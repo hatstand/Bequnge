@@ -1,7 +1,6 @@
 #ifndef FUNGESPACE_H
 #define FUNGESPACE_H
 
-#include <QChar>
 #include <QHash>
 #include <QDebug>
 #include <QIODevice>
@@ -51,10 +50,11 @@ The pig will help with the understanding of this class.
 
 struct FungeChar
 {
-	FungeChar(const Coord& c, const QChar& d) : coord(c), data(d) {}
+	FungeChar(const Coord& c, int d) : coord(c), data(d) {}
+	bool operator <(const FungeChar& other) const;
 	
 	Coord coord;
-	QChar data;
+	int data;
 };
 
 struct FrontComparison
@@ -108,6 +108,11 @@ class FungeSpace : public QObject
 	typedef boost::multi_index_container<
 		FungeChar,
 		boost::multi_index::indexed_by<
+			boost::multi_index::hashed_unique<
+				boost::multi_index::tag<hash>,
+				boost::multi_index::member<FungeChar, Coord, &FungeChar::coord>,
+				boost::hash<Coord>
+			>,
 			boost::multi_index::ordered_non_unique<
 				boost::multi_index::tag<front>,
 				boost::multi_index::member<FungeChar, Coord, &FungeChar::coord>,
@@ -117,10 +122,6 @@ class FungeSpace : public QObject
 				boost::multi_index::tag<side>,
 				boost::multi_index::member<FungeChar, Coord, &FungeChar::coord>,
 				SideComparison
-			>,
-			boost::multi_index::hashed_unique<
-				boost::multi_index::tag<hash>,
-				boost::multi_index::member<FungeChar, Coord, &FungeChar::coord>
 			>,
 			boost::multi_index::ordered_non_unique<
 				boost::multi_index::tag<clever>,
@@ -148,9 +149,9 @@ public:
 	~FungeSpace();
 
 	// Place a char in FungeSpace
-	void setChar(Coord, QChar);
+	void setChar(Coord, int);
 	// Get a char from a Coord in FungeSpace
-	QChar getChar(Coord) const;
+	int getChar(Coord) const;
 
 	// Get all the code back out from FungeSpace
 	CodeByFront& codeByFront() { return m_space.get<front>(); }
@@ -165,7 +166,7 @@ public:
 	void setDimensions(uint dimensions);
 	
 	void trackChanges(bool track) {m_trackChanges = track;}
-	QHash<Coord, QPair<QChar, QChar> > changes() const { return m_changes; }
+	QHash<Coord, QPair<int, int> > changes() const { return m_changes; }
 	void removeChange(Coord c) { m_changes.remove(c); }
 	
 	void toggleBreakpoint(Coord c) { if (isBreakpoint(c)) m_breakpoints.removeAll(c); else m_breakpoints << c; }
@@ -181,7 +182,7 @@ public:
 	void save(QString filename);
 
 signals:
-	void watchpointTriggered(Coord c, QChar oldValue);
+	void watchpointTriggered(Coord c, int oldValue);
 
 private:
 	void parseHeader(QIODevice* dev);
@@ -201,7 +202,7 @@ private:
 	Space m_space;
 	
 	bool m_trackChanges;
-	QHash<Coord, QPair<QChar, QChar> > m_changes;
+	QHash<Coord, QPair<int, int> > m_changes;
 	
 	QList<Coord> m_breakpoints;
 	QList<Coord> m_watchpoints;
