@@ -25,7 +25,8 @@ public:
 		Success,
 		End,
 		Invalid,
-		SuspendForInput
+		SuspendForInput,
+		Again // For zero tick instructions
 	};
 	
 	enum WaitingForInput

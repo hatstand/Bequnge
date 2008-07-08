@@ -138,10 +138,13 @@ Interpreter::Status Interpreter::step()
 	Interpreter::Status ret = compute(c);
 
 	//qDebug() << "Direction: " << m_direction;
-	if(ret == Success || ret == Invalid)
+	if(ret == Success || ret == Invalid || ret == Again)
 	{
 		move();
 	}
+
+	if (ret == Again)
+		return step();
 
 	return ret;
 }
@@ -222,7 +225,7 @@ Interpreter::Status Interpreter::compute(QChar command)
 	else if(command == 'Y')
 		downDimension();
 	else if(command == 'z')
-		;// Nop
+		return Success;// Nop
 	else if(command == 'y')
 		getSysInfo();
 	else if(command == 'r')
@@ -232,7 +235,10 @@ Interpreter::Status Interpreter::compute(QChar command)
 	else if(command == '"')
 		string();
 	else if(command == ';')
+	{
 		comment();
+		return Again;
+	}
 	else if(command == '\'')
 		character();
 	else if(command == 's')
