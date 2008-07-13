@@ -15,14 +15,17 @@ Sound::Sound(QObject* parent)
 	
 	createPath(media_, output_);
 	
+#ifndef Q_OS_LINUX
 	media_->setCurrentSource(MediaSource(QString(":/sounds/shortwhoosh.mp3")));
+#else
+	media_->setCurrentSource(MediaSource(QString(":/sounds/shortwhoosh.ogg")));
+#endif
 }
 
 Sound::~Sound() {
 }
 
 void Sound::play() {
-	Q_ASSERT(QFile::exists(":/sounds/shortwhoosh.mp3"));
 	media_->stop();
 	media_->play();
 }
