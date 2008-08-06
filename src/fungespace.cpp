@@ -131,6 +131,7 @@ void FungeSpace::readInAll(QIODevice* dev)
 		readPlane(dev);
 
 	qDebug() << "Finished reading code";
+	emit fungespaceChanged();
 }
 
 void FungeSpace::readPlane(QIODevice* dev)
@@ -175,7 +176,7 @@ void FungeSpace::readPlane(QIODevice* dev)
 			for(uint z = 2; z < m_dimensions; ++z)
 				p[z] = pos[z-2];
 
-			setChar(p, line[j].unicode());
+			setChar(p, line[j].unicode(), true);
 		}
 	}
 }
@@ -184,7 +185,7 @@ FungeSpace::~FungeSpace()
 {
 }
 
-void FungeSpace::setChar(Coord pos, int c)
+void FungeSpace::setChar(Coord pos, int c, bool postpone)
 {
 	if((uint)pos.count() > m_dimensions)
 		setDimensions(pos.count());
@@ -220,6 +221,9 @@ void FungeSpace::setChar(Coord pos, int c)
 	
 	if (isWatchpoint(pos))
 		emit watchpointTriggered(pos, oldValue);
+
+	if (!postpone)
+		emit fungespaceChanged();
 }
 
 int FungeSpace::getChar(Coord pos) const

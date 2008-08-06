@@ -149,7 +149,8 @@ public:
 	~FungeSpace();
 
 	// Place a char in FungeSpace
-	void setChar(Coord, int);
+	// Postpone prevents the fungespaceChanged() signal from being emitted.
+	void setChar(Coord, int, bool postpone = false);
 	// Get a char from a Coord in FungeSpace
 	int getChar(Coord) const;
 
@@ -183,6 +184,7 @@ public:
 
 signals:
 	void watchpointTriggered(Coord c, int oldValue);
+	void fungespaceChanged();
 
 private:
 	void parseHeader(QIODevice* dev);
