@@ -57,6 +57,8 @@ install_name_tool -change QtCore.framework/Versions/4/QtCore @executable_path/..
 install_name_tool -change QtGui.framework/Versions/4/QtGui @executable_path/../Frameworks/QtGui.framework/Versions/4.0/QtGui $EXEDIR/bequnge
 install_name_tool -change QtOpenGL.framework/Versions/4/QtOpenGL @executable_path/../Frameworks/QtOpenGL.framework/Versions/4.0/QtOpenGL $EXEDIR/bequnge
 install_name_tool -change phonon.framework/Versions/4/phonon @executable_path/../Frameworks/phonon.framework/Versions/4.0/phonon $EXEDIR/bequnge
+install_name_tool -change QtXml.framework/Versions/4/QtXml @executable_path/../Frameworks/QtXml.framework/Versions/4.0/QtXml $EXEDIR/bequnge
+install_name_tool -change QtDBus.framework/Versions/4/QtDBus @executable_path/../Frameworks/QtDBus.framework/Versions/4.0/QtDBus $EXEDIR/bequnge
 
 # Fix path names in Qt Libraries
 # QtCore
