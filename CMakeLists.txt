@@ -24,7 +24,8 @@ IF (NOT QT_QTOPENGL_FOUND)
 ENDIF (NOT QT_QTOPENGL_FOUND)
 
 IF (NOT QT_PHONON_FOUND)
-	MESSAGE(FATAL_ERROR "Qt Phonon libraries were not found.")
+	ADD_DEFINITIONS(-DNO_SOUND)
+	MESSAGE("Phonon not found. Sound disabled.")
 ENDIF (NOT QT_PHONON_FOUND)
 
 # Set up definitions and paths
