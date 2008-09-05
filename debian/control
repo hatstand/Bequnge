@@ -1,8 +1,8 @@
 Source: bequnge
 Section: universe/devel
 Priority: optional
-Build-Depends: debhelper, libalut-dev, libboost-dev, libopenal-dev, libqt4-dev ( >= 4.2), gcc (>= 4:4.0), cmake (>= 2.4), libvorbis-dev, libogg-dev, cdbs
-Maintainer: Chris Jones <cej105@ecs.soton.ac.uk>
+Build-Depends: debhelper, libboost-dev, libqt4-dev ( >= 4.4), gcc (>= 4:4.0), cmake (>= 2.6)
+Maintainer: John Maguire <john.maguire@gmail.com>
 Standards-Version: 3.7.2
 
 Package: bequnge

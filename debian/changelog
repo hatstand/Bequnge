@@ -1,3 +1,8 @@
+bequnge (0.3) edgy; urgency=low
+
+   * Version bump.
+
+ -- John Maguire <john.maguire@gmail.com>  Thu, 04 Sep 2008 12:54:14 +0200
 bequnge (0.01) edgy; urgency=low
 
    * Initial packaging.
