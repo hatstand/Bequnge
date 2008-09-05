@@ -158,3 +158,25 @@ void TestMatrix::testGl() {
 	QVERIFY(m.at(0,1) == 2);
 }	
 
+
+void TestMatrix::testSimpleOperators() {
+	float data[4] = {1,2,3,4};
+	float mult_result[4] = {2,4,6,8};
+	float add_result[4] = {2,3,4,5};
+	float min_result[4] = {0,1,2,3};
+	float div_result[4] = {0.5,1,1.5,2};
+
+	Matrix<float,2> mat(data);
+
+	Matrix<float,2> res(add_result);
+	QVERIFY(mat * 2 == res);
+
+	res = Matrix<float,2>(add_result);
+	QVERIFY(mat + 1 == res);
+
+	res = Matrix<float,2>(min_result);
+	QVERIFY(mat - 1 == res);
+
+	res = Matrix<float,2>(div_result);
+	QVERIFY(mat / 2 == res);
+}
