@@ -108,7 +108,9 @@ private:
 	Status compute(QChar);
 	void move(bool skipSpaces = true);
 	void jumpSpaces();
-	Coord getNextInstruction();
+	Coord getNextInstruction(const Coord& c);
+
+	bool isRealInstruction(Coord c);
 
 
 	// Instructions

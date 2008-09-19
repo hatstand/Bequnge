@@ -1,6 +1,7 @@
 #include <QApplication>
 
 #include <QFile>
+#include <QFileInfo>
 #include <QDebug>
 #include <QDateTime>
 
@@ -26,7 +27,15 @@ int main(int argc, char** argv)
 	}
 
  	QFile* f = new QFile(argv[1]);
- 	FungeSpace s(f);
+	QFileInfo info(*f);
+	FungeSpace::SourceType type = FungeSpace::Bequnge;
+	if (info.suffix() == "b98") {
+		type = FungeSpace::Befunge98;
+	} else if (info.suffix() == "bf") {
+		type = FungeSpace::Befunge93;
+	}
+
+ 	FungeSpace s(f, type);
 	StackStackCollectionModel m(0);
  	Interpreter i(&m, &s, 0);
 	Console console(&i);

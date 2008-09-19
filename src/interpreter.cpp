@@ -113,9 +113,9 @@ void Interpreter::move(bool skipSpaces)
 	emit ipChanged(m_ip);
 }
 
-Coord Interpreter::getNextInstruction()
+Coord Interpreter::getNextInstruction(const Coord& c)
 {
-	Coord temp = m_ip->m_pos;
+	Coord temp = c;
 	for (uint i = 0; i < m_space->dimensions(); ++i)
 	{
 		temp[i] += m_ip->m_direction[i];
@@ -125,7 +125,17 @@ Coord Interpreter::getNextInstruction()
 			m_ip->m_pos[i] = m_space->getPositiveEdge(i);
 	}
 
+	if (!isRealInstruction(temp))
+		return getNextInstruction(temp);
+
 	return temp;
+}
+
+bool Interpreter::isRealInstruction(Coord c) {
+	if (QString(" ;\")(").contains(m_space->getChar(c)))
+		return false;
+	
+	return true;
 }
 
 Interpreter::Status Interpreter::step()
@@ -664,13 +674,13 @@ void Interpreter::iterate()
 {
 	int x = popItem();
 	Coord old = m_ip->m_pos;
-	Coord c = getNextInstruction();
+	Coord c = getNextInstruction(m_ip->m_pos);
 
 	for(int i = 0; i < x; ++i)
 		compute(m_space->getChar(c));
 
-	if (old == m_ip->m_pos)
-		move();
+	//if (old == m_ip->m_pos)
+	//	move();
 }
 
 void Interpreter::beginBlock()
