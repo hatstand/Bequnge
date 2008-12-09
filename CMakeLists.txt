@@ -2,9 +2,6 @@ cmake_minimum_required(VERSION 2.6)
 
 INCLUDE(UsePkgConfig)
 
-# Include our custom cmake modules
-SET(CMAKE_MODULE_PATH ${CMAKE_SOURCE_DIR}/CMake)
-
 # Boost now required for multi_index
 FIND_PACKAGE(Boost REQUIRED)
 
