@@ -19,6 +19,7 @@ MainWindow::MainWindow(QWidget* parent)
 	  m_settings("BeQunge", "BeQunge", this)
 {
 	m_ui.setupUi(this);
+  showMaximized();
 	
 	setWindowIcon(QIcon(":/icons/beq.png"));
 	
@@ -49,9 +50,9 @@ MainWindow::MainWindow(QWidget* parent)
 	connect(m_glView, SIGNAL(stringModeChanged(bool)), stringMode, SLOT(setStringMode(bool)));
 	
 	// Hide the docks by default
-	m_ui.stackDock->hide();
-	m_ui.consoleDock->hide();
-	m_ui.debuggerDock->hide();
+  //m_ui.stackDock->hide();
+  //m_ui.consoleDock->hide();
+  //m_ui.debuggerDock->hide();
 	m_ui.documentationDock->hide();
 	
 	m_ui.displayFungeSpace->setEnabled(false);
@@ -144,11 +145,11 @@ void MainWindow::slotOpen()
 	m_settings.setValue("filedir", dir.absolutePath());
 
 	FungeSpace::SourceType type;
-	if (filter.contains("beq"))
+  if (fileName.endsWith("beq"))
 		type = FungeSpace::Bequnge;
-	else if (filter.contains("b98"))
+  else if (fileName.endsWith("b98"))
 		type = FungeSpace::Befunge98;
-	else if (filter.contains("bf"))
+  else if (fileName.endsWith("bf"))
 		type = FungeSpace::Befunge93;
 	else
 		Q_ASSERT(0);

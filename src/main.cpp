@@ -21,7 +21,7 @@ int main(int argc, char** argv)
 	if (app.arguments().count() < 2 || app.arguments().at(1) == "--gui")
 	{
 		MainWindow* win = new MainWindow(NULL);
-		win->showMaximized();
+		win->show();
 
 		return app.exec();
 	}
