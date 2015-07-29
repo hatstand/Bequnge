@@ -1,0 +1,11 @@
+<RCC>
+	<qresource prefix="/libcommongl/" >
+		<file>shaders/pp_vert.glsl</file>
+		<file>shaders/pp_blend.glsl</file>
+		<file>shaders/pp_blurx.glsl</file>
+		<file>shaders/pp_blury.glsl</file>
+		<file>shaders/pp_downsample.glsl</file>
+		<file>shaders/pp_motionblur.glsl</file>
+		<file>shaders/pp_bloom.glsl</file>
+	</qresource>
+</RCC>
