@@ -1,0 +1,142 @@
+body
+{
+	background-color: black;
+	color: white;
+}
+
+div.menu
+{
+	left: 0px;
+	width: 250px;
+	float: left;
+	padding-right: 30px;
+	border-right: 1px solid lime;
+	border-bottom: 1px solid lime;
+	margin-right: 30px;
+	padding-bottom: 30px;
+	text-align: right;
+}
+
+div.menu p.link
+{
+	color: lime;
+	font-family: monospace;
+	font-weight: bold;
+}
+
+div.menu p.link a
+{
+	color: lime;
+	text-decoration: none;
+}
+
+div.menu p.link a.current
+{
+	color: red;
+}
+
+div.menu p.link a:hover
+{
+	text-decoration: underline;
+}
+
+div.menu p.copy
+{
+	border-top: 1px dashed lime;
+	padding-top: 10px;
+	margin-top: 40px;
+	margin-left: 20px;
+	font-size: smaller;
+}
+
+div.content
+{
+	margin-left: 311px;
+}
+
+div.screenshot
+{
+	width: 555px;
+	text-align: center;
+	padding-bottom: 30px;
+	padding-top: 20px;
+	border-bottom: 1px dashed white;
+}
+
+a
+{
+	color: lime;
+	text-decoration: none;
+}
+
+a:hover
+{
+	text-decoration: underline;
+}
+
+div.download
+{
+	width: 600px;
+	border-bottom: 1px dashed white;
+	padding: 10px;
+	margin-bottom: 10px;
+}
+
+div.download img
+{
+	float: left;
+}
+
+div.download div
+{
+	padding-left: 60px;
+	min-height: 48px;
+}
+
+div.download .title
+{
+	margin: 0px;
+	color: lime;
+	font-size: larger;
+	font-weight: bold;
+}
+
+div.download .version
+{
+	margin: 0px;
+	color: lime;
+	font-size: smaller;
+	font-family: monospace;
+}
+
+
+h1
+{
+	color: lime;
+	font-family: monospace;
+	text-decoration: underline;
+}
+
+h2
+{
+	color: lime;
+	font-size: large;
+	font-weight: bold;
+}
+
+li
+{
+	padding-top: 5px;
+}
+
+img
+{
+	border: none;
+}
+
+.funge
+{
+	color: lime;
+	font-weight: bold;
+	font-family: monospace;
+}
