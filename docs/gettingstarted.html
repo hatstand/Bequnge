@@ -1,0 +1,79 @@
+<head>
+	<link rel="stylesheet" type="text/css" href="stylesheet.css" media="screen">
+</head>
+
+<div class="menu">
+	<img src="logo.png" alt="Bequnge Logo">
+	<p class="link"><a href="index.html">Home</a></p>
+	<p class="link"><a href="screenshots.html">Screenshots</a></p>
+	<p class="link"><a href="downloads.html">Downloads</a></p>
+	<p class="link"><a class="current" href="gettingstarted.html">Getting started</a></p>
+	<p class="link"><a href="https://github.com/hatstand/Bequnge">Source browser</a></p>
+<p class="copy">© 2006 <a href="mailto:me@davidsansome.com">David Sansome</a><br><a href="mailto:john.maguire@gmail.com">John Maguire</a></p>
+</div>
+
+<div class="content">
+
+<h1>Getting Started</h1>
+
+<h2>Simple Funge instructions</h2>
+
+<ul>
+	<li><span class="funge">2</span> pushes the number 2 onto the stack.  Any number from 0-9 can be pushed onto the stack - larger numbers are made by pushing smaller numbers and adding or multiplying them.</li>
+	<li><span class="funge">+</span> pops two numbers off the stack, adds them, and pushes the result back onto the stack.</li>
+	<li><span class="funge">.</span> pops a number off the stack and prints it to the console.</li>
+	<li><span class="funge">@</span> exits the Funge program.</li>
+</ul>
+
+<h2>Addition example</h2>
+
+<p>Try typing the following code into BeQunge:</p>
+
+<p class="funge">23+.@</p>
+
+<p>Press the Debug button on the BeQunge toolbar and watch the interpreter run your code.  Two numbers (2 and 3) will be pushed onto the stack.  These will be added together and the result (5) printed to the console.</p>
+<p>You can slow down execution of your code by using the speed slider.  You can also press the Pause button next to the slider and step through your code using the Step button on the toolbar.</p>
+
+<h1>Multi-dimensional code</h1>
+
+<p>Funge is a multi-dimensional programming language.  The instruction pointer is a vector and can travel in any direction through your code.  You can use the following instructions to change the direction of the instruction pointer:</p>
+
+<ul>
+	<li><span class="funge">&gt;</span> right.  This is the default direction.</li>
+	<li><span class="funge">&lt;</span> left.</li>
+	<li><span class="funge">^</span> up.</li>
+	<li><span class="funge">v</span> down.</li>
+	<li><span class="funge">h</span> into the screen (<span class="funge">h</span>igh).</li>
+	<li><span class="funge">l</span> out of the screen (<span class="funge">l</span>ow).</li>
+</ul>
+
+<p>Notice that when typing these instructions in the editor window, BeQunge will change the direction of text input for you.  The arrow at the bottom of the screen will change to reflect which direction text is being entered.  You can change this manually by holding Alt and pressing an arrow key.</p>
+<p>When you enter a <span class="funge">h</span> or <span class="funge">l</span> instruction, BeQunge will rotate the view to make it easier to see the plane you're working in.  You can rotate the view manually by pressing Tab.  You can also use the Page Down and Page Up keys to move the text cursor back or forward through your three dimensional code.</p>
+
+<h2>More than three dimensions</h2>
+
+<p>Additional dimensions can be shown by pressing Ctrl+Up.  This will "zoom out", showing the three-dimensional space you are currently editing in the center of the screen, surrounded by an infinite number of other three-dimensional spaces.  You can use the Up, Down, Left, Right, Page Up and Page Down keys to select another three-dimensional space that you want to edit, and then press Ctrl+Down to "zoom in" to it.</p>
+
+<p>Currently BeQunge is limited to displaying about 105 dimensions.</p>
+
+<p>There are two instructions used by BeQunge to move between these higher dimensions.  Note that these instructions are non-standard and do not appear in the Funge-98 specification.</p>
+
+<ul>
+	<li><span class="funge">Z</span> pops a number n off the stack and makes the instruction pointer travel forwards in the nth dimension.</li>
+	<li><span class="funge">Y</span> pops a number n off the stack and makes the instruction pointer travel backwards in the nth dimension.</li>
+</ul>
+
+<p>Dimensions are numbered beginning from 0, so 0Z would travel forwards in the x dimension, and 1Y would travel backwards in the y dimension.</p>
+
+<h1>Additional resources</h1>
+
+<h2>More examples</h2>
+
+<p>You can find more example programs on the <a href="downloads.html">downloads page</a>.</p>
+
+<h2>Funge reference</h2>
+
+<p>The <a href="http://quadium.net/funge/spec98.html">Funge-98 Final Specification</a> contains documentation on all Funge instructions.  Note that some Funge-98 instructions are not yet implemented in BeQunge, and others may behave differently than stated in the specification.</p>
+
+</div>
+
